@@ -1,0 +1,3 @@
+openshift:
+  project: tmf685
+  image_name: tmf685
