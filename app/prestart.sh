@@ -1,9 +1,14 @@
 #! /usr/bin/env sh
-# Exit in case a command below fails
-set -ex
 
 # Enable the code block for db connectivity and migration
-python app/app_prestart.py
 
-# Execute DB migration
+
+# Let the DB start
+python /app/app/backend_pre_start.py
+
+# Run migrations
 alembic upgrade head
+
+# Create initial data in DB
+python /app/app/initial_data.py
+
