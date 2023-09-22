@@ -85,7 +85,7 @@ stages:
 #         --cache-from $REGISTRY_SERVER/$PROJECT_DEV/$TEST_IMAGE_NAME:$CI_COMMIT_REF_SLUG
 #         -t $REGISTRY_SERVER/$PROJECT_DEV/$TEST_IMAGE_NAME:latest
 #         -t $REGISTRY_SERVER/$PROJECT_DEV/$TEST_IMAGE_NAME:$CI_COMMIT_REF_SLUG
-#         -f backend/backend.dockerfile
+#         -f backend/tmf685.dockerfile
 #         ./backend
 #     - docker push $REGISTRY_SERVER/$PROJECT_DEV/$TEST_IMAGE_NAME:latest
 #     - docker push $REGISTRY_SERVER/$PROJECT_DEV/$TEST_IMAGE_NAME:$CI_COMMIT_REF_SLUG
@@ -171,7 +171,7 @@ trigger_build_deploy:
   stage: build_deploy
   variables:
     DOCKERFILE_DIR: ./backend
-    BUILD_OPTS: "--build-arg $ROUTE_CACERTIFICATE -f backend.dockerfile"
+    BUILD_OPTS: "--build-arg $ROUTE_CACERTIFICATE -f tmf685.dockerfile"
   only:
     - develop
     - qa
@@ -211,7 +211,7 @@ trigger_build_prod_image:
     - docker build --build-arg=INSTALL_DEV=true
         --cache-from $REGISTRY_SERVER/$PROJECT_PREPROD/$SERVICE_IMAGE_NAME:master-build
         -t $REGISTRY_SERVER/$PROJECT_PREPROD/$SERVICE_IMAGE_NAME:master-build
-        -f backend/backend.dockerfile
+        -f backend/tmf685.dockerfile
         ./backend
     - docker push $REGISTRY_SERVER/$PROJECT_PREPROD/$SERVICE_IMAGE_NAME:master-build
   after_script:
