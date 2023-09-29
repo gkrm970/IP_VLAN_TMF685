@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment
+venv/
+env/
+.venv/
+.env/
+.env
+
+# Dependency directories
+__pypackages__/
+*.egg-info/
+dist/
+build/
+lib/
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite3
+
+# Temporary files
+*.tmp
+
+# Editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project

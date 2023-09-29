@@ -1,0 +1,42 @@
+include:
+  - local: '.gitlab/ci/static_analysis.yml'
+
+stages:
+  - static_analysis
+
+default:
+  tags:
+    # Default tag for all GitLab runner job executions
+    - toll6-runners-app01
+
+variables:
+  # Python and Poetry version definition for the static analysis jobs
+  PYTHON_VERSION: '3.11'
+  POETRY_VERSION: '1.5.1'
+
+autoflake:
+  extends: .static_analysis_job
+  script:
+    - autoflake --check .
+
+black:
+  extends: .static_analysis_job
+  script:
+    - black --check .
+
+isort:
+  extends: .static_analysis_job
+  script:
+    - isort --check .
+
+mypy:
+  extends: .static_analysis_job
+  script:
+    # Mypy requires the runtime dependencies to type check the code
+    - poetry install --no-root
+    - mypy .
+
+ruff:
+  extends: .static_analysis_job
+  script:
+    - ruff check .
