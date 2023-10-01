@@ -135,7 +135,7 @@ class CapacityAmount(Base):
 
 
 class AppliedCapacityAmount(Base):
-    __tablename__ = 'applied_capacity_amount_'
+    __tablename__ = 'applied_capacity_amount_resource'
 
     id: Mapped[int] = mapped_column(String(255), primary_key=True, index=True)
     baseType: Mapped[str] = mapped_column(String(255))
