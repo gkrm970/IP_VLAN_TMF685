@@ -1,10 +1,9 @@
 [tool.poetry]
-name = "resource_inventory"
+name = "resource_pool"
 version = "0.1.0"
-description = "Resource Inventory API"
+description = "Resource Pool API"
 authors = [
-    "Bence Petho <bence.petho@prodapt.com>",
-    "Karthikeyan Selvaraj <karthikeyan.sp@prodapt.com>"
+    "Gopalakrishn  R M <gopalakrishna.rm@prodapt.com>"
 ]
 readme = "README.md"
 
