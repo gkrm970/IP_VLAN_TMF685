@@ -176,13 +176,13 @@ class CapacitySpecRef(BaseModel):
 
 
 class ResourceBase(BaseModel):
-    baseType: str = Field(None, alias="@baseType", description="The base type of the resource.")
-    schemaLocation: str = Field(None, alias="@schemaLocation",
+    baseType: str = Field(None, description="The base type of the resource.")
+    schemaLocation: str = Field(None,
                                 description="A link to the schema describing a resource.")
-    type: str = Field(None, alias="@type", description="The type of the resource.")
+    type: str = Field(None, description="The type of the resource.")
     relatedParty: str = Field(None, description="A related party associated with this resource.")
     href: str = Field(None, description="The URI for the object itself.")
-    description: str = Field(None, description="A narrative text describing the resource.")
+    # description: str = Field(None, description="A narrative text describing the resource.")
 
 
 class ResourceCreate(ResourceBase):

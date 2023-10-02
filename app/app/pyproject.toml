@@ -1,0 +1,113 @@
+[tool.poetry]
+name = "resource_Pool and reservation_pool"
+version = "0.1.0"
+description = "Resource Pool and Reservation API"
+authors = [
+    "Gopalakrishna R M <gopalakrishna.rm@prodapt.com>"
+]
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Main application framework
+fastapi = "^0.103.1"
+# ASGI web server implementation with Cython dependencies and other extras
+uvicorn = { extras = ["standard"], version = "^0.23.2" }
+# Server and process manager for ASGI applications
+gunicorn = "^21.2.0"
+# Middleware for request ID propagation
+asgi-correlation-id = "^4.2.0"
+# Database schema migration tool
+alembic = "^1.12.0"
+# Database ORM
+sqlalchemy = "^2.0.21"
+# Type validation schemas used within FastAPI
+pydantic = "^2.2.1"
+# Settings management using Pydantic
+pydantic-settings = "^2.0.3"
+# DB driver for MySQL/MariaDB
+pymysql = "^1.1.0"
+# HTTP library for API calls
+requests = "^2.31.0"
+
+
+[tool.poetry.group.dev.dependencies]
+# Removes unused library imports and variables
+autoflake = "^2.2.1"
+# Auto-formatter
+black = { extras = ["d"], version = "^23.9.1" }
+# Sorting library imports
+isort = "^5.12.0"
+# Static type checker
+mypy = "^1.5.0"
+# Easy git pre-commit hooks
+pre-commit = "^3.4.0"
+# Linter
+ruff = "^0.0.285"
+
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+
+[[tool.poetry.source]]
+# Private TINAA package registry hosted in GitLab
+name = 'tinaa'
+url = 'https://gitlab.tinaa.teluslabs.net/api/v4/projects/1029/packages/pypi/simple'
+priority = "supplemental"
+
+
+[tool.autoflake]
+exclude = "venv,.venv"
+ignore-init-module-imports = true
+in-place = true
+recursive = true
+remove-all-unused-imports = true
+remove-unused-variables = true
+
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+
+[tool.isort]
+profile = "black"
+include_trailing_comma = true
+force_grid_wrap = 0
+# Same as Black
+line_length = 88
+
+
+[tool.mypy]
+# See https://mypy.readthedocs.io/en/stable/config_file.html for more information
+# Disallows defining functions without type annotations or with incomplete type annotations
+disallow_untyped_defs = true
+# Shows column numbers in error messages
+show_column_numbers = true
+# Prefixes each error with the relevant context
+show_error_context = true
+# Warns about casting an expression to its inferred type
+warn_redundant_casts = true
+# Warns about unneeded # type: ignore comments
+warn_unused_ignores = true
+
+
+[tool.ruff]
+# Enable pycodestyle (`E`), Pyflakes (`F`), isort (`I`), pep8-naming (`N`)
+# and Pylint (`PL`) codes by default
+select = ["E", "F", "I", "N", "PL"]
+ignore = []
+# Same as Black
+line-length = 88
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+# Assume Python 3.11
+target-version = "py311"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
