@@ -60,13 +60,13 @@ class AppliedCapacityAmount(BaseModel):
 
 
 class ResourceItem(BaseModel):
-    baseType: str
-    schemaLocation: str
-    type: str
-    quantity: int
-    subReservationState: str
-    resourceCapacity: ResourceCapacity
-    appliedCapacityAmount: AppliedCapacityAmount
+    baseType: str = Field(None, description="The base type of the resource.")
+    schemaLocation: str = Field(None, description="A link to the schema describing a resource.")
+    type: str = Field(None, description="The type of the resource.")
+    quantity: int = Field(None, description="The quantity of the resource.")
+    subReservationState: str = Field(None, description="The state of the sub-reservation.")
+    resourceCapacity: ResourceCapacity = Field(None, description="The capacity of the resource.")
+    appliedCapacityAmount: AppliedCapacityAmount = Field(None, description="The applied capacity amount.")
 
 
 class RequestedPeriod(BaseModel):
@@ -88,19 +88,17 @@ class ProductOfferingRef(BaseModel):
 
 
 class ReservationBase(BaseModel):
-    baseType: str = Field(None, alias="@baseType", description="The base type of the resource.")
-    schemaLocation: str = Field(None, alias="@schemaLocation",
+    baseType: str = Field(None, description="The base type of the resource.")
+    schemaLocation: str = Field(None,
                                 description="A link to the schema describing a resource.")
-    type: str = Field(None, alias="@type", description="The type of the resource.")
+    type: str = Field(None, description="The type of the resource.")
     relatedParty: str = Field(None, description="A related party associated with this resource.")
     href: str = Field(None, description="The URI for the object itself.")
-    description: str = Field(None, description="A narrative text describing the resource.")
-    reservationState: str
-    valid_for: str
-    reservationItem: List[ResourceItem]
-    channelRef: RelatedParty
-    requestedPeriod: RequestedPeriod
-    productOfferingRef: ProductOfferingRef
+    valid_for: str = Field(None, description="The period for which the object is valid.")
+    # reservationItem: List[ResourceItem] = Field(None, description="The items of the reservation.")
+    # channelRef: RelatedParty
+    # requestedPeriod: RequestedPeriod
+    # productOfferingRef: ProductOfferingRef
 
 
 class ReservationCreate(ReservationBase):

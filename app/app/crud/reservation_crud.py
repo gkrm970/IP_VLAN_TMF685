@@ -20,7 +20,7 @@ class ResourceCRUD(
 
         db_obj_id = str(uuid4())
         db_obj = models.Reservation(
-            id=db_obj_id, href=f"resource/{db_obj_id}", **obj_in_data
+            id=db_obj_id, **obj_in_data
         )
 
         db.add(db_obj)
