@@ -10,7 +10,7 @@ from app.crud.abstract_base import AbstractBaseCRUD  # isort: split
 from app import models, schemas
 
 
-class ResourceCRUD(
+class ReservationCRUD(
     AbstractBaseCRUD[models.Reservation, schemas.ReservationCreate, schemas.ReservationUpdate]
 ):
     async def create(
@@ -74,4 +74,4 @@ class ResourceCRUD(
         return db_obj
 
 
-reservation = ResourceCRUD(models.Reservation)
+reservation = ReservationCRUD(models.Reservation)

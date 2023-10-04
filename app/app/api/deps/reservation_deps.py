@@ -13,7 +13,7 @@ async def get_reservation(
 ) -> models.Reservation:
     reservation = await crud.reservation.get(db=db, id=id)
 
-    if resource is None:
+    if reservation is None:
         raise HTTPException(
             detail=f"No resource found with ID {id}",
             status_code=status.HTTP_404_NOT_FOUND,
