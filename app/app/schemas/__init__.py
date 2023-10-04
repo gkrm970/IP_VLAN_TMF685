@@ -1,7 +1,7 @@
 from .related_party_ref_schema import RelatedPartyRef # noqa F401
 from .product_offering_ref_schema import ProductOfferingRef # noqa F401
 
-from .reservation_schemas import (Reservation, ReservationCreate, ReservationUpdate)  # isort: split
+from .reservation_schemas import (ReservationBase, Reservation, ReservationCreate, ReservationUpdate)  # isort: split
 from .resource_schemas import Resource, ResourceCreate, ResourceUpdate  # isort: split
 
 # from .resource_reservation_item_schema import ResourceReservationItem

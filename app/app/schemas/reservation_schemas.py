@@ -38,4 +38,3 @@ class Reservation(ReservationBase):
             "of a type."
         ),
     )
-    href: str = Field(..., description="The URI for the object itself.")

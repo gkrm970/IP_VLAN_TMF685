@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app import schemas
 from app.db.base import Base
 
 
@@ -22,3 +23,8 @@ class RelatedPartyRef(Base):
     # # 1..1 relationship with Reservation table and RelatedPartyRef table (RelatedPartyRef table is child)
     reservation_id: Mapped[str] = mapped_column(String), ForeignKey("reservation.id")
     reservation: Mapped["Reservation"] = relationship(back_populates="related_party_ref")  # 1..1
+
+    @classmethod
+    def from_schema(cls, schema: schemas.RelatedPartyRef) -> "RelatedPartyRef":
+        return cls(**schema.model_dump())
+

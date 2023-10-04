@@ -16,14 +16,13 @@ class ReservationCRUD(
     async def create(
         self, db: AsyncSession, *, obj_in: schemas.ReservationCreate
     ) -> models.Reservation:
-        obj_in_data = jsonable_encoder(obj_in)
+        # obj_in_data = jsonable_encoder(obj_in)
+        db_obj = models.Reservation.from_schema(obj_in)
 
-        db_obj_id = str(uuid4())
-        db_obj = models.Reservation(
-            id=db_obj_id, **obj_in_data
-        )
-
-        log.info(f"Creating reservation with id {obj_in}")
+        # db_obj_id = str(uuid4())
+        # db_obj = models.Reservation(
+        #     id=db_obj_id, **obj_in_data
+        # )
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)

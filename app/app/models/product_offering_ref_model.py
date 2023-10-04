@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import models
+from app import models, schemas
 from app.db.base import Base
 
 if TYPE_CHECKING:
@@ -24,3 +24,7 @@ class ProductOfferingRef(Base):
     # 1..1 relationship with Reservation table and ProductOfferingRef table (ProductOfferingRef table is child)
     reservation_id: Mapped[str] = mapped_column(String), ForeignKey("reservation.id")
     reservation: Mapped["Reservation"] = relationship(back_populates="product_offering_ref")  # 1..1
+
+    @classmethod
+    def from_schema(cls, schema: schemas.ProductOfferingRef) -> "ProductOfferingRef":
+        return cls(**schema.model_dump())

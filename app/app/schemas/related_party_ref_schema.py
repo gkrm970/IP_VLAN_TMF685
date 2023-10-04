@@ -7,3 +7,4 @@ class RelatedPartyRef(BaseModel):
     href: str | None = Field(None, description="Reference of the related party.")
     name: str | None = Field(None, description="Name of the related party.")
     referred_type: str | None = Field(None, description="Type of the related party.")
+
