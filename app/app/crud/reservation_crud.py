@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Keep abstract base import on top to avoid circular imports
 from app.crud.abstract_base import AbstractBaseCRUD  # isort: split
-from app import models, schemas
+from app import models, schemas, log
 
 
 class ReservationCRUD(
@@ -23,6 +23,7 @@ class ReservationCRUD(
             id=db_obj_id, **obj_in_data
         )
 
+        log.info(f"Creating reservation with id {obj_in}")
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)

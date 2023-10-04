@@ -18,6 +18,8 @@ class ProductOfferingRef(Base):
     href: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(255))
     referred_type: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(String(255))
+    schema_location: Mapped[str] = mapped_column(String(255))
 
     # 1..1 relationship with Reservation table and ProductOfferingRef table (ProductOfferingRef table is child)
     reservation_id: Mapped[str] = mapped_column(String), ForeignKey("reservation.id")
