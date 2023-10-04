@@ -6,49 +6,41 @@ _NAME_DESCRIPTION = "A string used to give a name to the resource"
 
 
 class RelatedParty(BaseModel):
-    referredType: str
-    href: str
-    id: str
-    name: str
-    role: str
+    party_id: str | None = Field(None, alias="id", description="Identifier of the related party.")
+    role: str | None = Field(None, description="Role of the related party.")
 
 
 class Place(BaseModel):
-    referredType: str
-    href: str
-    id: str
-    name: str
+    id: str | None = Field(None, description="Identifier of the place.")
+    type: str | None = Field(None, alias="@type", description="The type of the resource.")
+    name: str | None = Field(None, description=_NAME_DESCRIPTION)
 
 
 class ApplicableTimePeriod(BaseModel):
-    baseType: str
-    schemaLocation: str
-    type: str
-    dayOfWeek: str
-    fromToDateTime: str
-    rangeInterval: str
-    validFor: str
+    fromDateTime: str | None = Field(None, alias="from", description="Start of the period.")
+    toDateTime: str | None = Field(None, alias="to", description="End of the period.")
+
+
+class Resource(BaseModel):
+    id: str | None = Field(None, description="Identifier of the resource.")
+    href: str | None = Field(None, description="The URI for the object itself.")
+    value: str | None = Field(None, description="The value of the resource.")
+    referred_type: str | None = Field(None, alias="@referredType", description="The actual type of the target instance.")
 
 
 class ResourcePool(BaseModel):
-    baseType: str
-    schemaLocation: str
-    type: str
-    description: str
-    href: str
-    id: str
-    relatedParty: str
-    resourceCollection: List[Place]
+    id: str | None = Field(None, description="Identifier of the resource pool.")
+    href: str | None = Field(None, description="The URI for the object itself.")
+    resource: Resource | None = Field(None, description="A resource is an identifiable physical or logical resource.")
 
 
-class ResourceCapacity(BaseModel):
-    baseType: str
-    schemaLocation: str
-    type: str
-    capacityDemandAmount: str
-    resourcePool: ResourcePool
-    applicableTimePeriod: ApplicableTimePeriod
-    place: Place
+class ResourceCapacityDemand(BaseModel):
+    resourceCapacityDemandAmount: str | None = Field(None, description="The amount of the resource capacity demand.")
+    applicableTimePeriod: ApplicableTimePeriod | None = Field(None,
+                                                              description="The period for which the object is valid.")
+    place: Place | None = Field(None, description="A place is a spatial area defined by a set of coordinates.")
+    resourcePool: ResourcePool | None = Field(None, description="A resource pool is a collection of resources.")
+    type: str | None = Field(None, alias="@type", description="The type of the resource.")
 
 
 class AppliedCapacityAmount(BaseModel):
@@ -56,49 +48,46 @@ class AppliedCapacityAmount(BaseModel):
     schemaLocation: str
     type: str
     appliedDemandAmount: str
-    resourceCapacityDemand: ResourceCapacity
+    resourceCapacityDemand: ResourceCapacityDemand
 
 
-class ResourceItem(BaseModel):
-    baseType: str = Field(None, description="The base type of the resource.")
-    schemaLocation: str = Field(None, description="A link to the schema describing a resource.")
-    type: str = Field(None, description="The type of the resource.")
-    quantity: int = Field(None, description="The quantity of the resource.")
-    subReservationState: str = Field(None, description="The state of the sub-reservation.")
-    resourceCapacity: ResourceCapacity = Field(None, description="The capacity of the resource.")
-    appliedCapacityAmount: AppliedCapacityAmount = Field(None, description="The applied capacity amount.")
+class ResourceReservationItem(BaseModel):
+    quantity: str
+    resourceCapacityDemand: list[ResourceCapacityDemand] | None = Field(None,
+                                                                        description="The resource capacity demand.")
 
 
 class RequestedPeriod(BaseModel):
-    baseType: str
-    schemaLocation: str
-    type: str
-    daysOfWeek: str
-    fromToDateTime: str
-    rangeInterval: str
-    validFor: str
+    startDate: str | None = Field(None, description="Start date of the requested period.")
+    endDate: str | None = Field(None, description="End date of the requested period.")
 
 
 class ProductOfferingRef(BaseModel):
-    href: str
-    id: str
-    name: str
-    bundledProductOffering: List[str]
-    referredType: str
+    href: str | None = Field(None, description="Reference of the product offering.")
+    id: str | None = Field(None, description="Identifier of the product offering.")
+    description: str | None = Field(None, description="Description of the product offering.")
+    schema_location: str | None = Field(None, alias="@schemaLocation",
+                                        description="A link to the schema describing a resource.")
+    type: str | None = Field(None, alias="@type", description="The type of the resource.")
 
 
 class ReservationBase(BaseModel):
-    baseType: str = Field(None, description="The base type of the resource.")
-    schemaLocation: str = Field(None,
-                                description="A link to the schema describing a resource.")
-    type: str = Field(None, description="The type of the resource.")
-    relatedParty: str = Field(None, description="A related party associated with this resource.")
+    schema_location: str = Field(None, alias="@schemaLocation",
+                                 description="A link to the schema describing a resource.")
+    type: str = Field(None, alias="@type", description="The type of the resource.")
     href: str = Field(None, description="The URI for the object itself.")
+    reservation_state: str = Field(None, description="The state of the reservation.")
     valid_for: str = Field(None, description="The period for which the object is valid.")
-    # reservationItem: List[ResourceItem] = Field(None, description="The items of the reservation.")
-    # channelRef: RelatedParty
-    # requestedPeriod: RequestedPeriod
-    # productOfferingRef: ProductOfferingRef
+    base_type: str = Field(None, alias="@baseType", description="The base type of the resource.")
+    description: str = Field(None, description="Description of the reservation.")
+    related_party: RelatedParty = Field(None, description="A related party associated with this resource.")
+    product_offering: ProductOfferingRef = Field(None,
+                                                 description="A product offering represents entities that are "
+                                                             "orderable from the provider of the catalog, "
+                                                             "this resource includes pricing information.")
+
+    # resourceReservationItem: ResourceReservationItem | None = Field(None, description="The items of the reservation.")
+    # requestPeriod: RequestedPeriod | None = Field(None, description="The requested period.")
 
 
 class ReservationCreate(ReservationBase):
@@ -120,3 +109,4 @@ class Reservation(ReservationBase):
             "of a type."
         ),
     )
+    href: str = Field(..., description="The URI for the object itself.")

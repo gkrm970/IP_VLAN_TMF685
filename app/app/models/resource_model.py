@@ -1,9 +1,8 @@
 import datetime
-from typing_extensions import Annotated
-from sqlalchemy import ForeignKey, DateTime, String
 
-from sqlalchemy import String, ForeignKey, Column, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing_extensions import Annotated
 
 from app.db.base import Base
 
