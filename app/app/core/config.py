@@ -22,7 +22,7 @@ class DatabaseSettings(BaseSettings):
 
     @field_validator("DB_SQLALCHEMY_URI", mode="before")
     def assemble_db_sqlalchemy_uri(
-            cls, field: str | None, field_info: ValidationInfo  # noqa: N805
+        cls, field: str | None, field_info: ValidationInfo  # noqa: N805
     ) -> str:
         if isinstance(field, str):
             return field

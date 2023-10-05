@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Response, status
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, log, models, schemas
 from app.api import deps
@@ -19,17 +19,19 @@ router = APIRouter()
     response_model=list[schemas.Reservation],
 )
 async def get_reservation(
-        fields: Annotated[str, deps.FieldsQuery] = "",
-        offset: Annotated[int, deps.OffsetQuery] = 0,
-        limit: Annotated[int, deps.LimitQuery] = 100,
-        *,
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        response: Response,
+    fields: Annotated[str, deps.FieldsQuery] = "",
+    offset: Annotated[int, deps.OffsetQuery] = 0,
+    limit: Annotated[int, deps.LimitQuery] = 100,
+    *,
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    response: Response,
 ) -> list[models.Reservation]:
     """
     This operation lists or finds Reservation objects.
     """
-    reservation, total = await crud.reservation.get_multi(db=db, limit=limit, offset=offset)
+    reservation, total = await crud.reservation.get_multi(
+        db=db, limit=limit, offset=offset
+    )
 
     no_of_reservation_pool = len(reservation)
 
@@ -50,10 +52,11 @@ async def get_reservation(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_reservation_pool(
-        reservation_create: Annotated[
-            schemas.ReservationCreate, Body(description="The Reservation pool to be created")
-        ],
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    reservation_create: Annotated[
+        schemas.ReservationCreate,
+        Body(description="The Reservation pool to be created"),
+    ],
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
     """
     This operation creates a Reservation pool entity.
@@ -64,8 +67,7 @@ async def create_reservation_pool(
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content=jsonable_encoder(reservation.to_schema())  # type: ignore
-
+        content=jsonable_encoder(reservation.to_schema()),  # type: ignore
     )
 
 
@@ -76,9 +78,9 @@ async def create_reservation_pool(
     response_model=schemas.Reservation,
 )
 async def get_reservation_pool_by_id(
-        fields: Annotated[str, deps.FieldsQuery] = "",
-        *,
-        reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    fields: Annotated[str, deps.FieldsQuery] = "",
+    *,
+    reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
 ) -> models.Reservation:
     """
     This operation retrieves a Reservation pool entity. Attribute selection is enabled for all
@@ -98,8 +100,8 @@ async def get_reservation_pool_by_id(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_reservation_pool_by_id(
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
 ) -> None:
     """
     This operation deletes a Reservation pool entity.
@@ -116,11 +118,12 @@ async def delete_reservation_pool_by_id(
     response_model=schemas.Reservation,
 )
 async def update_reservation_pool_by_id(
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        db_se: Annotated[models.Reservation, Depends(deps.get_reservation)],
-        reservation_update: Annotated[
-            schemas.ReservationUpdate, Body(description="The Reservation pool to be updated")
-        ],
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    db_se: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    reservation_update: Annotated[
+        schemas.ReservationUpdate,
+        Body(description="The Reservation pool to be updated"),
+    ],
 ) -> JSONResponse:
     """
     This operation updates partially a Reservation pool entity.
