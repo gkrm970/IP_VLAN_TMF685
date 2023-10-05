@@ -25,8 +25,4 @@ class RelatedPartyRef(Base):
 
     @classmethod
     def from_schema(cls, schema: schemas.RelatedPartyRef) -> "RelatedPartyRef":
-        relate_id = str(uuid.uuid4())
-        schema.id = schema.id or relate_id
-        schema.href = schema.href or relate_id
         return cls(**schema.model_dump())
-

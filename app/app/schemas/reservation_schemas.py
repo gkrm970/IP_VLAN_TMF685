@@ -4,6 +4,8 @@ from app import schemas
 
 
 class ReservationBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
     schema_location: str = Field(None, alias="@schemaLocation",
                                  description="A link to the schema describing a resource.")
     type: str = Field(None, alias="@type", description="The type of the resource.")
@@ -12,10 +14,9 @@ class ReservationBase(BaseModel):
     valid_for: str = Field(None, description="The period for which the object is valid.")
     base_type: str = Field(None, alias="@baseType", description="The base type of the resource.")
     description: str = Field(None, description="Description of the reservation.")
-
-    related_party: schemas.RelatedPartyRef = Field(None, description="A related party associated with this resource.")
-    product_offering: schemas.ProductOfferingRef = Field(None,
-                                                         description="A product offering represents entities that are "
+    related_party_ref: schemas.RelatedPartyRef = Field(None, alias="relatedParty", description="A related party associated with this resource.")
+    product_offering_ref: schemas.ProductOfferingRef = Field(None, alias="productOffering",
+                                                             description="A product offering represents entities that are "
                                                                      "order-able from the provider of the catalog, "
                                                                      "this resource includes pricing information.")
 

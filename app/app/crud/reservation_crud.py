@@ -13,6 +13,7 @@ from app import models, schemas, log
 class ReservationCRUD(
     AbstractBaseCRUD[models.Reservation, schemas.ReservationCreate, schemas.ReservationUpdate]
 ):
+
     async def create(
         self, db: AsyncSession, *, obj_in: schemas.ReservationCreate
     ) -> models.Reservation:

@@ -24,7 +24,4 @@ class ProductOfferingRef(Base):
 
     @classmethod
     def from_schema(cls, schema: schemas.ProductOfferingRef) -> "ProductOfferingRef":
-        product_id = str(uuid.uuid4())
-        schema.id = schema.id or product_id
-        schema.href = schema.href or product_id
         return cls(**schema.model_dump())
