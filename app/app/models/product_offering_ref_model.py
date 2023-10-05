@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String
@@ -12,19 +13,18 @@ if TYPE_CHECKING:
 
 
 class ProductOfferingRef(Base):
-    __tablename__ = 'product_offering_ref'
-
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     href: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(255))
     referred_type: Mapped[str] = mapped_column(String(255))
-    description: Mapped[str] = mapped_column(String(255))
-    schema_location: Mapped[str] = mapped_column(String(255))
 
     # 1..1 relationship with Reservation table and ProductOfferingRef table (ProductOfferingRef table is child)
-    reservation_id: Mapped[str] = mapped_column(String), ForeignKey("reservation.id")
+    reservation_id: Mapped[str] = mapped_column(ForeignKey("reservation.id"))
     reservation: Mapped["Reservation"] = relationship(back_populates="product_offering_ref")  # 1..1
 
     @classmethod
     def from_schema(cls, schema: schemas.ProductOfferingRef) -> "ProductOfferingRef":
+        product_id = str(uuid.uuid4())
+        schema.id = schema.id or product_id
+        schema.href = schema.href or product_id
         return cls(**schema.model_dump())

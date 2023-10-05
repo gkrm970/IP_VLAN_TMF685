@@ -12,6 +12,7 @@ class ReservationBase(BaseModel):
     valid_for: str = Field(None, description="The period for which the object is valid.")
     base_type: str = Field(None, alias="@baseType", description="The base type of the resource.")
     description: str = Field(None, description="Description of the reservation.")
+
     related_party: schemas.RelatedPartyRef = Field(None, description="A related party associated with this resource.")
     product_offering: schemas.ProductOfferingRef = Field(None,
                                                          description="A product offering represents entities that are "
@@ -38,3 +39,5 @@ class Reservation(ReservationBase):
             "of a type."
         ),
     )
+    # href: str = Field(None, description="The URI for the object itself.")
+    # name: str = Field(None, description="A string used to give a name to the resource")

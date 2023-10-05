@@ -17,12 +17,12 @@ class DatabaseSettings(BaseSettings):
     DB_PASSWORD: str = "root"
     DB_HOST: str = "10.17.36.156"
     DB_PORT: int = 3306
-    DB_NAME: str= "resource_pool"
+    DB_NAME: str = "reservation_db"
     DB_SQLALCHEMY_URI: str | None = None
 
     @field_validator("DB_SQLALCHEMY_URI", mode="before")
     def assemble_db_sqlalchemy_uri(
-        cls, field: str | None, field_info: ValidationInfo  # noqa: N805
+            cls, field: str | None, field_info: ValidationInfo  # noqa: N805
     ) -> str:
         if isinstance(field, str):
             return field

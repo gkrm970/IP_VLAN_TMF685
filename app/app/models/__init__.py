@@ -1,7 +1,7 @@
 from .product_offering_ref_model import ProductOfferingRef
 from .related_party_ref_model import RelatedPartyRef
 
-from .resource_model import Resource  # isort: split
+from .resource_model import Resource # noqa: F401
 from .reservation_model import Reservation  # isort: split
 
 # from .requested_period_model import RequestedPeriod
