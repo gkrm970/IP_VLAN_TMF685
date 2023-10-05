@@ -1,3 +1,4 @@
+from .channel_ref_schema import ChannelRef  # noqa F401
 from .product_offering_ref_schema import ProductOfferingRef  # noqa F401
 from .related_party_ref_schema import RelatedPartyRef  # noqa F401
 

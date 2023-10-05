@@ -18,7 +18,7 @@ router = APIRouter()
     responses=resource_responses.get_responses,
     response_model=list[schemas.Reservation],
 )
-async def get_reservation(
+async def get_reservations(
     fields: Annotated[str, deps.FieldsQuery] = "",
     offset: Annotated[int, deps.OffsetQuery] = 0,
     limit: Annotated[int, deps.LimitQuery] = 100,
@@ -51,7 +51,7 @@ async def get_reservation(
     response_model=schemas.Reservation,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_reservation_pool(
+async def create_reservation(
     reservation_create: Annotated[
         schemas.ReservationCreate,
         Body(description="The Reservation pool to be created"),

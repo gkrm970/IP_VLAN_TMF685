@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app import schemas
@@ -13,24 +15,28 @@ class ReservationBase(BaseModel):
     )
     type: str = Field(None, alias="@type", description="The type of the resource.")
     reservation_state: str = Field(None, description="The state of the reservation.")
-    valid_for: str = Field(
-        None, description="The period for which the object is valid."
+    valid_for: datetime.date = Field(
+        default_factory=datetime.date.today, description="The period for which the object is valid."
     )
     base_type: str = Field(
         None, alias="@baseType", description="The base type of the resource."
     )
     description: str = Field(None, description="Description of the reservation.")
     related_party_ref: schemas.RelatedPartyRef = Field(
-        None,
+        ...,
         alias="relatedParty",
         description="A related party associated with this resource.",
     )
-    product_offering_ref: schemas.ProductOfferingRef = Field(
+    product_offering_ref: schemas.ProductOfferingRef | None = Field(
         None,
         alias="productOffering",
         description="A product offering represents entities that are "
         "order-able from the provider of the catalog, "
         "this resource includes pricing information.",
+    )
+    channel_ref: schemas.ChannelRef | None = Field(
+        None,
+        alias="channel",
     )
 
 

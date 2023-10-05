@@ -18,14 +18,16 @@ class Reservation(Base):
     reservation_state: Mapped[str | None] = mapped_column(String(255))
     valid_for: Mapped[date] = mapped_column(Date, server_default=func.now())
 
-    # 1..1 relationship with Reservation table and RelatedPartyRef table (Reservation table is parent)
     related_party_ref: Mapped[models.RelatedPartyRef] = relationship(
-        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan"
+        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
     )
 
-    # 1..1 relationship with Reservation table and ProductOfferingRef table (Reservation table is parent)
-    product_offering_ref: Mapped[models.ProductOfferingRef] = relationship(
-        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan"
+    product_offering_ref: Mapped[models.ProductOfferingRef | None] = relationship(
+        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
+    )
+
+    channel_ref: Mapped[models.ChannelRef | None] = relationship(
+        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
     )
 
     # 1..0..1 relationship with Reservation table and RequestedPeriod table (Reservation table is parent)
@@ -54,8 +56,9 @@ class Reservation(Base):
                 schema.product_offering_ref
             ),
             related_party_ref=models.RelatedPartyRef.from_schema(
-                schema.related_party_ref
+                schema.related_party_ref,
             ),
+            channel_ref=models.ChannelRef.from_schema(schema.channel_ref),
         )
 
     def to_schema(self) -> schemas.Reservation:
