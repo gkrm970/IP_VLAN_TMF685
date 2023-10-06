@@ -31,12 +31,15 @@ class ReservationBase(BaseModel):
         None,
         alias="productOffering",
         description="A product offering represents entities that are "
-        "order-able from the provider of the catalog, "
-        "this resource includes pricing information.",
+                    "order-able from the provider of the catalog, "
+                    "this resource includes pricing information.",
     )
     channel_ref: schemas.ChannelRef | None = Field(
         None,
         alias="channel", description="The channel defines the channel for selling product offerings")
+    requested_period_ref: schemas.RequestedPeriod | None = Field(alias="requestedPeriod", description="The requested "
+                                                                                                  "period for the "
+                                                                                                  "reservation.")
 
 
 class ReservationCreate(ReservationBase):

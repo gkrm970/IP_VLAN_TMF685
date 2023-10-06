@@ -29,15 +29,10 @@ class Reservation(Base):
     channel_ref: Mapped[models.ChannelRef | None] = relationship(
         back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
     )
-
-    # 1..0..1 relationship with Reservation table and RequestedPeriod table (Reservation table is parent)
-    # requested_period = relationship("RequestedPeriod", back_populates="reservation", uselist=True)  # 1..0..1
-    #
-    # # 1..0..1 relationship with Reservation table and ChannelRef table (Reservation table is parent)
-    # channel_ref = relationship("ChannelRef", back_populates="reservation", uselist=True)  # 1..0..1
-    #
-    # # 1..1..* relationship with Reservation table and ReservationItem table (Reservation table is parent)
-    # reservation_item = relationship("ReservationItem", back_populates="reservation", uselist=True)  # 1..1..*
+    requested_period_ref: Mapped[models.RequestedPeriod | None] = relationship(back_populates="reservation",
+                                                                               lazy="selectin",
+                                                                               cascade="all, delete-orphan",
+                                                                               uselist=False)
 
     @classmethod
     def from_schema(cls, schema: schemas.ReservationCreate) -> "Reservation":
@@ -59,6 +54,7 @@ class Reservation(Base):
                 schema.related_party_ref,
             ),
             channel_ref=models.ChannelRef.from_schema(schema.channel_ref),
+            requested_period_ref=models.RequestedPeriod.from_schema(schema.requested_period_ref)
         )
 
     def to_schema(self) -> schemas.Reservation:
