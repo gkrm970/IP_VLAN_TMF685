@@ -14,7 +14,7 @@ class ReservationBase(BaseModel):
         description="A link to the schema describing a resource.",
     )
     type: str = Field(None, alias="@type", description="The type of the resource.")
-    reservation_state: str = Field(None, description="The state of the reservation.")
+    reservation_state: str = Field(None, description="The life cycle state of the reservation.")
     valid_for: datetime.date = Field(
         default_factory=datetime.date.today, description="The period for which the object is valid."
     )
@@ -25,7 +25,7 @@ class ReservationBase(BaseModel):
     related_party_ref: schemas.RelatedPartyRef = Field(
         ...,
         alias="relatedParty",
-        description="A related party associated with this resource.",
+        description=" A related party defines party or party role linked to a specific entity.",
     )
     product_offering_ref: schemas.ProductOfferingRef | None = Field(
         None,
@@ -36,8 +36,7 @@ class ReservationBase(BaseModel):
     )
     channel_ref: schemas.ChannelRef | None = Field(
         None,
-        alias="channel",
-    )
+        alias="channel", description="The channel defines the channel for selling product offerings")
 
 
 class ReservationCreate(ReservationBase):

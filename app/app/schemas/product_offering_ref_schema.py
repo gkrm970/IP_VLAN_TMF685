@@ -10,5 +10,5 @@ class ProductOfferingRef(BaseModel):
     referred_type: str | None = Field(
         None,
         alias="@referredType",
-        description="Referred type of the product offering.",
-    )
+        description=". Indicates the type of the referred object. This attribute is to be used when the object is "
+                    "representing a reference to an existing object instead of the of the object itself.",)
