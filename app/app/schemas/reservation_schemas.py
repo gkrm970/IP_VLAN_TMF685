@@ -38,8 +38,14 @@ class ReservationBase(BaseModel):
         None,
         alias="channel", description="The channel defines the channel for selling product offerings")
     requested_period_ref: schemas.RequestedPeriod | None = Field(alias="requestedPeriod", description="The requested "
-                                                                                                  "period for the "
-                                                                                                  "reservation.")
+                                                                                                      "period for the "
+                                                                                                      "reservation.")
+    reservation_item_ref: list[schemas.ReservationItem] = Field(..., alias="reservationItem", description="The "
+                                                                                                           "reservation"
+                                                                                                           "item "
+                                                                                                           "associated "
+                                                                                                           "with the "
+                                                                                                           "reservation.")
 
 
 class ReservationCreate(ReservationBase):

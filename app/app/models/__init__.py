@@ -1,3 +1,4 @@
+from .reservation_item_model import ReservationItem
 from .requested_period_model import RequestedPeriod
 from .channel_ref_model import ChannelRef
 from .product_offering_ref_model import ProductOfferingRef

@@ -18,7 +18,7 @@ class TestCreateResource:
         db_obj_id = uuid.uuid4().hex
 
         return models.Reservation(
-            name="test_name", id=db_obj_id, href=f"resource/{db_obj_id}"
+            name="test_name", id=db_obj_id, href=f"reservation/{db_obj_id}"
         )
 
     def test_create_resource_ok(

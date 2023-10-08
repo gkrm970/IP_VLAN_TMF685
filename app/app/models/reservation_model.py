@@ -33,10 +33,17 @@ class Reservation(Base):
                                                                                lazy="selectin",
                                                                                cascade="all, delete-orphan",
                                                                                uselist=False)
+    reservation_item_ref: Mapped[list[models.ReservationItem]] = relationship(back_populates="reservation",
+                                                                              lazy="selectin",
+                                                                              cascade="all, delete-orphan",
+                                                                              uselist=True
+                                                                              )
 
     @classmethod
     def from_schema(cls, schema: schemas.ReservationCreate) -> "Reservation":
         reservation_id = str(uuid.uuid4())
+        reservation_item_ref = [models.ReservationItem.from_schema(reservation_item) for reservation_item in
+                                schema.reservation_item_ref]
 
         return cls(
             id=reservation_id,
@@ -54,7 +61,9 @@ class Reservation(Base):
                 schema.related_party_ref,
             ),
             channel_ref=models.ChannelRef.from_schema(schema.channel_ref),
-            requested_period_ref=models.RequestedPeriod.from_schema(schema.requested_period_ref)
+            requested_period_ref=models.RequestedPeriod.from_schema(schema.requested_period_ref),
+            reservation_item_ref=reservation_item_ref
+
         )
 
     def to_schema(self) -> schemas.Reservation:

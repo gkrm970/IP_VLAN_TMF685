@@ -29,7 +29,7 @@ async def get_reservations(
     """
     This operation lists or finds Reservation objects.
     """
-    include = utils.get_include_fields(fields)
+    include = deps.get_include_fields(fields)
 
     reservation, total = await crud.reservation.get_multi(
         db=db, limit=limit, offset=offset
