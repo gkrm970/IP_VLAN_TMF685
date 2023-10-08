@@ -15,7 +15,7 @@ async def get_reservation(
 
     if reservation is None:
         raise HTTPException(
-            detail=f"No resource found with ID {id}",
+            detail=f"No Reservation record found with ID {id}",
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
