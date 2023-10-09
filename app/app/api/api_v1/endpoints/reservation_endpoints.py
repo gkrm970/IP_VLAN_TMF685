@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, log, models, schemas
-from app.api import deps, utils
+from app.api import deps
 from app.api.responses import reservation_responses
 
 router = APIRouter()
@@ -97,7 +97,7 @@ async def get_reservation_pool_by_id(
     This operation retrieves a Reservation pool entity. Attribute selection is enabled for all
     first level attributes.
     """
-    include = utils.get_include_fields(fields)
+    include = deps.get_include_fields(fields)
 
     log.info(f"{fields=}")
 

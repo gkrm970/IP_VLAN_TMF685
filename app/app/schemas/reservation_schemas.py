@@ -41,11 +41,11 @@ class ReservationBase(BaseModel):
                                                                                                       "period for the "
                                                                                                       "reservation.")
     reservation_item_ref: list[schemas.ReservationItem] = Field(..., alias="reservationItem", description="The "
-                                                                                                           "reservation"
-                                                                                                           "item "
-                                                                                                           "associated "
-                                                                                                           "with the "
-                                                                                                           "reservation.")
+                                                                                                          "reservation"
+                                                                                                          "item "
+                                                                                                          "associated "
+                                                                                                          "with the "
+                                                                                                          "reservation.")
 
 
 class ReservationCreate(ReservationBase):

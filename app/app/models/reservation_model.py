@@ -1,5 +1,6 @@
 import uuid
 from datetime import date
+from typing import Any
 
 from sqlalchemy import Date, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -66,5 +67,20 @@ class Reservation(Base):
 
         )
 
-    def to_schema(self) -> schemas.Reservation:
-        return schemas.Reservation.model_validate(self)
+    def to_schema(self, include_fields: set[str] | None = None) -> dict[str, Any]:
+        """
+        Converts the Reservation object to a schema dictionary.
+
+        Args:
+            include_fields (set[str] | None): Optional set of fields to include in the schema.
+
+        Returns:
+            dict[str, Any]: The schema dictionary representing the Reservation object.
+        """
+        try:
+            return schemas.Reservation.model_validate(self).model_dump(
+                by_alias=True, include=include_fields
+            )
+        except Exception as e:
+            # Handle the exception here, e.g. log the error or return a default value
+            return {}

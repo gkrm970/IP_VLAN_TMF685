@@ -1,3 +1,4 @@
+from .resource_capacity_demand_model import ResourceCapacityDemand
 from .reservation_item_model import ReservationItem
 from .requested_period_model import RequestedPeriod
 from .channel_ref_model import ChannelRef
