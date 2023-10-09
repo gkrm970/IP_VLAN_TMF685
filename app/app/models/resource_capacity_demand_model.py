@@ -6,11 +6,11 @@ import DateTime
 from sqlalchemy import ForeignKey, String, Date, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import schemas
+from app import schemas, models
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models import ReservationItem
+    from app.models import ReservationItem, ResourcePool
 
 
 class ResourceCapacityDemand(Base):
@@ -27,8 +27,11 @@ class ResourceCapacityDemand(Base):
 
     reservation_item_id: Mapped[str] = mapped_column(ForeignKey("reservation_item.id"), unique=True)
     reservation_item: Mapped["ReservationItem"] = relationship(
-        back_populates="resource_capacity_demand_ref"
-    )
+        back_populates="resource_capacity_demand_ref")
+
+    # ResourcePool and ResourceCapacityDemand are in a one-to-one relationship(Resource pool is the child of
+    # ResourceCapacityDemand )
+    resource_pool_ref: Mapped[models.ResourcePool] = relationship(back_populates="resource_capacity_demand_ref", lazy="selectin", cascade="all, delete-orphan", uselist=False )
 
     @classmethod
     def from_schema(cls, schema: schemas.ResourceCapacityDemand | None) -> Optional["ResourceCapacityDemand"]:
@@ -44,4 +47,16 @@ class ResourceCapacityDemand(Base):
         if schema is None:
             return None
 
-        return cls(**schema.model_dump())
+        return ResourceCapacityDemand(
+            id=schema.id,
+            resource_capacity_demand_amount=schema.resource_capacity_demand_amount,
+            base_type=schema.base_type,
+            schema_location=schema.schema_location,
+            type=schema.type,
+            applicable_time_period=schema.applicable_time_period,
+            place=schema.place,
+            pattern=schema.pattern,
+            category=schema.category,
+            resource_pool_ref=models.ResourcePool.from_schema(schema.resource_pool_ref)
+
+        )

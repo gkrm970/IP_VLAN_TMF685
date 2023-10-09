@@ -1,3 +1,4 @@
+from .resource_pool_model import ResourcePool
 from .resource_capacity_demand_model import ResourceCapacityDemand
 from .reservation_item_model import ReservationItem
 from .requested_period_model import RequestedPeriod

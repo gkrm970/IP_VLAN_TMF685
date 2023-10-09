@@ -40,18 +40,14 @@ class ReservationItem(Base):
         Returns:
         ReservationItem: An instance of the `ReservationItem` class.
         """
-        try:
-            if not isinstance(schema, schemas.ReservationItem):
-                raise ValueError("Invalid schema. Expected schemas.ReservationItem instance.")
-            return ReservationItem(
-                id=schema.id,
-                quantity=schema.quantity,
-                sub_reservation_state=schema.sub_reservation_state,
-                applied_capacity_amount=schema.applied_capacity_amount,
-                base_type=schema.base_type,
-                schema_location=schema.schema_location,
-                type=schema.type,
-                resource_capacity_demand_ref=models.ResourceCapacityDemand.from_schema(schema.resource_capacity_demand_ref)
-            )
-        except Exception as e:
-            raise ValueError(f"Failed to create ReservationItem from schema: {str(e)}, status code: {status.HTTP_500_INTERNAL_SERVER_ERROR}")
+
+        return ReservationItem(
+            id=schema.id,
+            quantity=schema.quantity,
+            sub_reservation_state=schema.sub_reservation_state,
+            applied_capacity_amount=schema.applied_capacity_amount,
+            base_type=schema.base_type,
+            schema_location=schema.schema_location,
+            type=schema.type,
+            resource_capacity_demand_ref=models.ResourceCapacityDemand.from_schema(schema.resource_capacity_demand_ref)
+        )

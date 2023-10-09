@@ -2,6 +2,8 @@ import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app import schemas
+
 
 class ResourceCapacityDemand(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
@@ -24,11 +26,16 @@ class ResourceCapacityDemand(BaseModel):
                                                                                    "of the class type of the"
                                                                                    "current object. ")
     type: str | None = Field(None, alias="@type", description="Class type of the product offering.")
-    applicable_time_period: datetime.datetime = Field(default_factory=datetime.datetime.today, alias="@applicableTimePeriod", description="The period of time "
-                                                                                                "for which Capacity "
-                                                                                                "or CapacityDemand "
-                                                                                                "applies.")
+    applicable_time_period: datetime.datetime = Field(default_factory=datetime.datetime.today,
+                                                      alias="@applicableTimePeriod", description="The period of time "
+                                                                                                 "for which Capacity "
+                                                                                                 "or CapacityDemand "
+                                                                                                 "applies.")
     place: str | None = Field(None, description="A place, location, or point of attachment.")
     pattern: str | None = Field(None, description="A regular expression to define the pattern for the capacity "
                                                   "demand amount.")
     category: str | None = Field(None, description="Category of the productOffering.")
+
+    # ResourcePool is nesting schema of ResourceCapacityDemand schema
+    resource_pool_ref: schemas.ResourcePool | None = Field(None, alias="resourcePool",
+                                                           description="Reference of the ResourcePool.")
