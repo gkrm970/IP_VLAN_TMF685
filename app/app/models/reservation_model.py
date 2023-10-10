@@ -67,7 +67,7 @@ class Reservation(Base):
 
         )
 
-    def to_schema(self, include_fields: set[str] | None = None) -> dict[str, Any]:
+    def to_dict(self, include_fields: set[str] | None = None) -> dict[str, Any]:
         """
         Converts the Reservation object to a schema dictionary.
 
