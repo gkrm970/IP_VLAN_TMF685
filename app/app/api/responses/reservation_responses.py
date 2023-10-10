@@ -1,12 +1,22 @@
+from typing import Any
+
+from app.core.exceptions import ErrorMessage
+
 _NOT_FOUND = "Not Found"
 
-_base_responses: dict[int | str, dict[str, str]] = {
-    400: {"description": "Bad Request"},
-    401: {"description": "Unauthorized"},
-    403: {"description": "Forbidden"},
-    405: {"description": "Method Not Allowed"},
-    409: {"description": "Conflict"},
-    500: {"description": "Internal Server Error"},
+
+_base_responses: dict[int | str, dict[str, Any]] = {
+    400: {"description": "Bad Request", "model": ErrorMessage},
+    401: {"description": "Unauthorized", "model": ErrorMessage},
+    403: {"description": "Forbidden", "model": ErrorMessage},
+    405: {"description": "Method Not Allowed", "model": ErrorMessage},
+    409: {"description": "Conflict", "model": ErrorMessage},
+    500: {"description": "Internal Server Error", "model": ErrorMessage},
+}
+
+
+_not_found_response: dict[int | str, dict[str, Any]] = {
+    404: {"description": _NOT_FOUND},
 }
 
 create_responses = {
@@ -16,18 +26,18 @@ create_responses = {
 
 get_responses = {
     200: {"description": "Success"},
-    404: {"description": _NOT_FOUND},
+    **_not_found_response,
     **_base_responses,
 }
 
 delete_responses = {
     204: {"description": "Deleted"},
-    404: {"description": _NOT_FOUND},
+    **_not_found_response,
     **_base_responses,
 }
 
 update_responses = {
     200: {"description": "Updated"},
-    404: {"description": _NOT_FOUND},
+    **_not_found_response,
     **_base_responses,
 }
