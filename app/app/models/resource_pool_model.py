@@ -6,7 +6,7 @@ import DateTime
 from sqlalchemy import ForeignKey, String, Date, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import schemas
+from app import schemas, models
 from app.db.base import Base
 
 if TYPE_CHECKING:
@@ -24,9 +24,15 @@ class ResourcePool(Base):
     type: Mapped[str] = mapped_column(String(255))
 
     # Resource pool and ResourceCapacityDemand are one-to-one relation (ResourcePool is child of ResourceCapacityDemand)
-    resource_pool_id: Mapped[str] = mapped_column(ForeignKey("resource_capacity_demand.id"), unique=True)
+    resource_capacity_demand_id: Mapped[str] = mapped_column(ForeignKey("resource_capacity_demand.id"), unique=True)
     resource_capacity_demand_ref: Mapped["ResourceCapacityDemand"] = relationship(
         back_populates="resource_pool_ref")
+
+    # ResourcePool and ResourceRef are one-to-one relationship(ResourceRef  is child of ResourcePool)
+    resource_ref: Mapped[models.ResourceRef] = relationship(back_populates="resource_ref",
+                                                                              lazy="selectin",
+                                                                              cascade="all, delete-orphan",
+                                                                              uselist=False)
 
     @classmethod
     def from_schema(cls, schema: schemas.ResourcePool | None) -> Optional["ResourcePool"]:
@@ -42,6 +48,14 @@ class ResourcePool(Base):
         if schema is None:
             return None
 
-        return cls(**schema.model_dump())
-
-
+        return ResourcePool(
+            id=schema.id,
+            href=schema.href,
+            description=schema.description,
+            related_party=schema.related_party,
+            resource_collection=schema.resource_collection,
+            base_type=schema.base_type,
+            schema_location=schema.schema_location,
+            type=schema.type,
+            resource_ref=models.ResourceRef.from_schema(schema.resource_ref),
+        )

@@ -15,7 +15,7 @@ class APISettings(BaseSettings):
 class DatabaseSettings(BaseSettings):
     DB_USERNAME: str = "root"
     DB_PASSWORD: str = "root"
-    DB_HOST: str = "10.17.36.156"
+    DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
     DB_NAME: str = "reservation_db"
     DB_SQLALCHEMY_URI: str | None = None

@@ -2,6 +2,8 @@ import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app import schemas
+
 
 class ResourcePool(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
@@ -26,3 +28,8 @@ class ResourcePool(BaseModel):
                                         description=" Generic attribute containing the link to the schema that"
                                                     "defines the structure of the class type of the current object.")
     type: str | None = Field(None, alias="@type", description="Type of the Resource Pool.")
+
+    # ResourcePool and ResourceRef are one-to-many relationship(ResourceRef  is child of ResourcePool)
+    resource_ref: schemas.ResourceRef | None = Field(None, alias="resource",
+                                                                       description="Reference of the "
+                                                                                   "ResourceCollection.")

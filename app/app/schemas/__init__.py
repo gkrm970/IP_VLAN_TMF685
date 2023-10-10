@@ -1,3 +1,4 @@
+from .resource_ref_schema import ResourceRef  # noqa F401
 from .resource_pool_schema import ResourcePool  # noqa F401
 from .resource_capacity_demand_schema import ResourceCapacityDemand  # noqa F401
 from .reservation_item_schema import ReservationItem  # noqa F401
