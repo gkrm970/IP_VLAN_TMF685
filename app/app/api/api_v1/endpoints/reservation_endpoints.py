@@ -40,7 +40,8 @@ async def get_reservations(
     log.info(f"Total available Reservation(s): {total}")
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder([reservation.to_dict(include_fields=include) for reservation in reservation]),
+        content=jsonable_encoder([reservation.to_dict(include_fields=include)
+                                  for reservation in reservation]),
         headers={"X-Result-Count": str(no_of_reservation_pool), "X-Total-Count": str(total)})
 
 
@@ -129,7 +130,7 @@ async def delete_reservation_pool_by_id(
 )
 async def update_reservation_pool_by_id(
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        db_se: Annotated[models.Reservation, Depends(deps.get_reservation)],
+        db_obj: Annotated[models.Reservation, Depends(deps.get_reservation)],
         reservation_update: Annotated[
             schemas.ReservationUpdate,
             Body(description="The Reservation pool to be updated"),
@@ -138,8 +139,8 @@ async def update_reservation_pool_by_id(
     """
     This operation updates partially a Reservation entity.
     """
-    updated_reservation = await crud.reservation.update(
-        db=db, db_obj=db_se, obj_in=reservation_update
+    updated_reservation = await crud.reservation.update(id=id,
+        db=db, db_obj=db_obj, obj_in=reservation_update
     )
 
     log.info(f"Updated Reservation with ID: {updated_reservation.id}")

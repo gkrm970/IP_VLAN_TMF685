@@ -41,6 +41,7 @@ class ReservationCRUD(
 
     @staticmethod
     async def update(
+        id: str,
         db: AsyncSession,
         *,
         db_obj: models.Reservation,

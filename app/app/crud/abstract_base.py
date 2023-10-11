@@ -35,6 +35,7 @@ class AbstractBaseCRUD(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     @staticmethod
     @abstractmethod
     async def update(
+        id: str,
         db: AsyncSession,
         *,
         db_obj: ModelType,
