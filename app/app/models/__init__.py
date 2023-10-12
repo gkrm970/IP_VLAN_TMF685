@@ -16,6 +16,6 @@ from .related_party_ref_model import RelatedPartyRef
 # keep reservation model import at the bottom to avoid circular imports
 from .reservation_model import Reservation  # isort: split
 
-from .resource_specification_schema import ResourceSpecification  # isort: split
+from .resource_specification_model import ResourceSpecification  # isort: split
 
 
