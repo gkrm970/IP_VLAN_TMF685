@@ -18,39 +18,37 @@ class Capacity(Base):
     capacity_amount_to: Mapped[str] = mapped_column(String(255))
 
     resource_pool_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_management.id"))
-    resource_pool: Mapped["ResourcePoolManagement"] = relationship(back_populates="resource_capacity", uselist=False)
-
-    # resource_id: Mapped[str] = mapped_column(ForeignKey("resource.id"))
-    # resource: Mapped["Resource"] = relationship(back_populates="related_parties")
+    resource_pool_management: Mapped["ResourcePoolManagement"] = relationship(back_populates="resource_capacity")
 
     place: Mapped[list[models.ResourcePlace]] = relationship(
         back_populates="capacity", lazy="selectin", cascade="all, delete-orphan"
     )
-    related_party: Mapped[list[models.ResourceRelatedParty]] = relationship(
+    related_party: Mapped[models.ResourceRelatedParty] = relationship(
         back_populates="capacity", lazy="selectin", cascade="all, delete-orphan"
     )
 
-    # place_id: Mapped[str] = mapped_column(ForeignKey("resource_place.id"), unique=True)
-    # place: Mapped[models.ResourcePlace] = relationship(
-    #     back_populates="capacity")
-    #
-    # related_party_id: Mapped[str] = mapped_column(ForeignKey("resource_related_party.id"), unique=True)
-    # related_party: Mapped[models.ResourceRelatedParty] = relationship(
-    #     back_populates="capacity")
-
     @classmethod
-    def from_schema(cls, schema: schemas.ResourceCapacity | None) -> Optional["Capacity"]:
-        # capacity_id = str(uuid.uuid4())
-        """
-        Create a ResourceCollection object from a schema.
+    def from_schema(cls, schema: schemas.ResourceCapacity) -> "Capacity":
+        print(f'schema:{schema}')
+        related_party = models.ResourceRelatedParty.from_schema(schema.related_party)
+        # related_party = [
+        #     models.ResourceRelatedParty.from_schema(rp)
+        #     for rp in schema.related_party
+        # ]
 
-        Args:
-            schema (schemas.ResourceCollection | None): The schema to create the object from.
+        place = [
+            models.ResourcePlace.from_schema(places)
+            for places in schema.place
+        ]
 
-        Returns:
-            Optional[ResourceCollection]: The created ResourceCollection object, or None if the schema is None.
-        """
-        if schema is None:
-            return None
+        dict_data = {
+            # "related_party":related_party,
+            "capacity_amount":schema.capacity_amount,
+            "capacity_amount_from":schema.capacity_amount_from,
+            "capacity_amount_to":schema.capacity_amount_to,
+            "place": place,
+        }
 
-        return cls(**schema.model_dump())
+        print(f'{dict_data=}')
+        dict_data["related_party"]=related_party
+        return cls(**dict_data)

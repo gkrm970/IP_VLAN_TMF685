@@ -20,13 +20,14 @@ class ResourcePoolManagement(Base):
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolManagement | None) -> Optional["ResourcePoolManagement"]:
+    def from_schema(cls, schema: schemas.ResourcePoolManagementCreate) -> "ResourcePoolManagement":
         resource_pool_id = str(uuid.uuid4())
 
         resource_capacity = [
-            models.Capacity.from_schema(capacity)
-            for capacity in schema.capacity
+            models.Capacity.from_schema(capacities)
+            for capacities in schema.resource_capacity
         ]
+        print(f'{resource_capacity=}')
         """
         Create a ResourcePool object from a schema.
 
@@ -36,8 +37,8 @@ class ResourcePoolManagement(Base):
         Returns:
             Optional[ResourcePool]: The created ResourcePool object, or None if the schema is None.
         """
-        if schema is None:
-            return None
+        # if schema is None:
+        #     return None
 
         return cls(
             id=resource_pool_id,
@@ -47,16 +48,5 @@ class ResourcePoolManagement(Base):
             resource_capacity=resource_capacity
         )
 
-    def to_dict(self, include_fields: set[str] | None = None) -> dict[str, Any]:
-        """
-        Converts the Reservation object to a schema dictionary.
-
-        Args:
-            include_fields (set[str] | None): Optional set of fields to include in the schema.
-
-        Returns:
-            dict[str, Any]: The schema dictionary representing the Reservation object.
-        """
-        return schemas.ResourcePoolManagement.model_validate(self).model_dump(
-            by_alias=True, include=include_fields
-        )
+    def to_dict(self) -> schemas.ResourcePoolManagement:
+        return schemas.ResourcePoolManagement.model_validate(self)

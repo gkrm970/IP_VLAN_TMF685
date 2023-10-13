@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+from app import schemas
 
 if TYPE_CHECKING:
     from app.models import Capacity
@@ -20,3 +21,9 @@ class ResourceRelatedParty(Base):
 
     # capacity: Mapped["Capacity"] = relationship(
     #     back_populates="related_party", uselist=False)
+
+    @classmethod
+    def from_schema(cls, schema: schemas.ResourceRelatedParty) -> "ResourceRelatedParty":
+        print(f'schema:{schema}')
+
+        return cls(**schema.model_dump())

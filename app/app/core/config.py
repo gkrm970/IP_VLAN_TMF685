@@ -13,11 +13,11 @@ class APISettings(BaseSettings):
 
 
 class DatabaseSettings(BaseSettings):
-    DB_USERNAME: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: int
-    DB_NAME: str
+    DB_USERNAME: str = "root"
+    DB_PASSWORD: str = "root123"
+    DB_HOST: str = "127.0.0.1"
+    DB_PORT: int = "3306"
+    DB_NAME: str = "tmf685"
     DB_SQLALCHEMY_URI: str | None = None
 
     @field_validator("DB_SQLALCHEMY_URI", mode="before")

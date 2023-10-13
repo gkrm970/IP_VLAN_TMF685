@@ -16,7 +16,10 @@ class ResourceCapacity(BaseModel):
         alias="relatedParty",
         description=" A related party defines party or party role linked to a specific entity.",
     )
-    place: List[schemas.ResourcePlace] | None = Field(
+    place: list[schemas.ResourcePlace] | None = Field(
         None,
         description=" A related party defines party or party role linked to a specific entity.",
     )
+
+
+

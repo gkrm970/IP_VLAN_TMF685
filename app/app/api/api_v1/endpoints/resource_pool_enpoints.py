@@ -10,13 +10,6 @@ from app.api import deps
 from app.api.responses import reservation_responses
 import json
 
-# # Open the JSON file in read mode
-# with open(
-#         'D:\\Telus\TMF-685\\tmf685-resource-pool-management\\app\\app\json_files\\resource_service_inventory_638.json',
-#         'r') as json_file:
-#     # Load JSON data from the file
-#     resource_specification = json.load(json_file)
-
 router = APIRouter()
 
 
@@ -24,15 +17,16 @@ router = APIRouter()
     "",
     summary="Creates a Resource Pool",
     responses=reservation_responses.create_responses,
-    response_model=schemas.ResourceSpecificationCreate,
+    response_model=schemas.ResourcePoolManagementCreate,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_resource_pool(
-        resource_create: Annotated[schemas.ResourceSpecificationCreate,
+        resource_create: Annotated[schemas.ResourcePoolManagementCreate,
         Body(description="The Resource pool to be created"),
         ],
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
+    print(f'{resource_create=}')
     """
     This operation creates a Resource pool entity.
     """
@@ -49,7 +43,7 @@ async def create_resource_pool(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(resource_pool.to_dict()),  # type: ignore
+        content=jsonable_encoder(resource_pool.to_dict()),
     )
 
 
@@ -57,7 +51,7 @@ async def create_resource_pool(
     "",
     summary="Retrieves a list of Resource Pools",
     responses=reservation_responses.get_responses,
-    response_model=list[schemas.ResourceSpecification],
+    response_model=list[schemas.ResourcePoolManagementCreate],
     status_code=status.HTTP_200_OK,
 )
 async def get_resource_pool(
@@ -87,7 +81,7 @@ async def get_resource_pool(
     "/{id}",
     summary="Retrieves a Resource Pool by ID",
     responses=reservation_responses.get_responses,
-    response_model=schemas.ResourceSpecification,
+    response_model=schemas.ResourcePoolManagementCreate,
     status_code=status.HTTP_200_OK,
 )
 async def get_resource_pool_by_id(
@@ -117,7 +111,7 @@ async def delete_resource_pool_by_id(
         id: str,
         *,
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        resource: Annotated[models.ResourceSpecification, Depends(deps.get_resource)],
+        resource: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
 ):
     """
     This operation deletes a Resource Pool by ID.
@@ -131,13 +125,13 @@ async def delete_resource_pool_by_id(
     "/{id}",
     summary="Updates partially a Resource Pool by ID",
     responses=reservation_responses.update_responses,
-    response_model=schemas.ResourceSpecification,
+    response_model=schemas.ResourcePoolManagementUpdate,
 )
 async def update_resource_pool_by_id(
         id: str,
-        resource_update: Annotated[schemas.ResourceSpecificationUpdate,
+        resource_update: Annotated[schemas.ResourcePoolManagementUpdate,
         Body(description="The Resource pool to be updated")],
-        db_obj: Annotated[models.ResourceSpecification, Depends(deps.get_resource)],
+        db_obj: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
         *,
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
