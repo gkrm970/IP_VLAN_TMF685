@@ -23,6 +23,8 @@ class ResourcePoolManagement(Base):
     def from_schema(cls, schema: schemas.ResourcePoolManagementCreate) -> "ResourcePoolManagement":
         resource_pool_id = str(uuid.uuid4())
 
+        print(f'{resource_pool_id}')
+
         resource_capacity = [
             models.Capacity.from_schema(capacities)
             for capacities in schema.resource_capacity

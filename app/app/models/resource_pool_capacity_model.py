@@ -24,17 +24,14 @@ class Capacity(Base):
         back_populates="capacity", lazy="selectin", cascade="all, delete-orphan"
     )
     related_party: Mapped[models.ResourceRelatedParty] = relationship(
-        back_populates="capacity", lazy="selectin", cascade="all, delete-orphan"
+        back_populates="capacity", lazy="selectin", cascade="all, delete-orphan", uselist=False
     )
 
     @classmethod
     def from_schema(cls, schema: schemas.ResourceCapacity) -> "Capacity":
         print(f'schema:{schema}')
+        # capacity_id = str(uuid.uuid4())
         related_party = models.ResourceRelatedParty.from_schema(schema.related_party)
-        # related_party = [
-        #     models.ResourceRelatedParty.from_schema(rp)
-        #     for rp in schema.related_party
-        # ]
 
         place = [
             models.ResourcePlace.from_schema(places)
@@ -42,13 +39,13 @@ class Capacity(Base):
         ]
 
         dict_data = {
-            # "related_party":related_party,
+            # "id":capacity_id,
             "capacity_amount":schema.capacity_amount,
             "capacity_amount_from":schema.capacity_amount_from,
             "capacity_amount_to":schema.capacity_amount_to,
+            "related_party": related_party,
             "place": place,
         }
 
         print(f'{dict_data=}')
-        dict_data["related_party"]=related_party
         return cls(**dict_data)
