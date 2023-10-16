@@ -1,10 +1,7 @@
 from typing import TYPE_CHECKING, Optional
-
-from sqlalchemy import ForeignKey, String, Integer
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from starlette import status
-
-from app import schemas, models
+from app import schemas
 from app.db.base import Base
 
 if TYPE_CHECKING:
