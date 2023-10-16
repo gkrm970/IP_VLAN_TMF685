@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class Capacity(Base):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, default=True, autoincrement=True
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True
                                     )
     capacity_amount: Mapped[int] = mapped_column(Integer)
     capacity_amount_from: Mapped[str] = mapped_column(String(255))

@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Optional
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from app import schemas
@@ -9,9 +9,8 @@ if TYPE_CHECKING:
 
 
 class ResourcePlace(Base):
-    id: Mapped[int] = mapped_column(
-        String(255), primary_key=True, index=True, default=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True
+                                    )
     name: Mapped[str] = mapped_column(String(255))
     type: Mapped[str] = mapped_column(String(255))
 
