@@ -9,6 +9,7 @@ LogLevel: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 class APISettings(BaseSettings):
     API_NAME: str = "resourcePoolManagement"
     API_VERSION: str = "v1"
+    API_BASE_URL: str = "127.0.0.1:8000"
     API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
 
 

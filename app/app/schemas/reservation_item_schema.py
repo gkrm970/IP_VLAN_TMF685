@@ -1,27 +1,27 @@
-from pydantic import BaseModel, ConfigDict, Field
-
+from pydantic import BaseModel, Field, ConfigDict
 from app import schemas
+
+_NAME_DESCRIPTION = "A string used to give a name to the reservation"
 
 
 class ReservationItem(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: str | None = Field(None, description="Identifier of the channel.")
-    quantity: int | None = Field(None, description="Represents the number of reservationItems that make up the "
-                                                   "reservation.")
-    sub_reservation_state: str | None = Field(None, alias="@subReservationState", description="The life cycle state "
-                                                                                              "of each reservation "
-                                                                                              "item.")
-    applied_capacity_amount: str | None = Field(None, alias="@appliedCapacityAmount",
-                                                description="The amount of capacityDemand to applied to a "
-                                                            "CapacityAmount.")
-    base_type: str | None = Field(None, alias="@baseType", description="The (class) type of the resource.", )
-    schema_location: str | None = Field(None, alias="@schemaLocation", description="Link to the schema describing ")
-    type: str | None = Field(None, alias="@type", description="The (class) type of the resource.", )
+    quantity: int | None = Field(
+        None,
+        description="When sub-classing, this defines the super-class",
+    )
+    sub_reservation_state: str | None = Field(
+        None,
+        alias="subReservationState",
+        description="When sub-classing, this defines the super-class",
+    )
+    applied_capacity_amount: schemas.AppliedCapacityAmount = Field(
+        alias="appliedCapacityAmount",
+        description="Array of objects (RelatedParty)",
+    )
+    reservation_resource_capacity: schemas.ReservationResourceCapacity = Field(
+        alias="resourceCapacity",
+        description="Array of objects (RelatedParty)",
+    )
 
-    # ResourceCapacityDemand is a child of ReservationItem
-    resource_capacity_demand_ref: schemas.ResourceCapacityDemand | None = Field(None, alias="resourceCapacityDemand",
-                                                                                description="The resource capacity "
-                                                                                            "demand associated"
-                                                                                            "with the reservation item."
-                                                                                )

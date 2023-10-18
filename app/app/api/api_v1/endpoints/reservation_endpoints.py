@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Response, status
+from fastapi import APIRouter, Body, Depends, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, log, models, schemas
@@ -19,30 +19,29 @@ router = APIRouter()
     response_model=list[schemas.Reservation],
 )
 async def get_reservations(
-        fields: Annotated[str, deps.FieldsQuery] = "",
-        offset: Annotated[int, deps.OffsetQuery] = 0,
-        limit: Annotated[int, deps.LimitQuery] = 100,
-        *,
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)]
+    fields: Annotated[str, deps.FieldsQuery] = "",
+    offset: Annotated[int, deps.OffsetQuery] = 0,
+    limit: Annotated[int, deps.LimitQuery] = 100,
+    *,
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
     """
-    This operation lists or finds Reservation objects.
+    This operation lists or finds Resource objects.
     """
-    include = deps.get_include_fields(fields)
+    [column.strip() for column in fields.split(",")] if fields else None
 
-    reservation, total = await crud.reservation.get_multi(
-        db=db, limit=limit, offset=offset
-    )
+    resources, total = await crud.reservation.get_multi(db=db, limit=limit, offset=offset)
 
-    no_of_reservation_pool = len(reservation)
+    no_of_reservations = len(resources)
 
-    log.info(f"Retrieved {no_of_reservation_pool} Reservation pool(s)")
-    log.info(f"Total available Reservation(s): {total}")
+    log.info(f"Retrieved {no_of_reservations} Reservations(s)")
+    log.info(f"Total available Reservations(s): {total}")
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder([reservation.to_dict(include_fields=include)
-                                  for reservation in reservation]),
-        headers={"X-Result-Count": str(no_of_reservation_pool), "X-Total-Count": str(total)})
+        content=jsonable_encoder([resource.to_schema() for resource in resources]),
+        headers={"X-Result-Count": str(no_of_reservations), "X-Total-Count": str(total)},
+    )
 
 
 @router.post(
@@ -53,28 +52,21 @@ async def get_reservations(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_reservation(
-        reservation_create: Annotated[
-            schemas.ReservationCreate,
-            Body(description="The Reservation pool to be created"),
-        ],
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    resource_create: Annotated[
+        schemas.ReservationCreate, Body(description="The Resource to be created")
+    ],
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
     """
-    This operation creates a Reservation pool entity.
+    This operation creates a Resource entity.
     """
-    reservation = await crud.reservation.create(db=db, obj_in=reservation_create)
+    resource = await crud.reservation.create(db=db, obj_in=resource_create)
 
-    # Exclude unset does not work on simply the resource.to_schema, because the DB model
-    # contains even the default/nulled properties. We need to build an include set from
-    # the resource create schema - the only time we can actually know what was not set
-
-    log.critical(reservation_create.model_dump(exclude_unset=True))
-
-    log.info(f"Created Reservation pool with ID: {reservation.id}")
+    log.info(f"Created Resource with ID: {resource.id}")
 
     return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(reservation.to_dict()),  # type: ignore
+        status_code=status.HTTP_201_CREATED,
+        content=jsonable_encoder(resource.to_schema()),
     )
 
 
@@ -84,68 +76,68 @@ async def create_reservation(
     responses=reservation_responses.get_responses,
     response_model=schemas.Reservation,
 )
-async def get_reservation_pool_by_id(
-        fields: Annotated[str, deps.FieldsQuery] = "",
-        *,
-        reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
+async def get_reservation_by_id(
+    fields: Annotated[str, deps.FieldsQuery] = "",
+    *,
+    resource: Annotated[models.Reservation, Depends(deps.get_resource)],
 ) -> JSONResponse:
     """
-    This operation retrieves a Reservation entity. Attribute selection is enabled for all
+    This operation retrieves a Resource entity. Attribute selection is enabled for all
     first level attributes.
     """
-    include = deps.get_include_fields(fields)
-
     log.info(f"{fields=}")
 
-    log.info(f"Retrieved Reservation with ID: {reservation.id}")
+    log.info(f"Retrieved Resource with ID: {resource.id}")
 
-    return JSONResponse(status_code=status.HTTP_200_OK,
-                        content=jsonable_encoder(reservation.to_dict(include_fields=include))
-                        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=jsonable_encoder(resource.to_schema()),
+    )
 
 
 @router.delete(
     "/{id}",
-    summary="Deletes a Reservation by ID",
+    summary="Deletes a Resource",
     responses=reservation_responses.delete_responses,
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_reservation_pool_by_id(
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
-):
+async def delete_resource_by_id(
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    resource: Annotated[models.Reservation, Depends(deps.get_resource)],
+) -> Response:
     """
-    This operation deletes a Reservation entity.
+    This operation deletes a Resource entity.
     """
-    await crud.reservation.delete(db=db, db_obj=reservation)
+    await crud.reservation.delete(db=db, db_obj=resource)
 
-    log.info(f"Deleted Reservation with ID: {reservation.id}")
+    log.info(f"Deleted Resource with ID: {resource.id}")
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch(
     "/{id}",
-    summary="Updates partially a Reservation by ID",
+    summary="Updates partially a Resource",
     responses=reservation_responses.update_responses,
     response_model=schemas.Reservation,
 )
-async def update_reservation_pool_by_id(
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        db_obj: Annotated[models.Reservation, Depends(deps.get_reservation)],
-        reservation_update: Annotated[
-            schemas.ReservationUpdate,
-            Body(description="The Reservation pool to be updated"),
-        ],
+async def update_resource_by_id(
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    resource: Annotated[models.Reservation, Depends(deps.get_resource)],
+    resource_update: Annotated[
+        schemas.ReservationUpdate, Body(description="The Resource to be updated")
+    ],
 ) -> JSONResponse:
     """
-    This operation updates partially a Reservation entity.
+    This operation updates partially a Resource entity.
     """
-    updated_reservation = await crud.reservation.update(id=id,
-        db=db, db_obj=db_obj, obj_in=reservation_update
+    updated_resource = await crud.reservation.update(
+        db=db, db_obj=resource, obj_in=resource_update
     )
 
-    log.info(f"Updated Reservation with ID: {updated_reservation.id}")
+    log.info(f"Updated Resource with ID: {updated_resource.id}")
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(updated_reservation.to_dict()),
+        content=jsonable_encoder(updated_resource.to_schema()),
     )

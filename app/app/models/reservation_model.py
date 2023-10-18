@@ -1,86 +1,64 @@
 import uuid
-from datetime import date
 from typing import Any
+from urllib.parse import urljoin
 
-from sqlalchemy import Date, String, func
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import models, schemas
+from app import models, schemas, settings
 from app.db.base import Base
 
+_ALL_DELETE_ORPHAN = "all, delete-orphan"
 
 class Reservation(Base):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
-    href: Mapped[str | None] = mapped_column(String(255))
-    base_type: Mapped[str | None] = mapped_column(String(255))
-    schema_location: Mapped[str | None] = mapped_column(String(255))
+    href: Mapped[str] = mapped_column(String(255))
     type: Mapped[str | None] = mapped_column(String(255))
-    description: Mapped[str | None] = mapped_column(String(255))
-    reservation_state: Mapped[str | None] = mapped_column(String(255))
-    valid_for: Mapped[date] = mapped_column(Date, server_default=func.now())
+    reservation_state: Mapped[str] = mapped_column(String(255))
 
-    related_party_ref: Mapped[models.RelatedPartyRef] = relationship(
-        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
+    related_parties: Mapped[models.ReservationRelatedParty] = relationship(
+        back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
     )
-
-    product_offering_ref: Mapped[models.ProductOfferingRef | None] = relationship(
-        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
+    reservation_item: Mapped[list[models.ReservationItem]] = relationship(
+        back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
     )
-
-    channel_ref: Mapped[models.ChannelRef | None] = relationship(
-        back_populates="reservation", lazy="selectin", cascade="all, delete-orphan", uselist=False
+    valid_for: Mapped[models.ValidFor] = relationship(
+        back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
     )
-    requested_period_ref: Mapped[models.RequestedPeriod | None] = relationship(back_populates="reservation",
-                                                                               lazy="selectin",
-                                                                               cascade="all, delete-orphan",
-                                                                               uselist=False)
-    reservation_item_ref: Mapped[list[models.ReservationItem]] = relationship(back_populates="reservation",
-                                                                              lazy="selectin",
-                                                                              cascade="all, delete-orphan",
-                                                                              uselist=True
-                                                                              )
 
     @classmethod
     def from_schema(cls, schema: schemas.ReservationCreate) -> "Reservation":
         reservation_id = str(uuid.uuid4())
-        reservation_item_ref = [models.ReservationItem.from_schema(reservation_item) for reservation_item in
-                                schema.reservation_item_ref]
+
+        related_parties = models.ReservationRelatedParty.from_schema(schema.related_parties)
+        print(f'{related_parties=}')
+        reservation_item_list = [
+            models.ReservationItem.from_schema(reservation_item)
+            for reservation_item in schema.reservation_item
+        ]
+        print(f'{reservation_item_list=}')
+        valid_for = models.ValidFor.from_schema(schema.valid_for)
+        print(f'{valid_for=}')
 
         return cls(
             id=reservation_id,
-            href=f"reservation/{reservation_id}",
-            base_type=schema.base_type,
-            schema_location=schema.schema_location,
+            href=f"resource/{reservation_id}",
             type=schema.type,
-            description=schema.description,
             reservation_state=schema.reservation_state,
-            valid_for=schema.valid_for,
-            product_offering_ref=models.ProductOfferingRef.from_schema(
-                schema.product_offering_ref
-            ),
-            related_party_ref=models.RelatedPartyRef.from_schema(
-                schema.related_party_ref,
-            ),
-            channel_ref=models.ChannelRef.from_schema(schema.channel_ref),
-            requested_period_ref=models.RequestedPeriod.from_schema(schema.requested_period_ref),
-            reservation_item_ref=reservation_item_ref
-
+            related_parties=related_parties,
+            reservation_item=reservation_item_list,
+            valid_for=valid_for
         )
 
-    def to_dict(self, include_fields: set[str] | None = None) -> dict[str, Any]:
-        """
-        Converts the Reservation object to a schema dictionary.
+    def to_schema(self) -> dict[str, Any]:
+        data = schemas.Reservation.model_validate(self).model_dump(by_alias=True)
+        # data = schemas.Reservation.model_validate(self).model_dump(
+        #     by_alias=True, include=include
+        # )
 
-        Args:
-            include_fields (set[str] | None): Optional set of fields to include in the schema.
+        data["href"] = urljoin(
+            f"{urljoin(str(settings.API_BASE_URL), settings.API_PREFIX)}/",
+            self.href,
+        )
 
-        Returns:
-            dict[str, Any]: The schema dictionary representing the Reservation object.
-        """
-        try:
-            return schemas.Reservation.model_validate(self).model_dump(
-                by_alias=True, include=include_fields
-            )
-        except Exception as e:
-            # Handle the exception here, e.g. log the error or return a default value
-            return {}
+        return data

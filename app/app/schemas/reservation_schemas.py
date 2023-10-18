@@ -1,51 +1,28 @@
-import datetime
-
-from pydantic import BaseModel, ConfigDict, Field
-
+from pydantic import BaseModel, Field, ConfigDict
 from app import schemas
+
+_NAME_DESCRIPTION = "A string used to give a name to the reservation"
 
 
 class ReservationBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    type: str | None = Field(
+        None,
+        alias="@type",
+        description="When sub-classing, this defines the super-class",
+    )
 
-    schema_location: str = Field(
-        None,
-        alias="@schemaLocation",
-        description="A link to the schema describing a resource.",
-    )
-    type: str = Field(None, alias="@type", description="The type of the resource.")
-    reservation_state: str = Field(None, description="The life cycle state of the reservation.")
-    valid_for: datetime.date = Field(
-        default_factory=datetime.date.today, description="The period for which the object is valid."
-    )
-    base_type: str = Field(
-        None, alias="@baseType", description="The base type of the resource."
-    )
-    description: str = Field(None, description="Description of the reservation.")
-    related_party_ref: schemas.RelatedPartyRef = Field(
-        ...,
+    related_parties: schemas.RelatedParty = Field(
         alias="relatedParty",
-        description=" A related party defines party or party role linked to a specific entity.",
+        description="Array of objects (RelatedParty)",
     )
-    product_offering_ref: schemas.ProductOfferingRef | None = Field(
-        None,
-        alias="productOffering",
-        description="A product offering represents entities that are "
-                    "order-able from the provider of the catalog, "
-                    "this resource includes pricing information.",
+    reservation_item: list[schemas.ReservationItem] = Field(
+        default_factory=list, alias="reservationItem", description="Array of objects (Note)"
     )
-    channel_ref: schemas.ChannelRef | None = Field(
-        None,
-        alias="channel", description="The channel defines the channel for selling product offerings")
-    requested_period_ref: schemas.RequestedPeriod | None = Field(alias="requestedPeriod", description="The requested "
-                                                                                                      "period for the "
-                                                                                                      "reservation.")
-    reservation_item_ref: list[schemas.ReservationItem] = Field(..., alias="reservationItem", description="The "
-                                                                                                          "reservation"
-                                                                                                          "item "
-                                                                                                          "associated "
-                                                                                                          "with the "
-                                                                                                          "reservation.")
+    reservation_state: str | None = Field(None,alias="reservationState", description="state of the reservation")
+
+    valid_for: schemas.ValidFor = Field(
+        description="Array of objects (RelatedParty)",
+    )
 
 
 class ReservationCreate(ReservationBase):
@@ -57,7 +34,7 @@ class ReservationUpdate(ReservationBase):
 
 
 class Reservation(ReservationBase):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     id: str = Field(
         ...,
@@ -67,6 +44,28 @@ class Reservation(ReservationBase):
             "of a type."
         ),
     )
-    href: str = Field(None, description="The URI for the object itself.")
-    # href: str = Field(None, description="The URI for the object itself.")
-    # name: str = Field(None, description="A string used to give a name to the resource")
+    href: str = Field(..., description="The URI for the object itself.")
+    type: str | None = Field(
+        None,
+        alias="@type",
+        description="When sub-classing, this defines the super-class",
+    )
+
+    related_parties: schemas.RelatedParty = Field(
+        alias="relatedParty",
+        description="Array of objects (RelatedParty)",
+    )
+    reservation_item: list[schemas.ReservationItem] = Field(
+        default_factory=list, alias="reservationItem", description="Array of objects (Note)"
+    )
+    reservation_state: str | None = Field(None, alias="reservationState", description="state of the reservation")
+
+    # valid_for: schemas.ValidFor = Field(
+    #     description="Array of objects (RelatedParty)",
+    # )
+    valid_for: schemas.ValidFor | dict | None = Field(
+        None,
+        description="Array of objects (RelatedParty)",
+    )
+
+
