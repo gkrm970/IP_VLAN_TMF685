@@ -11,16 +11,18 @@ class ReservationBase(BaseModel):
         description="When sub-classing, this defines the super-class",
     )
 
-    related_parties: schemas.RelatedParty = Field(
+    related_parties: schemas.RelatedParty | None = Field(
+        None,
         alias="relatedParty",
         description="Array of objects (RelatedParty)",
     )
-    reservation_item: list[schemas.ReservationItem] = Field(
+    reservation_item: list[schemas.ReservationItem] | None = Field(
         default_factory=list, alias="reservationItem", description="Array of objects (Note)"
     )
     reservation_state: str | None = Field(None,alias="reservationState", description="state of the reservation")
 
-    valid_for: schemas.ValidFor = Field(
+    valid_for: schemas.ValidFor | None = Field(
+        None,
         description="Array of objects (RelatedParty)",
     )
 

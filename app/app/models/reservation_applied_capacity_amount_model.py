@@ -5,7 +5,7 @@ from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 _ALL_DELETE_ORPHAN = "all, delete-orphan"
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from app.models import ReservationItem
 
 
-class AppliedCapacityAmount(Base):
+class AppliedCapacityAmount(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     applied_capacity_amount: Mapped[str] = mapped_column(String(255))
 

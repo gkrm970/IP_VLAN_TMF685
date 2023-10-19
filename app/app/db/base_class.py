@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 
-class Base(AsyncAttrs, DeclarativeBase):
+class BaseDbModel(AsyncAttrs, DeclarativeBase):
     # All tables have IDs, this is here to avoid type-checking errors from mypy
     id: Any
 

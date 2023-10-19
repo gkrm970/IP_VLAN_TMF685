@@ -6,13 +6,13 @@ from sqlalchemy import String, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
     from app.models import ReservationResourceCapacity
 
 
-class ReservationApplicableTimePeriod(Base):
+class ReservationApplicableTimePeriod(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     is_from: Mapped[datetime.datetime | None] = mapped_column(
         DateTime(timezone=True)

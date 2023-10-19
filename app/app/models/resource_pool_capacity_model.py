@@ -4,13 +4,13 @@ from sqlalchemy import ForeignKey, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import schemas, models
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
     from app.models import ResourcePoolManagement
 
 
-class Capacity(Base):
+class Capacity(BaseDbModel):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True
                                     )
     capacity_amount: Mapped[int] = mapped_column(Integer)

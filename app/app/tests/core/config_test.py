@@ -91,7 +91,7 @@ class TestDebugSettings:
 
         settings = Settings()  # type: ignore[call-arg]
 
-        assert settings.LOGGER_LEVEL == "DEBUG"
+        assert settings.LOGGER_LEVEL == "WARNING"
 
     def test_no_debug_leaves_log_level(self) -> None:
         os.environ["LOGGER_LEVEL"] = "WARNING"

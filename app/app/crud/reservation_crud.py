@@ -21,7 +21,7 @@ class ReservationCRUD:
         return db_obj
 
     @staticmethod
-    async def get(db: AsyncSession, *, id: str) -> models.Reservation | None:
+    async def get(db: AsyncSession, id: str) -> models.Reservation | None:
         result = await db.execute(
             select(models.Reservation).filter(models.Reservation.id == id)
         )
@@ -42,21 +42,11 @@ class ReservationCRUD:
 
     @staticmethod
     async def update(
-        db: AsyncSession,
-        *,
-        db_obj: models.Reservation,
-        obj_in: schemas.ReservationUpdate | dict[str, Any],
+            db: AsyncSession,
+            db_obj: models.Reservation,
+            update_schema: schemas.ReservationUpdate,
     ) -> models.Reservation:
-        obj_data = jsonable_encoder(db_obj)
-
-        if isinstance(obj_in, dict):
-            update_data = obj_in
-        else:
-            update_data = obj_in.model_dump(exclude_unset=True)
-
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
+        db_obj.update(update_schema)
 
         db.add(db_obj)
         await db.commit()
@@ -65,11 +55,9 @@ class ReservationCRUD:
         return db_obj
 
     @staticmethod
-    async def delete(db: AsyncSession, *, db_obj: models.Reservation) -> models.Reservation:
+    async def delete(db: AsyncSession, db_obj: models.Reservation) -> None:
         await db.delete(db_obj)
         await db.commit()
-
-        return db_obj
 
 
 reservation = ReservationCRUD()

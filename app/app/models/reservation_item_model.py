@@ -5,7 +5,7 @@ from sqlalchemy import String, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 _ALL_DELETE_ORPHAN = "all, delete-orphan"
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from app.models import Reservation
 
 
-class ReservationItem(Base):
+class ReservationItem(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     quantity: Mapped[int] = mapped_column(Integer)
     sub_reservation_state: Mapped[str] = mapped_column(String(255))

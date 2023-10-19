@@ -5,13 +5,13 @@ from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
     from app.models import ReservationResourceCapacity
 
 
-class ReservationResourcePool(Base):
+class ReservationResourcePool(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     pool_id: Mapped[str] = mapped_column(String(255))
     href: Mapped[str] = mapped_column(String(255))

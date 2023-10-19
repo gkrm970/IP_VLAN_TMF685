@@ -10,6 +10,8 @@ from app.api import deps
 from app.api.responses import reservation_responses
 import json
 
+from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
+
 router = APIRouter()
 
 
@@ -26,7 +28,6 @@ async def create_resource_pool(
         ],
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
-    print(f'{resource_create=}')
     """
     This operation creates a Resource pool entity.
     """
@@ -42,7 +43,7 @@ async def create_resource_pool(
     log.info(f"Created Resource pool with ID: {resource_pool.id}")
 
     return JSONResponse(
-        status_code=status.HTTP_200_OK,
+        status_code=status.HTTP_201_CREATED,
         content=jsonable_encoder(resource_pool.to_dict()),
     )
 
@@ -85,19 +86,19 @@ async def get_resource_pool(
     status_code=status.HTTP_200_OK,
 )
 async def get_resource_pool_by_id(
-        id: str,
         fields: Annotated[str, deps.FieldsQuery] = "",
         *,
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)]
+        resource_pool: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
 ) -> JSONResponse:
     """
     This operation retrieves a Resource Pool by ID.
     """
-    resource = await crud.resource_pool.get(db=db, id=id)
-    log.info(f"Retrieved Resource pool with ID: {resource.id}")
+    include = get_include_fields_for_response(fields)
+
+    log.info(f"Retrieved Resource pool with ID: {resource_pool.id}")
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(resource.to_dict())
+        content=jsonable_encoder(resource_pool.to_dict(include=include))
     )
 
 
@@ -112,13 +113,14 @@ async def delete_resource_pool_by_id(
         *,
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
         resource: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
-):
+) -> Response:
     """
     This operation deletes a Resource Pool by ID.
     """
-    await crud.resource_pool.delete(db=db, db_obj=resource)
-    log.info(f"Deleted Resource pool with ID: {resource.id}")
-    return "Resource record deleted successfully"
+    await crud.resource_pool.delete(db, resource)
+
+    log.info(f"Deleted Resource Pool with ID: {resource.id}")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch(
@@ -127,20 +129,22 @@ async def delete_resource_pool_by_id(
     responses=reservation_responses.update_responses,
     response_model=schemas.ResourcePoolManagementUpdate,
 )
-async def update_resource_pool_by_id(
-        id: str,
-        resource_update: Annotated[schemas.ResourcePoolManagementUpdate,
-        Body(description="The Resource pool to be updated")],
-        db_obj: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
-        *,
+async def update_resource_by_id(
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+        resource: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
+        resource_update: Annotated[
+            schemas.ResourcePoolManagementUpdate, Body(description="The Resource Pool to be updated")
+        ],
 ) -> JSONResponse:
     """
-    This operation updates partially a Resource Pool by ID.
+    This operation updates partially a Resource entity.
     """
-    resource = await crud.resource_pool.update(db=db, id=id, obj_in=resource_update,db_obj=db_obj)
-    log.info(f"Updated Resource pool with ID: {resource.id}")
+    updated_resource = await crud.resource_pool.update(db, resource, resource_update)
+
+    log.info(f"Updated Resource Pool ID: {updated_resource.id}")
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(resource.to_dict())
+        content=jsonable_encoder(updated_resource.to_dict()),
     )
+

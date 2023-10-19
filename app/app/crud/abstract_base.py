@@ -4,10 +4,10 @@ from typing import Any, Generic, Type, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 # SQLAlchemy Model
-ModelType = TypeVar("ModelType", bound=Base)
+ModelType = TypeVar("ModelType", bound=BaseDbModel)
 
 # Pydantic Schema Models
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)

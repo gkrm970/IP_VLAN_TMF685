@@ -5,13 +5,13 @@ from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
     from app.models import ReservationResource
 
 
-class Characteristic(Base):
+class Characteristic(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     ipv4_subnet: Mapped[str] = mapped_column(String(255))
 

@@ -5,13 +5,13 @@ from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
-from app.db.base import Base
+from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
     from app.models import ReservationResourceCapacity
 
 
-class ReservationPlace(Base):
+class ReservationPlace(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255))
     type: Mapped[str] = mapped_column(String(255))

@@ -21,7 +21,7 @@ class ResourcePoolCRUD:
         return db_obj
 
     @staticmethod
-    async def get(db: AsyncSession, *, id: str) -> models.ResourcePoolManagement | None:
+    async def get(db: AsyncSession, id: str) -> models.ResourcePoolManagement | None:
         result = await db.execute(
             select(models.ResourcePoolManagement).filter(models.ResourcePoolManagement.id == id)
         )
@@ -43,20 +43,10 @@ class ResourcePoolCRUD:
     @staticmethod
     async def update(
         db: AsyncSession,
-        *,
         db_obj: models.ResourcePoolManagement,
-        obj_in: schemas.ResourcePoolManagementUpdate | dict[str, Any],
+        update_schema: schemas.ResourcePoolManagementUpdate,
     ) -> models.ResourcePoolManagement:
-        obj_data = jsonable_encoder(db_obj)
-
-        if isinstance(obj_in, dict):
-            update_data = obj_in
-        else:
-            update_data = obj_in.model_dump(exclude_unset=True)
-
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
+        db_obj.update(update_schema)
 
         db.add(db_obj)
         await db.commit()
@@ -65,11 +55,9 @@ class ResourcePoolCRUD:
         return db_obj
 
     @staticmethod
-    async def delete(db: AsyncSession, *, db_obj: models.ResourcePoolManagement) -> models.ResourcePoolManagement:
+    async def delete(db: AsyncSession,db_obj: models.ResourcePoolManagement) -> None:
         await db.delete(db_obj)
         await db.commit()
-
-        return db_obj
 
 
 resource_pool = ResourcePoolCRUD()
