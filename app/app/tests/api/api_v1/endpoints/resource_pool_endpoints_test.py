@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, models, schemas
 from app.core.config import settings
-from app.tests import mocks
+from app.tests.mocks import resource_pool_crud_mocks as mocks
 
 
 class TestGetResourcesPool:
@@ -169,6 +169,52 @@ class TestGetResourcePoolByID:
         assert "name" in resource
 
 
+class TestUpdateResourceByID:
+    @staticmethod
+    @pytest.fixture(scope="function", autouse=True)
+    def mock_resource_pool_crud_get(monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(crud.resource_pool, "get", mocks.get)
+
+    @staticmethod
+    @pytest.fixture(scope="function", autouse=True)
+    def mock_resource_pool_crud_delete(monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(crud.resource_pool, "update", mocks.update)
+
+    @pytest.fixture(scope="function", autouse=True)
+    def test_update_resource_pool_by_id_status_code_is_200(
+            self, client: TestClient
+    ) -> None:
+        response = client.patch(
+            f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}",
+            content=json.dumps({"name": "test_name"}),
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        # response.json()["name"] = "test_name1"
+        #
+        # assert response.json()["name"] == "test_name1"
+
+    # def test_update_resource_pool_by_id_status_code_is_404_when_not_found(
+    #     self, client: TestClient
+    # ) -> None:
+    #     response = client.patch(
+    #         f"{settings.API_PREFIX}/resourcePool/{str(uuid.uuid4())}",
+    #         content=json.dumps({"name": "test_name"}),
+    #     )
+    #     assert "id" not in response.json()
+    #     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    # def test_update_resource_pool_by_id_status_code_is_200(
+    #     self, client: TestClient
+    # ) -> None:
+    #     response = client.patch(
+    #         f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}",
+    #         content=json.dumps({"name": "test_name"}),
+    #     )
+    #     assert "id" in response.json()
+    #     assert response.status_code == status.HTTP_200_OK
+
+
 class TestDeleteResourcePooleByID:
     @staticmethod
     @pytest.fixture(scope="function", autouse=True)
@@ -193,7 +239,3 @@ class TestDeleteResourcePooleByID:
         response = client.delete(f"{settings.API_PREFIX}/resourcePool/{str(uuid.uuid4())}")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
-
-
-class TestUpdateResourceByID:
-    pass

@@ -1,16 +1,13 @@
-from typing import Any
-
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app import models, schemas
-from app.crud.abstract_base import AbstractBaseCRUD
 
 
 class ResourcePoolCRUD:
     @staticmethod
     async def create(
-        db: AsyncSession, *, obj_in: schemas.ResourcePoolManagementCreate
+        db: AsyncSession, obj_in: schemas.ResourcePoolManagementCreate
     ) -> models.ResourcePoolManagement:
         db_obj = models.ResourcePoolManagement.from_schema(obj_in)
 
@@ -31,7 +28,6 @@ class ResourcePoolCRUD:
     @staticmethod
     async def get_multi(
         db: AsyncSession,
-        *,
         limit: int = 100,
         offset: int = 0,
     ) -> tuple[list[models.ResourcePoolManagement], int]:
