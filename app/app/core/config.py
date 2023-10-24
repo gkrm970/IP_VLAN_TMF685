@@ -34,7 +34,7 @@ class DatabaseSettings(BaseSettings):
         port = field_info.data.get("DB_PORT")
         db_name = field_info.data.get("DB_NAME")
 
-        return f"mysql+aiomysql://{username}:{password}@{host}:{port}/{db_name}"
+        return f"postgresql+asyncpg://{username}:{password}@{host}:{port}/{db_name}"
 
 
 class LoggerSettings(BaseSettings):
