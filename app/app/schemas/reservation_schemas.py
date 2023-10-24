@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
+
 from app import schemas
 
 _NAME_DESCRIPTION = "A string used to give a name to the reservation"
@@ -53,7 +54,7 @@ class Reservation(ReservationBase):
         description="When sub-classing, this defines the super-class",
     )
 
-    related_parties: schemas.RelatedParty = Field(
+    related_parties: schemas.RelatedParty | dict | None = Field(
         alias="relatedParty",
         description="Array of objects (RelatedParty)",
     )

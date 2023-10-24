@@ -15,9 +15,9 @@ EXISTING_RESERVATION = models.Reservation(
 
 
 async def get_multi(
-        db: AsyncSession,
-        limit: int = 100,
-        offset: int = 0,
+        _db: AsyncSession,
+        _limit: int = 100,
+        _offset: int = 0,
 ) -> tuple[list[models.Reservation], int]:
     reservations = []
     number_of_reservation = random.randint(1, 10)
@@ -37,18 +37,22 @@ async def get_multi(
     return reservations, number_of_reservation
 
 
-async def reservation_create(_db: AsyncSession, _obj_in: schemas.ReservationCreate) -> models.Reservation:
+async def create(_db: AsyncSession, _obj_in: schemas.ReservationCreate) -> models.Reservation:
     db_obj_id = str(uuid.uuid4())
 
     return models.Reservation(reservation_state="test_name", id=db_obj_id, href=f"reservation/{db_obj_id}")
 
 
-async def reservation_get(_db: AsyncSession, id: str) -> models.Reservation | None:
+async def get(_db: AsyncSession, id: str) -> models.Reservation | None:
     if id == EXISTING_RESERVATION.id:
         return EXISTING_RESERVATION
 
     return None
 
 
-async def reservation_delete(_db: AsyncSession, _db_obj: models.Reservation) -> None:
+async def delete(_db: AsyncSession, _db_obj: models.Reservation) -> None:
     return None
+
+async def update(_db: AsyncSession, _db_obj: models.Reservation) -> None:
+    return None
+

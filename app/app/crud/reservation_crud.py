@@ -1,6 +1,3 @@
-from typing import Any
-
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +7,7 @@ from app import models, schemas
 class ReservationCRUD:
     @staticmethod
     async def create(
-        db: AsyncSession, *, obj_in: schemas.ReservationCreate
+        db: AsyncSession, obj_in: schemas.ReservationCreate
     ) -> models.Reservation:
         db_obj = models.Reservation.from_schema(obj_in)
 
@@ -31,7 +28,6 @@ class ReservationCRUD:
     @staticmethod
     async def get_multi(
         db: AsyncSession,
-        *,
         limit: int = 100,
         offset: int = 0,
     ) -> tuple[list[models.Reservation], int]:

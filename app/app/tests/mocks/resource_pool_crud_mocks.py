@@ -15,9 +15,9 @@ EXISTING_RESOURCE = models.ResourcePoolManagement(
 
 
 async def get_multi(
-    db: AsyncSession,
-    limit: int = 100,
-    offset: int = 0,
+    _db: AsyncSession,
+    _limit: int = 100,
+    _offset: int = 0,
 ) -> tuple[list[models.ResourcePoolManagement], int]:
     resources = []
     number_of_resources = random.randint(1, 10)
@@ -51,4 +51,7 @@ async def get(_db: AsyncSession, id: str) -> models.ResourcePoolManagement | Non
 
 
 async def delete(_db: AsyncSession, _db_obj: models.ResourcePoolManagement) -> None:
+    return None
+
+async def update(_db: AsyncSession, _db_obj: models.ResourcePoolManagement)-> None:
     return None
