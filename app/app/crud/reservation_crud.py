@@ -1,14 +1,52 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
+from app import models, schemas, log
+from app.core.exceptions import ConflictError, NotFoundError
 
 
 class ReservationCRUD:
+
+    @staticmethod
+    async def get_by_resource_pool_id(db: AsyncSession, id: str) -> models.ReservationResourcePool | None:
+        result = await db.execute(
+            select(models.ReservationResourcePool).filter(models.ReservationResourcePool.id == id)
+        )
+        return result.scalars().first()
+
+    @staticmethod
+    async def validate_resource_pool_id(
+            db: AsyncSession,
+            resource_pool_id: str
+    ):
+        existing_resource_pool_id = await ReservationCRUD.get_by_resource_pool_id(
+            db, resource_pool_id
+        )
+
+        if existing_resource_pool_id is not None:
+            raise ConflictError(
+                f"resourcePool with id {resource_pool_id} already exists"
+            )
+
     @staticmethod
     async def create(
-        db: AsyncSession, obj_in: schemas.ReservationCreate
+            db: AsyncSession, obj_in: schemas.ReservationCreate
     ) -> models.Reservation:
+        resource_pool_id = obj_in.reservation_item[0].reservation_resource_capacity.resource_pool.id
+        log.info(f'{resource_pool_id=}')
+
+        result = await db.execute(
+            select(models.ResourcePoolManagement).filter(models.ResourcePoolManagement.id == resource_pool_id)
+        )
+        existing_resource_pool_id = result.scalars().first()
+
+        log.info(f'{existing_resource_pool_id=}')
+        if existing_resource_pool_id is None:
+            raise NotFoundError(
+                f"resourcePool with id {resource_pool_id} not found"
+            )
+        await ReservationCRUD.validate_resource_pool_id(db, resource_pool_id)
+
         db_obj = models.Reservation.from_schema(obj_in)
 
         db.add(db_obj)
@@ -27,9 +65,9 @@ class ReservationCRUD:
 
     @staticmethod
     async def get_multi(
-        db: AsyncSession,
-        limit: int = 100,
-        offset: int = 0,
+            db: AsyncSession,
+            limit: int = 100,
+            offset: int = 0,
     ) -> tuple[list[models.Reservation], int]:
         result = await db.execute(select(models.Reservation).limit(limit).offset(offset))
         total = await db.execute(select(func.count()).select_from(models.Reservation))

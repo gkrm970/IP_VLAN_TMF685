@@ -29,7 +29,11 @@ class ReservationBase(BaseModel):
 
 
 class ReservationCreate(ReservationBase):
-    pass
+    related_parties: schemas.RelatedParty= Field(
+        ...,
+        alias="relatedParty",
+        description="Array of objects (RelatedParty)",
+    )
 
 
 class ReservationUpdate(ReservationBase):
