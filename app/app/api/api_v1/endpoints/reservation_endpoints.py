@@ -30,7 +30,7 @@ async def get_reservations(
     """
     [column.strip() for column in fields.split(",")] if fields else None
 
-    resources, total = await crud.reservation.get_multi(db=db, limit=limit, offset=offset)
+    resources, total = await crud.reservation.get_multi(db, limit, offset)
 
     no_of_reservations = len(resources)
 
@@ -60,7 +60,7 @@ async def create_reservation(
     """
     This operation creates a Reservation entity.
     """
-    reservation = await crud.reservation.create(db=db, obj_in=resource_create)
+    reservation = await crud.reservation.create(db, resource_create)
 
     log.info(f"Created Reservation with ID: {reservation.id}")
 

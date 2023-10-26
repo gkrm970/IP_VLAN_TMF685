@@ -46,7 +46,7 @@ class TestDatabaseSettings:
         os.environ["DB_PORT"] = port
         os.environ["DB_NAME"] = db_name
 
-        return f"mysql+aiomysql://{username}:{password}@{host}:{port}/{db_name}"
+        return f"postgresql+asyncpg://{username}:{password}@{host}:{port}/{db_name}"
 
     def test_sqlalchemy_uri_is_assembled(self, set_db_config: str) -> None:
         settings = Settings()  # type: ignore[call-arg]

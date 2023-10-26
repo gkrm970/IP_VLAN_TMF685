@@ -8,8 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, log, schemas, models
 from app.api import deps
 from app.api.responses import reservation_responses
-import json
-
 from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
 
 router = APIRouter()
@@ -32,7 +30,7 @@ async def create_resource_pool(
     This operation creates a Resource pool entity.
     """
 
-    resource_pool = await crud.resource_pool.create(db=db, obj_in=resource_create)
+    resource_pool = await crud.resource_pool.create(db, resource_create)
 
     # Exclude unset does not work on simply the resource.to_dict, because the DB model
     # contains even the default/nulled properties. We need to build an include set from
@@ -66,7 +64,7 @@ async def get_resource_pool(
     This operation retrieves a list of Resource Pools.
     """
     resource, total = await crud.resource_pool.get_multi(
-        db=db, limit=limit, offset=offset)
+        db, limit, offset)
     no_of_resource_pool = len(resource)
 
     log.info(f"Retrieved {no_of_resource_pool} Resource pool(s)")
