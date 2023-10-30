@@ -3,7 +3,13 @@ from typing import Any, Type
 from urllib.parse import urljoin
 
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, relationship, InstrumentedAttribute, ColumnProperty
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+    InstrumentedAttribute,
+    ColumnProperty,
+)
 
 from app import models, schemas, settings
 from app.db.base import BaseDbModel
@@ -15,40 +21,44 @@ class Reservation(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     href: Mapped[str] = mapped_column(String(255))
     type: Mapped[str | None] = mapped_column(String(255))
-    reservation_state: Mapped[str] = mapped_column(String(255))
-
+    # reservation_state: Mapped[str] = mapped_column(String(255))
     related_parties: Mapped[models.ReservationRelatedParty] = relationship(
-        back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
+        back_populates="reservation",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
     )
     reservation_item: Mapped[list[models.ReservationItem]] = relationship(
         back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
     )
     valid_for: Mapped[models.ValidFor] = relationship(
-        back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
+        back_populates="reservation",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
     )
 
     @classmethod
     def from_schema(cls, schema: schemas.ReservationCreate) -> "Reservation":
         reservation_id = str(uuid.uuid4())
 
-        related_parties = models.ReservationRelatedParty.from_schema(schema.related_parties)
-        print(f'{related_parties=}')
+        related_parties = models.ReservationRelatedParty.from_schema(
+            schema.related_parties
+        )
+
         reservation_item_list = [
             models.ReservationItem.from_schema(reservation_item)
             for reservation_item in schema.reservation_item
         ]
-        print(f'{reservation_item_list=}')
         valid_for = models.ValidFor.from_schema(schema.valid_for)
-        print(f'{valid_for=}')
 
         return cls(
             id=reservation_id,
             href=f"resource/{reservation_id}",
             type=schema.type,
-            reservation_state=schema.reservation_state,
             related_parties=related_parties,
             reservation_item=reservation_item_list,
-            valid_for=valid_for
+            valid_for=valid_for,
         )
 
     def to_schema(self, include: set[str] | None = None) -> dict[str, Any]:
@@ -83,7 +93,9 @@ class Reservation(BaseDbModel):
                 model_relationship: Relationship = model_attr.property  # type: ignore
 
                 # The related model class is defined in the argument property of the relationship
-                related_model_class: Type[models.Reservation] = model_relationship.argument
+                related_model_class: Type[
+                    models.Reservation
+                ] = model_relationship.argument
 
                 if model_relationship.uselist:
                     update_model = [
@@ -94,4 +106,3 @@ class Reservation(BaseDbModel):
                     update_model = related_model_class.from_schema(update_schema_value)  # type: ignore
 
                 setattr(self, field_name, update_model)
-

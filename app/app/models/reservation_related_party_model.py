@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import models, schemas
+from app import schemas
 from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
@@ -20,12 +20,10 @@ class ReservationRelatedParty(BaseDbModel):
     reservation: Mapped["Reservation"] = relationship(back_populates="related_parties")
 
     @classmethod
-    def from_schema(cls, schema: schemas.RelatedParty | None) -> Optional["ReservationRelatedParty"]:
+    def from_schema(
+        cls, schema: schemas.RelatedParty | None
+    ) -> Optional["ReservationRelatedParty"]:
         # schema.id = schema.id or str(uuid.uuid4())
         if schema is None:
             return None
-        return cls(
-            id=str(uuid.uuid4()),
-            name=schema.name,
-            role=schema.role
-        )
+        return cls(id=str(uuid.uuid4()), name=schema.name, role=schema.role)

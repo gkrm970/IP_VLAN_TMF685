@@ -28,5 +28,3 @@ async def get_reservation(
     if reservation is None:
         raise NotFoundError(f"No reservation found with ID {id}")
     return reservation
-
-

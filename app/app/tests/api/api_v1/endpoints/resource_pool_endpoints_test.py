@@ -23,7 +23,7 @@ class TestGetResourcesPool:
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_resources_responds_with_list_of_resources(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/resourcePool")
 
@@ -33,7 +33,7 @@ class TestGetResourcesPool:
             assert resource["name"] == "test_name"
 
     def test_get_resources_pool_responds_with_defined_query_fields(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/resourcePool", params={"fields": "name"}
@@ -43,7 +43,7 @@ class TestGetResourcesPool:
             assert "category" not in resource
 
     def test_get_resources_pool_responds_with_mandatory_fields_always(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/resourcePool", params={"fields": "name"}
@@ -55,14 +55,14 @@ class TestGetResourcesPool:
             assert "name" in resource
 
     def test_get_resources_responds_with_x_total_count_header(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/resourcePool")
 
         assert "X-Total-Count" in response.headers
 
     def test_get_resources_pool_responds_with_x_result_count_header(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/resourcePool")
 
@@ -72,7 +72,7 @@ class TestGetResourcesPool:
 class TestCreateResourcePool:
     @staticmethod
     async def _mock_create(
-            db: AsyncSession, obj_in: schemas.ResourcePoolManagementCreate
+        db: AsyncSession, obj_in: schemas.ResourcePoolManagementCreate
     ) -> models.ResourcePoolManagement:
         db_obj_id = uuid.uuid4().hex
 
@@ -81,7 +81,7 @@ class TestCreateResourcePool:
         )
 
     def test_create_resource_pool_status_code_is_201(
-            self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         test_request_payload = {"name": "test_name"}
 
@@ -96,7 +96,7 @@ class TestCreateResourcePool:
         assert response.json()["name"] == "test_name"
 
     def test_create_resource_missing_name(
-            self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         test_request_payload = {"category": "test_category"}
 
@@ -116,7 +116,9 @@ class TestGetResourcePoolByID:
     def mock_resource_pool_crud_get(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(crud.resource_pool, "get", mocks.get)
 
-    def test_get_resource_pool_by_id_status_code_is_200(self, client: TestClient) -> None:
+    def test_get_resource_pool_by_id_status_code_is_200(
+        self, client: TestClient
+    ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}"
         )
@@ -124,14 +126,14 @@ class TestGetResourcePoolByID:
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_resource_pool_by_id_status_code_is_404_when_not_found(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/resourcePool/{str(uuid.uuid4())}")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_get_resource_pool_by_id_responds_with_single_resource(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}"
@@ -144,7 +146,7 @@ class TestGetResourcePoolByID:
         assert resource["name"] == "test_name"
 
     def test_get_resource_pool_by_id_responds_with_defined_query_fields(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}",
@@ -156,7 +158,7 @@ class TestGetResourcePoolByID:
         assert "category" not in resource
 
     def test_get_resources_pool_responds_with_mandatory_fields_always(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}",
@@ -182,7 +184,7 @@ class TestUpdateResourceByID:
 
     @pytest.fixture(scope="function", autouse=True)
     def test_update_resource_pool_by_id_status_code_is_200(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.patch(
             f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}",
@@ -226,7 +228,9 @@ class TestDeleteResourcePooleByID:
     def mock_resource_pool_crud_delete(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(crud.resource_pool, "delete", mocks.delete)
 
-    def test_delete_resource_pool_by_id_status_code_is_200(self, client: TestClient) -> None:
+    def test_delete_resource_pool_by_id_status_code_is_200(
+        self, client: TestClient
+    ) -> None:
         response = client.delete(
             f"{settings.API_PREFIX}/resourcePool/{mocks.EXISTING_RESOURCE.id}"
         )
@@ -234,8 +238,10 @@ class TestDeleteResourcePooleByID:
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_delete_resource_pool_by_id_status_code_is_404_when_not_found(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
-        response = client.delete(f"{settings.API_PREFIX}/resourcePool/{str(uuid.uuid4())}")
+        response = client.delete(
+            f"{settings.API_PREFIX}/resourcePool/{str(uuid.uuid4())}"
+        )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND

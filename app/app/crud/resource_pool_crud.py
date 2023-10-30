@@ -20,7 +20,9 @@ class ResourcePoolCRUD:
     @staticmethod
     async def get(db: AsyncSession, id: str) -> models.ResourcePoolManagement | None:
         result = await db.execute(
-            select(models.ResourcePoolManagement).filter(models.ResourcePoolManagement.id == id)
+            select(models.ResourcePoolManagement).filter(
+                models.ResourcePoolManagement.id == id
+            )
         )
 
         return result.scalars().first()
@@ -31,8 +33,12 @@ class ResourcePoolCRUD:
         limit: int = 100,
         offset: int = 0,
     ) -> tuple[list[models.ResourcePoolManagement], int]:
-        result = await db.execute(select(models.ResourcePoolManagement).limit(limit).offset(offset))
-        total = await db.execute(select(func.count()).select_from(models.ResourcePoolManagement))
+        result = await db.execute(
+            select(models.ResourcePoolManagement).limit(limit).offset(offset)
+        )
+        total = await db.execute(
+            select(func.count()).select_from(models.ResourcePoolManagement)
+        )
 
         return list(result.scalars().all()), total.scalar() or 0
 
@@ -51,7 +57,7 @@ class ResourcePoolCRUD:
         return db_obj
 
     @staticmethod
-    async def delete(db: AsyncSession,db_obj: models.ResourcePoolManagement) -> None:
+    async def delete(db: AsyncSession, db_obj: models.ResourcePoolManagement) -> None:
         await db.delete(db_obj)
         await db.commit()
 

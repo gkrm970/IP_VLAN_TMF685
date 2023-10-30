@@ -25,9 +25,9 @@ class AppException(HTTPException):
 
 class BadRequestError(AppException):
     def __init__(
-            self,
-            message: str,
-            headers: dict[str, str] | None = None,
+        self,
+        message: str,
+        headers: dict[str, str] | None = None,
     ):
         status_code = status.HTTP_400_BAD_REQUEST
 
@@ -51,9 +51,9 @@ class BadRequestError(AppException):
 
 class ConflictError(HTTPException):
     def __init__(
-            self,
-            message: str,
-            headers: dict[str, str] | None = None,
+        self,
+        message: str,
+        headers: dict[str, str] | None = None,
     ):
         status_code = status.HTTP_409_CONFLICT
 
@@ -77,9 +77,9 @@ class ConflictError(HTTPException):
 
 class NotFoundError(AppException):
     def __init__(
-            self,
-            message: str,
-            headers: dict[str, str] | None = None,
+        self,
+        message: str,
+        headers: dict[str, str] | None = None,
     ):
         status_code = status.HTTP_404_NOT_FOUND
 

@@ -18,22 +18,40 @@ class ReservationResourceCapacity(BaseDbModel):
     type: Mapped[str] = mapped_column(String(255))
     capacity_demand_amount: Mapped[str] = mapped_column(String(255))
 
-    reservation_applicable_time_period: Mapped[models.ReservationApplicableTimePeriod] = relationship(
-        back_populates="reservation_resource_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
+    reservation_applicable_time_period: Mapped[
+        models.ReservationApplicableTimePeriod
+    ] = relationship(
+        back_populates="reservation_resource_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
     )
     reservation_place: Mapped[list[models.ReservationPlace]] = relationship(
-        back_populates="reservation_resource_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+        back_populates="reservation_resource_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
     )
     resource_pool: Mapped[models.ReservationResourcePool] = relationship(
-        back_populates="reservation_resource_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
+        back_populates="reservation_resource_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
     )
 
     reservation_item_id: Mapped[str] = mapped_column(ForeignKey("reservation_item.id"))
-    reservation_item: Mapped["ReservationItem"] = relationship(back_populates="reservation_resource_capacity")
+    reservation_item: Mapped["ReservationItem"] = relationship(
+        back_populates="reservation_resource_capacity"
+    )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationResourceCapacity) -> "ReservationResourceCapacity":
-        reservation_applicable_time_period = models.ReservationApplicableTimePeriod.from_schema(schema.reservation_applicable_time_period)
+    def from_schema(
+        cls, schema: schemas.ReservationResourceCapacity
+    ) -> "ReservationResourceCapacity":
+        reservation_applicable_time_period = (
+            models.ReservationApplicableTimePeriod.from_schema(
+                schema.reservation_applicable_time_period
+            )
+        )
         reservation_place = [
             models.ReservationPlace.from_schema(reservation_place)
             for reservation_place in schema.reservation_place
@@ -46,7 +64,5 @@ class ReservationResourceCapacity(BaseDbModel):
             capacity_demand_amount=schema.capacity_demand_amount,
             reservation_applicable_time_period=reservation_applicable_time_period,
             reservation_place=reservation_place,
-            resource_pool=resource_pool
+            resource_pool=resource_pool,
         )
-
-

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, log, models, schemas
 from app.api import deps
 from app.api.responses import reservation_responses
+from app.api.utils.reservation_response import create_reservation_response
 
 router = APIRouter()
 
@@ -40,7 +41,10 @@ async def get_reservations(
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=jsonable_encoder([resource.to_schema() for resource in resources]),
-        headers={"X-Result-Count": str(no_of_reservations), "X-Total-Count": str(total)},
+        headers={
+            "X-Result-Count": str(no_of_reservations),
+            "X-Total-Count": str(total),
+        },
     )
 
 
@@ -60,6 +64,9 @@ async def create_reservation(
     """
     This operation creates a Reservation entity.
     """
+    # reservation_res = create_reservation_response(resource_create)
+    # log.info("reservation_res", reservation_res)
+
     reservation = await crud.reservation.create(db, resource_create)
 
     log.info(f"Created Reservation with ID: {reservation.id}")
@@ -102,10 +109,10 @@ async def get_reservation_by_id(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_reservation_by_id(
-        id: str,
-        *,
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    id: str,
+    *,
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
 ) -> Response:
     """
     This operation deletes a Reservation by ID.
@@ -123,16 +130,18 @@ async def delete_reservation_by_id(
     response_model=schemas.ReservationUpdate,
 )
 async def update_reservation_by_id(
-        db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-        reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
-        reservation_update: Annotated[
-            schemas.ReservationUpdate, Body(description="The Reservation to be updated")
-        ],
+    db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    reservation_update: Annotated[
+        schemas.ReservationUpdate, Body(description="The Reservation to be updated")
+    ],
 ) -> JSONResponse:
     """
     This operation updates partially a Reservation entity.
     """
-    update_reservation = await crud.reservation.update(db, reservation, reservation_update)
+    update_reservation = await crud.reservation.update(
+        db, reservation, reservation_update
+    )
 
     log.info(f"Updated Reservation ID: {update_reservation.id}")
 

@@ -18,9 +18,11 @@ class ReservationBase(BaseModel):
         description="Array of objects (RelatedParty)",
     )
     reservation_item: list[schemas.ReservationItem] | None = Field(
-        default_factory=list, alias="reservationItem", description="Array of objects (Note)"
+        default_factory=list,
+        alias="reservationItem",
+        description="Array of objects (Note)",
     )
-    reservation_state: str | None = Field(None,alias="reservationState", description="state of the reservation")
+    # reservation_state: str | None = Field(None,alias="reservationState", description="state of the reservation")
 
     valid_for: schemas.ValidFor | None = Field(
         None,
@@ -29,7 +31,7 @@ class ReservationBase(BaseModel):
 
 
 class ReservationCreate(ReservationBase):
-    related_parties: schemas.RelatedParty= Field(
+    related_parties: schemas.RelatedParty = Field(
         ...,
         alias="relatedParty",
         description="Array of objects (RelatedParty)",
@@ -63,16 +65,12 @@ class Reservation(ReservationBase):
         description="Array of objects (RelatedParty)",
     )
     reservation_item: list[schemas.ReservationItem] = Field(
-        default_factory=list, alias="reservationItem", description="Array of objects (Note)"
+        default_factory=list,
+        alias="reservationItem",
+        description="Array of objects (Note)",
     )
-    reservation_state: str | None = Field(None, alias="reservationState", description="state of the reservation")
 
-    # valid_for: schemas.ValidFor = Field(
-    #     description="Array of objects (RelatedParty)",
-    # )
     valid_for: schemas.ValidFor | dict | None = Field(
         None,
         description="Array of objects (RelatedParty)",
     )
-
-

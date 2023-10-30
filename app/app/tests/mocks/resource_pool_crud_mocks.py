@@ -10,7 +10,7 @@ _existing_resource_id = str(uuid.uuid4())
 EXISTING_RESOURCE = models.ResourcePoolManagement(
     name="test_name",
     id=_existing_resource_id,
-    href=f"resourcePool/{_existing_resource_id}"
+    href=f"resourcePool/{_existing_resource_id}",
 )
 
 
@@ -37,10 +37,14 @@ async def get_multi(
     return resources, number_of_resources
 
 
-async def create(_db: AsyncSession, _obj_in: schemas.ResourcePoolManagementCreate) -> models.ResourcePoolManagement:
+async def create(
+    _db: AsyncSession, _obj_in: schemas.ResourcePoolManagementCreate
+) -> models.ResourcePoolManagement:
     db_obj_id = str(uuid.uuid4())
 
-    return models.ResourcePoolManagement(name="test_name", id=db_obj_id, href=f"resourcePool/{db_obj_id}")
+    return models.ResourcePoolManagement(
+        name="test_name", id=db_obj_id, href=f"resourcePool/{db_obj_id}"
+    )
 
 
 async def get(_db: AsyncSession, id: str) -> models.ResourcePoolManagement | None:
@@ -53,5 +57,6 @@ async def get(_db: AsyncSession, id: str) -> models.ResourcePoolManagement | Non
 async def delete(_db: AsyncSession, _db_obj: models.ResourcePoolManagement) -> None:
     return None
 
-async def update(_db: AsyncSession, _db_obj: models.ResourcePoolManagement)-> None:
+
+async def update(_db: AsyncSession, _db_obj: models.ResourcePoolManagement) -> None:
     return None

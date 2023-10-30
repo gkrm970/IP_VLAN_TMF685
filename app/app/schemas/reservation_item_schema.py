@@ -11,17 +11,7 @@ class ReservationItem(BaseModel):
         None,
         description="When sub-classing, this defines the super-class",
     )
-    sub_reservation_state: str | None = Field(
-        None,
-        alias="subReservationState",
-        description="When sub-classing, this defines the super-class",
-    )
-    applied_capacity_amount: schemas.AppliedCapacityAmount = Field(
-        alias="appliedCapacityAmount",
-        description="Array of objects (RelatedParty)",
-    )
     reservation_resource_capacity: schemas.ReservationResourceCapacity = Field(
         alias="resourceCapacity",
         description="Array of objects (RelatedParty)",
     )
-

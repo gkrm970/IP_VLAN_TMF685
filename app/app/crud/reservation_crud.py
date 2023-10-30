@@ -6,19 +6,19 @@ from app.core.exceptions import ConflictError, NotFoundError
 
 
 class ReservationCRUD:
-
     @staticmethod
-    async def get_by_resource_pool_id(db: AsyncSession, id: str) -> models.ReservationResourcePool | None:
+    async def get_by_resource_pool_id(
+        db: AsyncSession, id: str
+    ) -> models.ReservationResourcePool | None:
         result = await db.execute(
-            select(models.ReservationResourcePool).filter(models.ReservationResourcePool.id == id)
+            select(models.ReservationResourcePool).filter(
+                models.ReservationResourcePool.id == id
+            )
         )
         return result.scalars().first()
 
     @staticmethod
-    async def validate_resource_pool_id(
-            db: AsyncSession,
-            resource_pool_id: str
-    ):
+    async def validate_resource_pool_id(db: AsyncSession, resource_pool_id: str):
         existing_resource_pool_id = await ReservationCRUD.get_by_resource_pool_id(
             db, resource_pool_id
         )
@@ -30,21 +30,23 @@ class ReservationCRUD:
 
     @staticmethod
     async def create(
-            db: AsyncSession, obj_in: schemas.ReservationCreate
+        db: AsyncSession, obj_in: schemas.ReservationCreate
     ) -> models.Reservation:
-        resource_pool_id = obj_in.reservation_item[0].reservation_resource_capacity.resource_pool.id
-        log.info(f'{resource_pool_id=}')
+        resource_pool_id = obj_in.reservation_item[
+            0
+        ].reservation_resource_capacity.resource_pool.id
+        log.info(f"{resource_pool_id=}")
 
         result = await db.execute(
-            select(models.ResourcePoolManagement).filter(models.ResourcePoolManagement.id == resource_pool_id)
+            select(models.ResourcePoolManagement).filter(
+                models.ResourcePoolManagement.id == resource_pool_id
+            )
         )
         existing_resource_pool_id = result.scalars().first()
 
-        log.info(f'{existing_resource_pool_id=}')
+        log.info(f"{existing_resource_pool_id=}")
         if existing_resource_pool_id is None:
-            raise NotFoundError(
-                f"resourcePool with id {resource_pool_id} not found"
-            )
+            raise NotFoundError(f"resourcePool with id {resource_pool_id} not found")
         await ReservationCRUD.validate_resource_pool_id(db, resource_pool_id)
 
         db_obj = models.Reservation.from_schema(obj_in)
@@ -65,20 +67,22 @@ class ReservationCRUD:
 
     @staticmethod
     async def get_multi(
-            db: AsyncSession,
-            limit: int = 100,
-            offset: int = 0,
+        db: AsyncSession,
+        limit: int = 100,
+        offset: int = 0,
     ) -> tuple[list[models.Reservation], int]:
-        result = await db.execute(select(models.Reservation).limit(limit).offset(offset))
+        result = await db.execute(
+            select(models.Reservation).limit(limit).offset(offset)
+        )
         total = await db.execute(select(func.count()).select_from(models.Reservation))
 
         return list(result.scalars().all()), total.scalar() or 0
 
     @staticmethod
     async def update(
-            db: AsyncSession,
-            db_obj: models.Reservation,
-            update_schema: schemas.ReservationUpdate,
+        db: AsyncSession,
+        db_obj: models.Reservation,
+        update_schema: schemas.ReservationUpdate,
     ) -> models.Reservation:
         db_obj.update(update_schema)
 

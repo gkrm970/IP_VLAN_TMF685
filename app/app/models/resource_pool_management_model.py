@@ -3,7 +3,13 @@ from typing import Type, Any
 from urllib.parse import urljoin
 
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, relationship, InstrumentedAttribute, ColumnProperty
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+    InstrumentedAttribute,
+    ColumnProperty,
+)
 from app.db.base import BaseDbModel
 from app import schemas, models, settings
 
@@ -17,11 +23,15 @@ class ResourcePoolManagement(BaseDbModel):
     name: Mapped[str] = mapped_column(String(255))
 
     resource_capacity: Mapped[list[models.Capacity]] = relationship(
-        back_populates="resource_pool_management", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+        back_populates="resource_pool_management",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolManagementCreate) -> "ResourcePoolManagement":
+    def from_schema(
+        cls, schema: schemas.ResourcePoolManagementCreate
+    ) -> "ResourcePoolManagement":
         resource_pool_id = str(uuid.uuid4())
 
         resource_capacity = [
@@ -45,7 +55,7 @@ class ResourcePoolManagement(BaseDbModel):
             href=f"resourcePool/{resource_pool_id}",
             type=schema.type,
             name=schema.name,
-            resource_capacity=resource_capacity
+            resource_capacity=resource_capacity,
         )
 
     def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:
@@ -79,7 +89,9 @@ class ResourcePoolManagement(BaseDbModel):
                 model_relationship: Relationship = model_attr.property  # type: ignore
 
                 # The related model class is defined in the argument property of the relationship
-                related_model_class: Type[models.ResourcePoolManagement] = model_relationship.argument
+                related_model_class: Type[
+                    models.ResourcePoolManagement
+                ] = model_relationship.argument
 
                 if model_relationship.uselist:
                     update_model = [

@@ -27,8 +27,7 @@ class ReservationResourceCapacity(BaseModel):
         description="Array of objects (RelatedParty)",
     )
     reservation_place: list[schemas.Place] = Field(
-        alias="place",
-        default_factory=list, description="Array of objects (Note)"
+        alias="place", default_factory=list, description="Array of objects (Note)"
     )
     resource_pool: schemas.ReservationResourcePool = Field(
         alias="resourcePool",

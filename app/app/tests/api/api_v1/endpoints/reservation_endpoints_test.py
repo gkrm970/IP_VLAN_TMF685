@@ -18,12 +18,12 @@ class TestGetReservation:
 
     def test_get_reservation_status_code_is_200(self, client: TestClient) -> None:
         response = client.get(f"{settings.API_PREFIX}/reservation")
-        print(f'{response=}')
+        print(f"{response=}")
 
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_reservation_responds_with_list_of_reservation(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/reservation")
 
@@ -32,9 +32,8 @@ class TestGetReservation:
         for reservation in response.json():
             assert reservation["reservationState"] == "test_name"
 
-
     def test_get_reservations_responds_with_defined_query_fields(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/reservation", params={"fields": "name"}
@@ -44,7 +43,7 @@ class TestGetReservation:
             assert "category" not in reservation
 
     def test_get_reservation_pool_responds_with_mandatory_fields_always(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/reservation", params={"fields": "name"}
@@ -55,16 +54,15 @@ class TestGetReservation:
             assert "href" in reservation
             assert "relatedParty" in reservation
 
-
     def test_get_reservations_responds_with_x_total_count_header(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/reservation")
 
         assert "X-Total-Count" in response.headers
 
     def test_get_reservations_pool_responds_with_x_result_count_header(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/reservation")
 
@@ -78,7 +76,7 @@ class TestCreateReservation:
         monkeypatch.setattr(crud.reservation, "create", mocks.create)
 
     def test_create_reservation_pool_status_code_is_201(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         test_request_payload = {"type": "test_name"}
 
@@ -90,9 +88,7 @@ class TestCreateReservation:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json()["reservationState"] == "test_name"
 
-    def test_create_reservation_missing_name(
-            self, client: TestClient
-    ) -> None:
+    def test_create_reservation_missing_name(self, client: TestClient) -> None:
         test_request_payload = {"category1": "test_category"}
 
         response = client.post(
@@ -100,7 +96,6 @@ class TestCreateReservation:
             content=json.dumps(test_request_payload),
         )
         assert "category" not in response.json()
-
 
 
 class TestGetReservationByID:
@@ -117,14 +112,14 @@ class TestGetReservationByID:
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_reservation_by_id_status_code_is_404_when_not_found(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(f"{settings.API_PREFIX}/reservation/{str(uuid.uuid4())}")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_get_reservation_by_id_responds_with_single_resource(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/reservation/{mocks.EXISTING_RESERVATION.id}"
@@ -137,7 +132,7 @@ class TestGetReservationByID:
         assert reservation["reservationState"] == "test_name"
 
     def test_get_reservation_by_id_responds_with_defined_query_fields(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/reservation/{mocks.EXISTING_RESERVATION.id}",
@@ -149,7 +144,7 @@ class TestGetReservationByID:
         assert "type" not in reservation
 
     def test_get_reservation_responds_with_mandatory_fields_always(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.get(
             f"{settings.API_PREFIX}/reservation/{mocks.EXISTING_RESERVATION.id}",
@@ -157,12 +152,11 @@ class TestGetReservationByID:
         )
 
         reservation = response.json()
-        print(f'reservation:{reservation}')
+        print(f"reservation:{reservation}")
 
         assert "href" in reservation
         assert "relatedParty" in reservation
         assert "id" in reservation
-
 
 
 class TestUpdateReservationByID:
@@ -178,7 +172,7 @@ class TestUpdateReservationByID:
 
     @pytest.fixture(scope="function", autouse=True)
     def test_update_reservation_by_id_status_code_is_200(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         response = client.patch(
             f"{settings.API_PREFIX}/reservation/{mocks.EXISTING_RESERVATION.id}",
@@ -211,7 +205,9 @@ class TestDeleteReservationByID:
     def mock_reservation_crud_delete(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(crud.reservation, "delete", mocks.delete)
 
-    def test_delete_reservation_by_id_status_code_is_200(self, client: TestClient) -> None:
+    def test_delete_reservation_by_id_status_code_is_200(
+        self, client: TestClient
+    ) -> None:
         response = client.delete(
             f"{settings.API_PREFIX}/reservation/{mocks.EXISTING_RESERVATION.id}"
         )
@@ -219,8 +215,10 @@ class TestDeleteReservationByID:
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_delete_reservation_by_id_status_code_is_404_when_not_found(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
-        response = client.delete(f"{settings.API_PREFIX}/reservation/{str(uuid.uuid4())}")
+        response = client.delete(
+            f"{settings.API_PREFIX}/reservation/{str(uuid.uuid4())}"
+        )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND

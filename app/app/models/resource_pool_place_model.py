@@ -9,8 +9,9 @@ if TYPE_CHECKING:
 
 
 class ResourcePlace(BaseDbModel):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True
-                                    )
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, autoincrement=True
+    )
     name: Mapped[str] = mapped_column(String(255))
     type: Mapped[str] = mapped_column(String(255))
 
@@ -19,5 +20,4 @@ class ResourcePlace(BaseDbModel):
 
     @classmethod
     def from_schema(cls, schema: schemas.ResourcePlace) -> "ResourcePlace":
-
         return cls(**schema.model_dump())

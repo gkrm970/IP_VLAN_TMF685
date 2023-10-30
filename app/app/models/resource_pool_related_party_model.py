@@ -20,6 +20,7 @@ class ResourceRelatedParty(BaseDbModel):
     capacity: Mapped["Capacity"] = relationship(back_populates="related_party")
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourceRelatedParty) -> "ResourceRelatedParty":
-
+    def from_schema(
+        cls, schema: schemas.ResourceRelatedParty
+    ) -> "ResourceRelatedParty":
         return cls(**schema.model_dump())
