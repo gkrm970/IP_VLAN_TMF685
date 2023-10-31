@@ -30,7 +30,7 @@ class ResourcePoolManagement(BaseDbModel):
 
     @classmethod
     def from_schema(
-        cls, schema: schemas.ResourcePoolManagementCreate
+            cls, schema: schemas.ResourcePoolManagementCreate
     ) -> "ResourcePoolManagement":
         resource_pool_id = str(uuid.uuid4())
 
@@ -89,9 +89,10 @@ class ResourcePoolManagement(BaseDbModel):
                 model_relationship: Relationship = model_attr.property  # type: ignore
 
                 # The related model class is defined in the argument property of the relationship
-                related_model_class: Type[
-                    models.ResourcePoolManagement
-                ] = model_relationship.argument
+                related_model_class = model_relationship.argument
+                # related_model_class: Type[
+                #     models.ResourcePoolManagement
+                # ] = model_relationship.argument
 
                 if model_relationship.uselist:
                     update_model = [
@@ -99,6 +100,8 @@ class ResourcePoolManagement(BaseDbModel):
                         for schema in update_schema_value
                     ]
                 else:
-                    update_model = related_model_class.from_schema(update_schema_value)  # type: ignore
+                    update_model = related_model_class.from_schema(  # type: ignore
+                        update_schema_value
+                    )
 
                 setattr(self, field_name, update_model)

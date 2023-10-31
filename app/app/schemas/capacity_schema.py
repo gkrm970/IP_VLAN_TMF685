@@ -9,7 +9,7 @@ class ResourceCapacity(BaseModel):
         None,
         alias="capacityAmount",
         description="A value and units that define the CapacityAmount, such as "
-        "10000 ea, 10B Mb. ",
+                    "10000 ea, 10B Mb. ",
     )
     capacity_amount_from: str | None = Field(
         None, alias="capacityAmountFrom", description="Name of the resource collection"
@@ -18,13 +18,13 @@ class ResourceCapacity(BaseModel):
         None, alias="capacityAmountTo", description="Name of the resource collection"
     )
 
-    related_party: schemas.ResourceRelatedParty = Field(
-        ...,
-        alias="relatedParty",
-        description=" A related party defines party or party role linked to a specific entity.",
-    )
+    related_party: schemas.ResourceRelatedParty | None = Field(None,
+                                                               alias="relatedParty",
+                                                               description="A related party defines party or party "
+                                                                           "role linked to a specific entity.",
+                                                               )
     place: list[schemas.ResourcePlace] | None = Field(
         default_factory=list,
         description="A related party defines party or party role linked "
-        "to a specific entity.",
+                    "to a specific entity.",
     )
