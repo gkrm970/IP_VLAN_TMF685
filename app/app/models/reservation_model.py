@@ -61,7 +61,7 @@ class Reservation(BaseDbModel):
             valid_for=valid_for,
         )
 
-    def to_schema(self, include: set[str] | None = None) -> dict[str, Any]:
+    def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:
         data = schemas.Reservation.model_validate(self).model_dump(
             by_alias=True, include=include
         )

@@ -7,7 +7,7 @@ LogLevel: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 class APISettings(BaseSettings):
-    API_BASE_URL: str = "127.0.0.1:8000"
+    API_BASE_URL: AnyHttpUrl = "http://127.0.0.1:8000"
     API_NAME: str = "resourcePoolManagement"
     API_VERSION: str = "v1"
     API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
@@ -48,7 +48,7 @@ class LoggerSettings(BaseSettings):
     LOGGER_DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 
 
-class Settings(APISettings, DatabaseSettings, LoggerSettings):
+class Settings(APISettings, DatabaseSettings, LoggerSettings, ResourceInventoryProviderSettings):
     model_config = SettingsConfigDict(
         case_sensitive=True,
         env_file=".env",

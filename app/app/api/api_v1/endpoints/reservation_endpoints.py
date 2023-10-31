@@ -1,14 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, status, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, log, models, schemas
-from app.api import deps
+from app.api import deps, utils
 from app.api.responses import reservation_responses
-from app.api.utils.reservation_response import create_reservation_response
+
 
 router = APIRouter()
 
@@ -40,7 +40,7 @@ async def get_reservations(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder([resource.to_schema() for resource in resources]),
+        content=jsonable_encoder([resource.to_dict() for resource in resources]),
         headers={
             "X-Result-Count": str(no_of_reservations),
             "X-Total-Count": str(total),
@@ -56,7 +56,7 @@ async def get_reservations(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_reservation(
-        resource_create: Annotated[
+        reservation_create: Annotated[
             schemas.ReservationCreate, Body(description="The Reservation to be created")
         ],
         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
@@ -64,16 +64,15 @@ async def create_reservation(
     """
     This operation creates a Reservation entity.
     """
-    reservation_res = create_reservation_response(resource_create)
-    print("reservation_res", reservation_res)
+    reserved_resources = await utils.resource_reservation_manager.reserve(reservation_create)
 
-    reservation = await crud.reservation.create(db, resource_create)
+    reservation = await crud.reservation.create(db, reserved_resources)
 
     log.info(f"Created Reservation with ID: {reservation.id}")
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content=jsonable_encoder(reservation.to_schema()),
+        content=jsonable_encoder(reservation.to_dict()),
     )
 
 
@@ -98,7 +97,7 @@ async def get_reservation_by_id(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(resource.to_schema()),
+        content=jsonable_encoder(resource.to_dict()),
     )
 
 
@@ -147,5 +146,5 @@ async def update_reservation_by_id(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(update_reservation.to_schema()),
+        content=jsonable_encoder(update_reservation.to_dict()),
     )

@@ -51,10 +51,10 @@ async def create_resource_pool(
     "",
     summary="Retrieves a list of Resource Pools",
     responses=reservation_responses.get_responses,
-    response_model=list[schemas.ResourcePoolManagementCreate],
+    response_model=list[schemas.ResourcePoolManagement],
     status_code=status.HTTP_200_OK,
 )
-async def get_resource_pool(
+async def get_resource_pools(
     fields: Annotated[str, deps.FieldsQuery] = "",
     offset: Annotated[int, deps.OffsetQuery] = 0,
     limit: Annotated[int, deps.LimitQuery] = 100,

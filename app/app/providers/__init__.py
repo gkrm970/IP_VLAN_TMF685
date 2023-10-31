@@ -1,0 +1,1 @@
+from .resource_inventory_provider import resource_inventory_provider

@@ -1,6 +1,7 @@
+import httpx
 import requests
 
-from app import log
+from app import log, schemas
 
 BASE_URL = "http://127.0.0.1:8000"
 headers = {
@@ -23,20 +24,42 @@ def create_resource_item(request_body):
     return response
 
 
-def fetch_resource_pool_data(url):
-    response = requests.get(url)
+from typing import TypeAlias, Literal
+from asgi_correlation_id import correlation_id
+
+Method: TypeAlias = Literal["GET"]
+
+
+async def _send_request(method: Method, href: str) -> httpx.Response:
+    async with httpx.AsyncClient() as client:
+        await client.request(method, href, headers={"X-Request-ID": correlation_id.get() or ""})
+
+
+async def fetch_resource_pool_data(url):
+    response = httpx.AsyncClient()
     if response.status_code == 200:
         return response.json()
     else:
         raise Exception(f"Failed to fetch data from {url}. Status code: {response.status_code}")
 
 
-def process_reservation_item(item, used_vlans):
+def process_reservation_item(item: schemas.ReservationItem, used_vlans: set[int]):
+    item.reservation_resource_capacity.resource_pool.href
     resource_pool_href_url = item["reservation_resource_capacity"]["resource_pool"]["href"]
     resource_pool_id = item["reservation_resource_capacity"]["resource_pool"]["pool_id"]
     resource_pool_data = fetch_resource_pool_data(resource_pool_href_url)
     demand_amount = int(item["reservation_resource_capacity"]["capacity_demand_amount"])
     reserved_vlans = set()
+
+    # self._extract_capacity_amount()
+    # self._extract_related_party()
+    #
+    # reserved_vlans = self._reserve_tinaa_resources()
+    # self._reserve_netcracker_resources()
+    #
+    # self._create_logical_resources_in_inventory()
+    #
+    # self._assemble_resource_creation_request()
 
     for capacity_item in resource_pool_data.get("capacity", []):
         capacity_amount = capacity_item.get("capacityAmount", 0)
@@ -55,8 +78,11 @@ def process_reservation_item(item, used_vlans):
             # If IP Address generate Reservation endpoint for netcraker \
             # and trigger wait for Ip Addresses as a responses.
             pass
-    if len(reserved_vlans) == demand_amount:
-        request_body_639 = {
+
+    are_enough_vlans_available = len(reserved_vlans) == demand_amount
+
+    if are_enough_vlans_available:
+        create_resource_request = {
             "category": "UPF NFs",
             "description": "Ericsson UPF 25 IOT NF",
             "href": "https://api.develop.tinaa.teluslabs.net/plan/inventory/resourceInventoryManagement/v1"
@@ -76,7 +102,7 @@ def process_reservation_item(item, used_vlans):
             ],
             "resourceCharacteristic": [{"name": related_party_id, "value": vlan} for vlan in applied_capacity_amount]
         }
-        response = create_resource_item(request_body_639)
+        response = create_resource_item(create_resource_request)
 
         if response.status_code == 201:
             resource_pool_json = response.json()
@@ -133,8 +159,6 @@ def process_reservation_item(item, used_vlans):
                 "href": "/resourcePoolManagement/v1/resourcePool/fe18c37c-c92c-4e0b-9f3f-826c3928aa5a"
             }
 
-            # log.info("capacity_amount", capacity_amount)
-            # log.info("demand_amount", demand_amount)
             for resource_pool_item in resource_pool_patch_response["capacity"]:
                 resource_pool_item["capacityAmount"] = remaining_amount
             log.info("resource_pool_patch_response", resource_pool_patch_response)
@@ -148,7 +172,6 @@ def process_reservation_item(item, used_vlans):
                 characteristic = {
                     "8021qVLAN": vlan
                 }
-                # characteristic_list.append(characteristic)
 
                 applied_capacity_amount["resource"].append({
                     "@referredType": "VLAN",
@@ -170,12 +193,8 @@ def process_reservation_item(item, used_vlans):
         log.info("Insufficient available VLANs.")
 
 
-def create_reservation_response(reservation_data):
-    reservation_data_json = reservation_data.dict()
-    print(reservation_data_json)
-
-    for item in reservation_data_json["reservation_item"]:
+def create_reservation_response(reservation_create: schemas.ReservationCreate):
+    for reservation_item in reservation_create.reservation_item:
         used_vlans = set()
-        process_reservation_item(item, used_vlans)
-    return reservation_data_json
-
+        process_reservation_item(reservation_item, used_vlans)
+    return reservation_create
