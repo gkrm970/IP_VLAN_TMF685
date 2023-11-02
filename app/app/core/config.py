@@ -13,6 +13,13 @@ class APISettings(BaseSettings):
     API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
 
 
+class ResourceInventoryProviderSettings(BaseSettings):
+    RI_PROVIDER_BASE_URL: str = "http://127.0.0.1:8000"
+    API_NAME: str = "plan/inventory/resourceInventoryManagement"
+    API_VERSION: str = "v1"
+    RI_PROVIDER_API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
+
+
 class DatabaseSettings(BaseSettings):
     DB_USERNAME: str
     DB_PASSWORD: str
@@ -23,7 +30,7 @@ class DatabaseSettings(BaseSettings):
 
     @field_validator("DB_SQLALCHEMY_URI", mode="before")
     def assemble_db_sqlalchemy_uri(
-        cls, field: str | None, field_info: ValidationInfo  # noqa: N805
+            cls, field: str | None, field_info: ValidationInfo  # noqa: N805
     ) -> str:
         if isinstance(field, str):
             return field

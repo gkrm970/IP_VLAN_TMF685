@@ -65,8 +65,9 @@ async def create_reservation(
     This operation creates a Reservation entity.
     """
     reserved_resources = await utils.resource_reservation_manager.reserve(reservation_create)
+    print("reserved_resources", reserved_resources)
 
-    reservation = await crud.reservation.create(db, reserved_resources)
+    reservation = await crud.reservation.create(db, reservation_create)
 
     log.info(f"Created Reservation with ID: {reservation.id}")
 

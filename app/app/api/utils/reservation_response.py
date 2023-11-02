@@ -43,8 +43,9 @@ async def fetch_resource_pool_data(url):
         raise Exception(f"Failed to fetch data from {url}. Status code: {response.status_code}")
 
 
-def process_reservation_item(item: schemas.ReservationItem, used_vlans: set[int]):
+def process_reservation_item(item, used_vlans: set[int]):
     item.reservation_resource_capacity.resource_pool.href
+    href = item.reservation_resource_capacity.resource_pool.href
     resource_pool_href_url = item["reservation_resource_capacity"]["resource_pool"]["href"]
     resource_pool_id = item["reservation_resource_capacity"]["resource_pool"]["pool_id"]
     resource_pool_data = fetch_resource_pool_data(resource_pool_href_url)
