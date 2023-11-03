@@ -15,14 +15,12 @@ class ResourceInventoryProvider:
 
     async def _send_request(self, method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
         try:
-            json_data = json.dumps(request_body)
-            print("json_data", json_data)
-            log.info(f"json_data_1111: {request_body} {type(request_body)}")
+
             async with httpx.AsyncClient() as client:
                 response = await client.request(method, url, json=request_body)
-                response.raise_for_status()
-                print("response_639", response)
-                return response
+                response_639 = response.json()
+
+                return response_639
 
         except httpx.HTTPStatusError:
             pass
@@ -62,6 +60,7 @@ class ResourceInventoryProvider:
         # response = await self._send_request("POST", urljoin(self.base_url, self.api_prefix), create_resource_request)
         tmf_639_url = "https://48e8744b-8c35-47d1-bb3d-7e8a35dea502.mock.pstmn.io"
         response = await self._send_request("POST", tmf_639_url, create_resource_request)
+
         return response
 
 
