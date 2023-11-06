@@ -7,15 +7,16 @@ from app import schemas
 _NAME_DESCRIPTION = "A string used to give a name to the resource"
 
 
-class ResourcePoolRelatedParty(BaseModel):
+class ResourcePoolResourceSpecification(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    party_id: str = Field(
+    type: str | None = Field(
+        None,
+        alias="@type",
+        description=_NAME_DESCRIPTION)
+    href: str = Field(
         ...,
         description=_NAME_DESCRIPTION)
-    name: str = Field(
-        ...,
-        description=_NAME_DESCRIPTION)
-    role: str = Field(
+    resource_specification_id: str = Field(
         ...,
         description=_NAME_DESCRIPTION)

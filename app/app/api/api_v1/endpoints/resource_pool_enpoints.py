@@ -17,12 +17,12 @@ router = APIRouter()
     "",
     summary="Creates a Resource Pool",
     responses=reservation_responses.create_responses,
-    response_model=schemas.ResourcePoolManagementCreate,
+    response_model=schemas.ResourcePoolCreate,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_resource_pool(
     resource_create: Annotated[
-        schemas.ResourcePoolManagementCreate,
+        schemas.ResourcePoolCreate,
         Body(description="The Resource pool to be created"),
     ],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
@@ -51,7 +51,7 @@ async def create_resource_pool(
     "",
     summary="Retrieves a list of Resource Pools",
     responses=reservation_responses.get_responses,
-    response_model=list[schemas.ResourcePoolManagement],
+    response_model=list[schemas.ResourcePool],
     status_code=status.HTTP_200_OK,
 )
 async def get_resource_pools(
@@ -86,13 +86,13 @@ async def get_resource_pools(
     "/{id}",
     summary="Retrieves a Resource Pool by ID",
     responses=reservation_responses.get_responses,
-    response_model=schemas.ResourcePoolManagementCreate,
+    response_model=schemas.ResourcePoolCreate,
     status_code=status.HTTP_200_OK,
 )
 async def get_resource_pool_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
     *,
-    resource_pool: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
+    resource_pool: Annotated[models.ResourcePool, Depends(deps.get_resource)],
 ) -> JSONResponse:
     """
     This operation retrieves a Resource Pool by ID.
@@ -116,7 +116,7 @@ async def delete_resource_pool_by_id(
     id: str,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    resource: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
+    resource: Annotated[models.ResourcePool, Depends(deps.get_resource)],
 ) -> Response:
     """
     This operation deletes a Resource Pool by ID.
@@ -131,13 +131,13 @@ async def delete_resource_pool_by_id(
     "/{id}",
     summary="Updates partially a Resource Pool by ID",
     responses=reservation_responses.update_responses,
-    response_model=schemas.ResourcePoolManagementUpdate,
+    response_model=schemas.ResourcePoolUpdate,
 )
 async def update_resource_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    resource: Annotated[models.ResourcePoolManagement, Depends(deps.get_resource)],
+    resource: Annotated[models.ResourcePool, Depends(deps.get_resource)],
     resource_update: Annotated[
-        schemas.ResourcePoolManagementUpdate,
+        schemas.ResourcePoolUpdate,
         Body(description="The Resource Pool to be updated"),
     ],
 ) -> JSONResponse:

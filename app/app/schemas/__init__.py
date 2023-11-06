@@ -1,11 +1,8 @@
-from .place_schema import ResourcePlace  # noqa F401
-from .resource_pool_related_party_schema import ResourceRelatedParty  # noqa F401
-from .capacity_schema import ResourceCapacity  # noqa F401
-from .resource_pool_management_schema import (
-    ResourcePoolManagement,
-    ResourcePoolManagementCreate,
-    ResourcePoolManagementUpdate,
-)
+from .resource_pool_related_party_schema import ResourcePoolRelatedParty
+from .resource_pool_place_schema import ResourcePoolPlace
+from .resource_pool_applicable_time_period_schema import ResourcePoolApplicableTimePeriod
+from .resource_pool_capacity_schema import ResourcePoolCapacity
+from .resource_pool_schema import ResourcePool, ResourcePoolCreate, ResourcePoolUpdate
 from .reservation_applicable_time_period_schema import (
     ReservationApplicableTimePeriod,
 )  # noqa F401

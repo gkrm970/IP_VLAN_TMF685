@@ -19,19 +19,18 @@ if TYPE_CHECKING:
     from app.models import ResourcePoolCapacity
 
 
-class ResourcePoolRelatedParty(BaseDbModel):
+class ResourcePoolResourceSpecification(BaseDbModel):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
 
-    party_id: Mapped[str] = mapped_column(String(255))
-    name: Mapped[str] = mapped_column(String(255))
-    role: Mapped[str] = mapped_column(String(255))
+    type: Mapped[str] = mapped_column(String(255))
+    href: Mapped[str] = mapped_column(String(255))
+    resource_specification_id: Mapped[str] = mapped_column(String(255))
 
     resource_pool_capacity_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_capacity.id"))
-    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="related_party")
+    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="resource_specification")
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolRelatedParty) -> "ResourcePoolRelatedParty":
-        print("related_party", schema)
+    def from_schema(cls, schema: schemas.ResourcePoolResourceSpecification) -> "ResourcePoolResourceSpecification":
         # schema.id = schema.id or str(uuid.uuid4())
 
         # The base_type, schemaLocation and type fields are not in the OpenAPI spec, but
