@@ -21,8 +21,13 @@ class Reservation(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     href: Mapped[str] = mapped_column(String(255))
     type: Mapped[str | None] = mapped_column(String(255))
-    # reservation_state: Mapped[str] = mapped_column(String(255))
     related_parties: Mapped[models.ReservationRelatedParty] = relationship(
+        back_populates="reservation",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
+    )
+    requested_period: Mapped[models.ReservationRequestedPeriod] = relationship(
         back_populates="reservation",
         lazy="selectin",
         cascade=_ALL_DELETE_ORPHAN,
@@ -30,12 +35,6 @@ class Reservation(BaseDbModel):
     )
     reservation_item: Mapped[list[models.ReservationItem]] = relationship(
         back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
-    )
-    valid_for: Mapped[models.ValidFor] = relationship(
-        back_populates="reservation",
-        lazy="selectin",
-        cascade=_ALL_DELETE_ORPHAN,
-        uselist=False,
     )
 
     @classmethod
@@ -45,20 +44,21 @@ class Reservation(BaseDbModel):
         related_parties = models.ReservationRelatedParty.from_schema(
             schema.related_parties
         )
+        requested_period = models.ReservationRequestedPeriod.from_schema(schema.requested_period)
 
         reservation_item_list = [
             models.ReservationItem.from_schema(reservation_item)
             for reservation_item in schema.reservation_item
         ]
-        valid_for = models.ValidFor.from_schema(schema.valid_for)
+        print("reservation_item_list", reservation_item_list)
 
         return cls(
             id=reservation_id,
             href=f"resource/{reservation_id}",
             type=schema.type,
             related_parties=related_parties,
-            reservation_item=reservation_item_list,
-            valid_for=valid_for,
+            requested_period=requested_period,
+            reservation_item=reservation_item_list
         )
 
     def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:

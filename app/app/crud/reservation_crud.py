@@ -15,6 +15,7 @@ class ReservationCRUD:
                 models.ReservationResourcePool.id == id
             )
         )
+        print("result", result)
         return result.scalars().first()
 
     @staticmethod
@@ -34,7 +35,7 @@ class ReservationCRUD:
     ) -> models.Reservation:
         resource_pool_id = obj_in.reservation_item[
             0
-        ].reservation_resource_capacity.resource_pool.id
+        ].reservation_resource_capacity.resource_pool.pool_id
         log.info(f"{resource_pool_id=}")
 
         result = await db.execute(
@@ -42,14 +43,15 @@ class ReservationCRUD:
                 models.ResourcePool.id == resource_pool_id
             )
         )
-        existing_resource_pool_id = result.scalars().first()
+        existing_resource_pool_id_11 = result.scalars().first()
 
-        log.info(f"{existing_resource_pool_id=}")
-        if existing_resource_pool_id is None:
+        log.info(f"{existing_resource_pool_id_11=}")
+        if existing_resource_pool_id_11 is None:
             raise NotFoundError(f"resourcePool with id {resource_pool_id} not found")
         await ReservationCRUD.validate_resource_pool_id(db, resource_pool_id)
 
         db_obj = models.Reservation.from_schema(obj_in)
+        print("db_obj", db_obj)
 
         db.add(db_obj)
         await db.commit()

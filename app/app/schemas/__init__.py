@@ -2,6 +2,7 @@ from .resource_pool_resource_specification_schema import ResourcePoolResourceSpe
 from .resource_pool_related_party_schema import ResourcePoolRelatedParty
 from .resource_pool_place_schema import ResourcePoolPlace
 from .resource_pool_applicable_time_period_schema import ResourcePoolApplicableTimePeriod
+from .reservation_external_party_characteristics_schema import ExternalPartyCharacteristics
 from .resource_pool_capacity_schema import ResourcePoolCapacity
 from .resource_pool_schema import ResourcePool, ResourcePoolCreate, ResourcePoolUpdate
 from .reservation_applicable_time_period_schema import (
@@ -27,7 +28,7 @@ from .reservation_item_schema import ReservationItem  # noqa F401
 # from .product_offering_ref_schema import ProductOfferingRef
 
 from .reservation_related_party_schema import RelatedParty
-from .valid_for_schema import ValidFor
+from .reservation_requested_period_schema import ReservationRequestedPeriod
 
 from .reservation_schemas import (
     ReservationBase,

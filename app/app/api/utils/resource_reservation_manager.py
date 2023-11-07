@@ -16,6 +16,9 @@ class ResourceReservationManager:
                 if unique_vlan is not None:
                     reserved_vlans.add(unique_vlan)
             return reserved_vlans
+        else:
+            print("Not enough resources available to reserve VLANs.")
+            raise Exception("Not enough resources available to reserve VLANs.")
 
     async def _reserve_netcracker_resources(self):
         pass
@@ -27,11 +30,14 @@ class ResourceReservationManager:
 
         for reservation_item in reservation_create.reservation_item:
             resource_pool_href = reservation_item.reservation_resource_capacity.resource_pool.href
+            print("resource_pool_href", resource_pool_href)
             resource_pool_id = reservation_item.reservation_resource_capacity.resource_pool.pool_id
             resource_pool_response = await self.resource_pool_provider.get_resource(resource_pool_href)
+            print("resource_pool_response", resource_pool_response)
             capacity_list = resource_pool_response.get("capacity")
 
             for capacity in capacity_list:
+                resource_specification_list = capacity.get("resourceSpecification")
                 capacity_amount = await self.resource_pool_provider.extract_capacity_amount(capacity)
                 log.info("capacity_amount_data", capacity_amount, type(capacity_amount))
                 related_party_id = await self.resource_pool_provider.extract_related_party(capacity)
@@ -41,12 +47,14 @@ class ResourceReservationManager:
                     demand_amount = int(reservation_item.reservation_resource_capacity.capacity_demand_amount)
                     reserved_vlans = await self._reserve_tinaa_resources(demand_amount, int(capacity_amount), used_vlans)
                     print("reserved_vlans", reserved_vlans)
-                    are_enough_vlans_available = len(reserved_vlans) == demand_amount
-                    if are_enough_vlans_available:
-                        resource_inventory_response = \
-                            await self.resource_inventory_provider.create_resource(related_party_id, reserved_vlans)
-                        resource_inventory_href = resource_inventory_response.get("href")
-                        resource_inventory_id = resource_inventory_response.get("id")
+                    # are_enough_vlans_available = len(reserved_vlans) == demand_amount
+                    # if reserved_vlans:
+                    resource_inventory_response = \
+                        await self.resource_inventory_provider.create_resource(related_party_id, reserved_vlans,
+                                                                               reservation_item,
+                                                                               resource_specification_list)
+                    resource_inventory_href = resource_inventory_response.get("href")
+                    resource_inventory_id = resource_inventory_response.get("id")
                 elif related_party_id == "netcracker":
                     await self._reserve_netcracker_resources()
                 reservation_response = \

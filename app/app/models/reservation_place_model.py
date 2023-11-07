@@ -25,5 +25,8 @@ class ReservationPlace(BaseDbModel):
 
     @classmethod
     def from_schema(cls, schema: schemas.Place) -> "ReservationPlace":
-        schema.id = schema.id or str(uuid.uuid4())
-        return cls(**schema.model_dump())
+        return cls(
+            id=str(uuid.uuid4()),
+            name=schema.name,
+            type=schema.type
+        )

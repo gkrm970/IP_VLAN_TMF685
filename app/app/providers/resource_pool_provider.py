@@ -42,6 +42,7 @@ class ResourcePoolProvider:
 
     async def get_resource(self, resource_pool_href: str) -> dict[str, Any]:
         response = await self._send_request("GET", resource_pool_href)
+        # print("resource_pool_response", response.json())
         # response = await self._send_request("GET", urljoin(self.base_url, resource_pool_href))
         return response.json()
 

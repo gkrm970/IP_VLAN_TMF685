@@ -27,5 +27,8 @@ class ReservationResourcePool(BaseDbModel):
     def from_schema(
         cls, schema: schemas.ReservationResourcePool
     ) -> "ReservationResourcePool":
-        schema.id = schema.id or str(uuid.uuid4())
-        return cls(**schema.model_dump())
+        return cls(
+            id=str(uuid.uuid4()),
+            pool_id=schema.pool_id,
+            href=schema.href
+        )

@@ -9,12 +9,13 @@ from .reservation_applicable_time_period_model import (
 )  # noqa F401
 from .reservation_place_model import ReservationPlace  # noqa F401
 from .reservation_resource_pool_model import ReservationResourcePool  # noqa F401
+from .reservation_external_party_characteristics_model import ExternalPartyCharacteristics
 from .reservation_resource_capacity_model import (
     ReservationResourceCapacity,
 )  # noqa F401
 from .reservation_item_model import ReservationItem  # noqa F401
 from .reservation_related_party_model import ReservationRelatedParty
-from .valid_for_model import ValidFor
+from .reservation_requested_period_model import ReservationRequestedPeriod
 
 from .reservation_model import Reservation  # isort: split
 

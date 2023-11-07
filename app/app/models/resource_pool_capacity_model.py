@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class ResourcePoolCapacity(BaseDbModel):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
 
     applicable_time_period: Mapped[models.ResourcePoolApplicableTimePeriod] = relationship(
         back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
@@ -61,8 +61,7 @@ class ResourcePoolCapacity(BaseDbModel):
         # resource_pool_capacity_id = str(uuid.uuid4())
 
         return cls(
-            # id=resource_pool_capacity_id,
-            # href=f"resource/{resource_pool_capacity_id}",
+            id=str(uuid.uuid4()),
             capacity_amount=schema.capacity_amount,
             capacity_amount_from=schema.capacity_amount_from,
             capacity_amount_remaining=schema.capacity_amount_remaining,

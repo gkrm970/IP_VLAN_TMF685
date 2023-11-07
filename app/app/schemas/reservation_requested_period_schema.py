@@ -4,15 +4,11 @@ import datetime
 _NAME_DESCRIPTION = "A string used to give a name to the reservation"
 
 
-class ValidFor(BaseModel):
+class ReservationRequestedPeriod(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: str | None = Field(
+    from_: datetime.datetime | None = Field(
         None,
-        description="Unique identifier of the Valid_for",
-    )
-    start_date: datetime.datetime | None = Field(
-        None,
-        alias="startDate",
+        alias="from",
         description="A date time. The date till the reservation is operating",
     )

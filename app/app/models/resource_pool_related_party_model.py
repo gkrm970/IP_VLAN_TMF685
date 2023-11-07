@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class ResourcePoolRelatedParty(BaseDbModel):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
 
     party_id: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(255))
@@ -31,12 +31,9 @@ class ResourcePoolRelatedParty(BaseDbModel):
 
     @classmethod
     def from_schema(cls, schema: schemas.ResourcePoolRelatedParty) -> "ResourcePoolRelatedParty":
-        print("related_party", schema)
-        # schema.id = schema.id or str(uuid.uuid4())
-
-        # The base_type, schemaLocation and type fields are not in the OpenAPI spec, but
-        # they are part of the UML diagram for this model, so we include them here even
-        # though they are always going to be NULL in the DB
         return cls(
-            **schema.model_dump()
+            id=str(uuid.uuid4()),
+            party_id=schema.party_id,
+            name=schema.name,
+            role=schema.role
         )
