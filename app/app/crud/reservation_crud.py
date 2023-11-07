@@ -38,8 +38,8 @@ class ReservationCRUD:
         log.info(f"{resource_pool_id=}")
 
         result = await db.execute(
-            select(models.ResourcePoolManagement).filter(
-                models.ResourcePoolManagement.id == resource_pool_id
+            select(models.ResourcePool).filter(
+                models.ResourcePool.id == resource_pool_id
             )
         )
         existing_resource_pool_id = result.scalars().first()

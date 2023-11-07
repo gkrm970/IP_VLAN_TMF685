@@ -7,9 +7,9 @@ from app import models, schemas
 class ResourcePoolCRUD:
     @staticmethod
     async def create(
-        db: AsyncSession, obj_in: schemas.ResourcePoolManagementCreate
-    ) -> models.ResourcePoolManagement:
-        db_obj = models.ResourcePoolManagement.from_schema(obj_in)
+        db: AsyncSession, obj_in: schemas.ResourcePoolCreate
+    ) -> models.ResourcePool:
+        db_obj = models.ResourcePool.from_schema(obj_in)
 
         db.add(db_obj)
         await db.commit()
@@ -18,10 +18,10 @@ class ResourcePoolCRUD:
         return db_obj
 
     @staticmethod
-    async def get(db: AsyncSession, id: str) -> models.ResourcePoolManagement | None:
+    async def get(db: AsyncSession, id: str) -> models.ResourcePool | None:
         result = await db.execute(
-            select(models.ResourcePoolManagement).filter(
-                models.ResourcePoolManagement.id == id
+            select(models.ResourcePool).filter(
+                models.ResourcePool.id == id
             )
         )
 
@@ -32,12 +32,12 @@ class ResourcePoolCRUD:
         db: AsyncSession,
         limit: int = 100,
         offset: int = 0,
-    ) -> tuple[list[models.ResourcePoolManagement], int]:
+    ) -> tuple[list[models.ResourcePool], int]:
         result = await db.execute(
-            select(models.ResourcePoolManagement).limit(limit).offset(offset)
+            select(models.ResourcePool).limit(limit).offset(offset)
         )
         total = await db.execute(
-            select(func.count()).select_from(models.ResourcePoolManagement)
+            select(func.count()).select_from(models.ResourcePool)
         )
 
         return list(result.scalars().all()), total.scalar() or 0
@@ -45,9 +45,9 @@ class ResourcePoolCRUD:
     @staticmethod
     async def update(
         db: AsyncSession,
-        db_obj: models.ResourcePoolManagement,
-        update_schema: schemas.ResourcePoolManagementUpdate,
-    ) -> models.ResourcePoolManagement:
+        db_obj: models.ResourcePool,
+        update_schema: schemas.ResourcePoolUpdate,
+    ) -> models.ResourcePool:
         db_obj.update(update_schema)
 
         db.add(db_obj)
@@ -57,7 +57,7 @@ class ResourcePoolCRUD:
         return db_obj
 
     @staticmethod
-    async def delete(db: AsyncSession, db_obj: models.ResourcePoolManagement) -> None:
+    async def delete(db: AsyncSession, db_obj: models.ResourcePool) -> None:
         await db.delete(db_obj)
         await db.commit()
 

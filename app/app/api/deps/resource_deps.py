@@ -11,7 +11,7 @@ from app.core.exceptions import NotFoundError
 async def get_resource(
     id: Annotated[str, Path(description="Identifier of the Resource pool")],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-) -> models.ResourcePoolManagement:
+) -> models.ResourcePool:
     resource = await crud.resource_pool.get(db, id)
 
     if resource is None:

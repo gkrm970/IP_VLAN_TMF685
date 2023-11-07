@@ -1,3 +1,4 @@
+from .resource_pool_resource_specification_schema import ResourcePoolResourceSpecification
 from .resource_pool_related_party_schema import ResourcePoolRelatedParty
 from .resource_pool_place_schema import ResourcePoolPlace
 from .resource_pool_applicable_time_period_schema import ResourcePoolApplicableTimePeriod

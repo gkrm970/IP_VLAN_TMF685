@@ -17,7 +17,7 @@ class ResourcePoolProvider:
         capacity_amount = capacity.get("capacityAmount")
         return capacity_amount
 
-    async def extract_related_party(self, capacity: schemas.ResourcePoolManagement):
+    async def extract_related_party(self, capacity: schemas.ResourcePool):
         related_party_id = capacity.get("relatedParty").get("id")
         return related_party_id
 
@@ -27,17 +27,6 @@ class ResourcePoolProvider:
                 used_vlans.add(vlan)
                 return vlan
         return None
-
-    async def _reserve_tinaa_resources(self, demand_amount: int, capacity_amount: int, used_vlans: set[int]):
-        reserved_vlans = set()
-        if demand_amount <= capacity_amount:
-            available_capacity_amount = capacity_amount - demand_amount
-            schemas.ResourcePoolManagementUpdate.resource_capacity.capacity_amount = available_capacity_amount
-            for _ in range(demand_amount):
-                unique_vlan = self.generate_unique_vlan(capacity_amount, used_vlans)
-                if unique_vlan is not None:
-                    reserved_vlans.add(unique_vlan)
-            return reserved_vlans
 
     async def _send_request(self, method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
         try:

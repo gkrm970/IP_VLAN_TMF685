@@ -3,19 +3,19 @@ from app.core.exceptions import BadRequestError
 
 _resource_field_alias_name_mapping: dict[str, str] = {
     field_info.alias or field_name: field_name
-    for field_name, field_info in schemas.ResourcePoolManagementCreate.model_fields.items()
+    for field_name, field_info in schemas.ResourcePool.model_fields.items()
 }
 
 
 _resource_schema_field_aliases: set[str] = {
     field_info.alias or field_name
-    for field_name, field_info in schemas.ResourcePoolManagementCreate.model_fields.items()
+    for field_name, field_info in schemas.ResourcePool.model_fields.items()
 }
 
 
 _mandatory_resource_schema_field_aliases: set[str] = {
     field_info.alias or field_name
-    for field_name, field_info in schemas.ResourcePoolManagementCreate.model_fields.items()
+    for field_name, field_info in schemas.ResourcePoolCreate.model_fields.items()
     if field_info.is_required()
 }
 
