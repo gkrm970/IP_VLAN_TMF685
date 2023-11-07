@@ -43,14 +43,6 @@ class ResourceInventoryProvider:
                                                               applied_capacity_amount], "resourceSpecification": [],
                                    "resourceVersion": "0.0.1", "place": []}
 
-        # "resourceSpecification": {
-        #     "href": "https://api.develop.tinaa.teluslabs.net/plan/inventory/resourceCatalogManagement/v1"
-        #             "/resourceSpecification"
-        #             "/def69b28-f380-43a2-9064-18585ffbc613",
-        #     "id": "def69b28-f380-43a2-9064-18585ffbc613",
-        #     "version": "0.0.1"
-        # },
-
         for place_info in reservation_place:
             create_resource_request["place"].append({
                 "name": place_info.name,
@@ -58,14 +50,11 @@ class ResourceInventoryProvider:
             })
 
         for resource_specification_info in resource_specification_list:
-            print("resource_specification_info", resource_specification_info)
             create_resource_request["resourceSpecification"].append({
                 "href": resource_specification_info.get("href"),
                 "id": resource_specification_info.get("id"),
                 "version": "0.0.1"
             })
-
-        print("create_resource_request_1", create_resource_request)
 
         # response = await self._send_request("POST", urljoin(self.base_url, self.api_prefix), create_resource_request)
         tmf_639_url = "https://48e8744b-8c35-47d1-bb3d-7e8a35dea502.mock.pstmn.io"

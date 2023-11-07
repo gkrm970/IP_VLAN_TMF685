@@ -3,9 +3,13 @@ from urllib.parse import urljoin
 
 import httpx
 
-from app import schemas, models, log
+from app import schemas, log
 from app.core.config import settings
-from app.crud import reservation
+
+
+async def final_reservation_response(reservation_response):
+    final_response = []
+    return final_response.append(reservation_response)
 
 
 class ResourcePoolProvider:
@@ -51,8 +55,8 @@ class ResourcePoolProvider:
                                                    resource_inventory_id) -> None | dict | Any:
         log.info(f"in reservation capacity_amount: {reservation_item}")
         log.info(f"type_of reservation_item {type(reservation_item)}")
-        # demand_amount = reservation_item.reservation_resource_capacity.capacity_demand_amount
-        demand_amount = "10"
+        demand_amount = reservation_item.reservation_resource_capacity.capacity_demand_amount
+        print("demand_amount_var", demand_amount)
 
         applied_capacity_amount = {
             "appliedCapacityAmount": str(demand_amount),
