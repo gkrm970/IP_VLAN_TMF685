@@ -59,7 +59,7 @@ class ResourceInventoryProvider:
         # response = await self._send_request("POST", urljoin(self.base_url, self.api_prefix), create_resource_request)
         tmf_639_url = "https://48e8744b-8c35-47d1-bb3d-7e8a35dea502.mock.pstmn.io"
         response = await self._send_request("POST", tmf_639_url, create_resource_request)
-
+        print("639_response", response)
         return response
 
 

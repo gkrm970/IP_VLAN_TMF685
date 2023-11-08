@@ -27,6 +27,7 @@ class ResourceReservationManager:
 
     async def reserve(self, reservation_create: schemas.ReservationCreate):
         used_vlans = set()
+        reservation_responses = []
         for reservation_item in reservation_create.reservation_item:
             resource_pool_href = reservation_item.reservation_resource_capacity.resource_pool.href
             resource_pool_id = reservation_item.reservation_resource_capacity.resource_pool.pool_id
@@ -47,24 +48,27 @@ class ResourceReservationManager:
                                                                                reservation_item,
                                                                                resource_specification_list)
                     resource_inventory_href = resource_inventory_response.get("href")
+                    print("resource_inventory_href", resource_inventory_href)
                     resource_inventory_id = resource_inventory_response.get("id")
                     reservation_res = \
-                        self.resource_pool_provider.create_resource_reservation_response(
+                        await self.resource_pool_provider.create_resource_reservation_response(
                             reservation_create.reservation_item, used_vlans,
                             resource_inventory_href,
                             resource_inventory_id)
-                    # res = await final_reservation_response(reservation_res)
+                    reservation_responses.append(reservation_res)
 
                 elif related_party_id == "netcracker":
                     await self._reserve_netcracker_resources()
                 # reservation_response = \
-                #     self.resource_pool_provider.create_resource_reservation_response(
+                #     await self.resource_pool_provider.create_resource_reservation_response(
                 #         reservation_create.reservation_item, used_vlans,
                 #         resource_inventory_href,
                 #         resource_inventory_id)
-                # # log.info(f"reservation_response: {reservation_response}")
+                # reservation_responses.append(reservation_response)
+                # log.info(f"reservation_response: {reservation_response}")
                 # res = await final_reservation_response(reservation_response)
-                return await reservation_res
+            print("reservation_responses_1", reservation_responses)
+            return reservation_responses
 
 
 resource_reservation_manager = ResourceReservationManager()

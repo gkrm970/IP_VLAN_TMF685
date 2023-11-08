@@ -1,3 +1,4 @@
+import json
 from typing import Any, Optional
 from urllib.parse import urljoin
 
@@ -54,8 +55,28 @@ class ResourcePoolProvider:
                                                    resource_inventory_href,
                                                    resource_inventory_id) -> None | dict | Any:
         log.info(f"in reservation capacity_amount: {reservation_item}")
+        # Import the necessary classes and modules
+        from datetime import datetime
+
+        # Define a function to convert objects to dictionaries
+        def convert_to_dict(obj):
+            if isinstance(obj, list):
+                return [convert_to_dict(item) for item in obj]
+            elif hasattr(obj, '__dict__'):
+                return {key: convert_to_dict(value) for key, value in obj.__dict__.items() if not callable(value)}
+            elif isinstance(obj, datetime):
+                return obj.isoformat()
+            else:
+                return obj
+
+        # Convert the data to a dictionary
+        converted_data = convert_to_dict(reservation_item)
+
+        # Print the converted data
+        print("converted_data", converted_data)
+
         log.info(f"type_of reservation_item {type(reservation_item)}")
-        demand_amount = reservation_item.reservation_resource_capacity.capacity_demand_amount
+        demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
         print("demand_amount_var", demand_amount)
 
         applied_capacity_amount = {
@@ -73,12 +94,21 @@ class ResourcePoolProvider:
                 "resource_id": resource_inventory_id,
                 "characteristic": characteristic
             })
-        applied_capacity_amount["appliedCapacityAmount"] = demand_amount
 
-        final_res = reservation_item.append(applied_capacity_amount)
-        print("final_res", final_res)
+        converted_data.append(applied_capacity_amount)
 
-        return final_res
+        print("reservation_item_1", converted_data)
+        return reservation_item
+
+        # response_data = [applied_capacity_amount]
+        #
+        # response_json = json.dumps(response_data, ensure_ascii=False)
+        # # applied_capacity_amount["appliedCapacityAmount"] = demand_amount
+        # #
+        # # reservation_item.append(applied_capacity_amount)
+        # print("reservation_item_1", response_json)
+        #
+        # return response_json
 
 
 resource_pool_provider = ResourcePoolProvider()
