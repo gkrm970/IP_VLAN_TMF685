@@ -20,10 +20,9 @@ class ReservationRelatedParty(BaseDbModel):
     reservation: Mapped["Reservation"] = relationship(back_populates="related_parties")
 
     @classmethod
-    def from_schema(
-        cls, schema: schemas.RelatedParty | None
-    ) -> Optional["ReservationRelatedParty"]:
-        # schema.id = schema.id or str(uuid.uuid4())
-        if schema is None:
-            return None
-        return cls(id=str(uuid.uuid4()), name=schema.name, role=schema.role)
+    def from_schema(cls, schema: schemas.RelatedParty) -> "ReservationRelatedParty":
+        return cls(
+            id=str(uuid.uuid4()),
+            name=schema.name,
+            role=schema.role
+        )

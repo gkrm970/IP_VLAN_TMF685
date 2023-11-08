@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Any, Optional
 from urllib.parse import urljoin
 
@@ -55,30 +56,11 @@ class ResourcePoolProvider:
                                                    resource_inventory_href,
                                                    resource_inventory_id) -> None | dict | Any:
         log.info(f"in reservation capacity_amount: {reservation_item}")
-        # Import the necessary classes and modules
-        from datetime import datetime
-
-        # Define a function to convert objects to dictionaries
-        def convert_to_dict(obj):
-            if isinstance(obj, list):
-                return [convert_to_dict(item) for item in obj]
-            elif hasattr(obj, '__dict__'):
-                return {key: convert_to_dict(value) for key, value in obj.__dict__.items() if not callable(value)}
-            elif isinstance(obj, datetime):
-                return obj.isoformat()
-            else:
-                return obj
-
-        # Convert the data to a dictionary
-        converted_data = convert_to_dict(reservation_item)
-
-        # Print the converted data
-        print("converted_data", converted_data)
-
         log.info(f"type_of reservation_item {type(reservation_item)}")
         demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
         print("demand_amount_var", demand_amount)
-
+        # data = reservation_item.model_dump()
+        # print("data", data)
         applied_capacity_amount = {
             "appliedCapacityAmount": str(demand_amount),
             "resource": []
@@ -95,10 +77,79 @@ class ResourcePoolProvider:
                 "characteristic": characteristic
             })
 
-        converted_data.append(applied_capacity_amount)
+        data_list = []
+        for item in reservation_item:
+            item_data = {
+                "reservationItem": [
+                    {
+                        "appliedCapacityAmount": applied_capacity_amount,
+                        "quantity": item.quantity,
+                        "resourceCapacity": {
+                            "@type": item.reservation_resource_capacity.type,
+                            "applicableTimePeriod": {
+                                "from": item.reservation_resource_capacity.reservation_applicable_time_period.from_.isoformat(),
+                            },
+                            "place": [
+                                {
+                                    "name": place.name,
+                                    "type": place.type
+                                }for place in item.reservation_resource_capacity.reservation_place],
+                            "capacityDemandAmount": item.reservation_resource_capacity.capacity_demand_amount,
+                            "resourcePool": {
+                                "href": item.reservation_resource_capacity.resource_pool.href,
+                                "id": item.reservation_resource_capacity.resource_pool.pool_id,
+                            }
+                        }
+                    }
+                ]
+            }
+        #     item_data = {
+        #         "quantity": item.quantity,
+        #         "reservation_resource_capacity": {
+        #             "type": item.reservation_resource_capacity.type,
+        #             "reservation_applicable_time_period": {
+        #                 "from": item.reservation_resource_capacity.reservation_applicable_time_period.from_.isoformat(),
+        #             },
+        #             "capacity_demand_amount": item.reservation_resource_capacity.capacity_demand_amount,
+        #             "external_party_characteristics": {
+        #                 "ipam_description": item.reservation_resource_capacity.external_party_characteristics.ipam_description,
+        #                 "ipam_details": item.reservation_resource_capacity.external_party_characteristics.ipam_details,
+        #             },
+        #             "reservation_place": [{
+        #                 "name": place.name,
+        #                 "type": place.type
+        #             } for place in item.reservation_resource_capacity.reservation_place],
+        #             "resource_pool": {
+        #                 "pool_id": item.reservation_resource_capacity.resource_pool.pool_id,
+        #                 "href": item.reservation_resource_capacity.resource_pool.href,
+        #             }
+        #         }
+        #     }
+        #
+        #     data_list.append(item_data)
+        # data_json = json.dumps(data_list)
+        # print("data_json", data_json)
+        # applied_capacity_amount = {
+        #     "appliedCapacityAmount": str(demand_amount),
+        #     "resource": []
+        # }
+        # for vlan in used_vlans:
+        #     characteristic = {
+        #         "8021qVLAN": vlan
+        #     }
+        #
+        #     applied_capacity_amount["resource"].append({
+        #         "@referredType": "VLAN",
+        #         "href": resource_inventory_href,
+        #         "resource_id": resource_inventory_id,
+        #         "characteristic": characteristic
+        #     })
+        #
+        # reservation_item.append(applied_capacity_amount)
+            data_list.append(item_data)
 
-        print("reservation_item_1", converted_data)
-        return reservation_item
+        print("reservation_item_1", data_list)
+        return data_list
 
         # response_data = [applied_capacity_amount]
         #
