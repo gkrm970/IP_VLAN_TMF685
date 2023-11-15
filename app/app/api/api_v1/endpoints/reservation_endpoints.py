@@ -1,16 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, status, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, log, models, schemas
-from app.api import deps, utils
+from app.api import deps
 from app.api.responses import reservation_responses
 from app.api.utils.reservation_alias_mapping import get_include_fields_for_response
 
-router = APIRouter()
+router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
 
 
 @router.get(
