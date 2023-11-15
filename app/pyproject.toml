@@ -30,7 +30,10 @@ pydantic = "^2.4.1"
 pydantic-settings = "^2.0.3"
 # Generic retry library
 tenacity = "^8.2.3"
-pyjwt = "^2.8.0"
+# JavaScript Object Signing and Encryption (JOSE) implementation used for OAuth
+python-jose = { extras = ["cryptography"], version = "^3.3.0" }
+# HTTP client for external API calls
+httpx = "^0.25.0"
 
 
 tinaa-logger = "^0.1.4"
@@ -50,8 +53,14 @@ pre-commit = "^3.4.0"
 ruff = "^0.0.285"
 # Unit testing framework
 pytest = "^7.4.2"
+# Pytest plugin to define test env variables from pyproject.toml
+pytest-env = "^1.0.1"
+# Tool to generate testing coverage reports
+coverage = "^7.3.2"
 # The test client uses HTTPX to make requests against the app
 httpx = "^0.25.0"
+# Mypy library stubs for python-jose
+types-python-jose = "^3.3.4.8"
 
 sqlalchemy-stubs = "^0.3"
 
@@ -114,6 +123,15 @@ warn_unused_ignores = true
 # being used, for now, as a bridge between the existing .ini configuration system and
 # the future configuration format.
 
+# Environment variables for tests, D: means don't overwrite if already set another way
+env = [
+    "D:API_BASE_URL=http://localhost:8639",
+    "D:AUTH_BASE_URL=http://localhost",
+    "D:DB_USERNAME=root",
+    "D:DB_PASSWORD=test",
+    "D:DB_HOST=localhost",
+    "D:DB_NAME=tmf639_test",
+]
 # Ignore deprecation warnings produced by FastAPI internal calls to Pydantic
 filterwarnings = """
 ignore:.*use `with_info_plain_validator_function` instead.:DeprecationWarning
@@ -134,7 +152,12 @@ target-version = "py311"
 
 
 [tool.ruff.per-file-ignores]
+# Ignore Pyflakes `imported but unused` errors in the files below
+"app/api/deps/__init__.py" = ["F401"]
 "app/models/__init__.py" = ["F401"]
+"app/schemas/__init__.py" = ["F401"]
+"app/tests/mocks/__init__.py" = ["F401"]
+"app/tests/overrides/__init__.py" = ["F401"]
 
 
 [build-system]
