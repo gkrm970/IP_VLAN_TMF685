@@ -3,8 +3,8 @@ name = "resource_pool"
 version = "0.1.0"
 description = "Resource Pool API"
 authors = [
-    "Gopalakrishna R M <gopalakrishna.rm@prodapt.com>"
-          ]
+    "Gopalakrishn  R M <gopalakrishna.rm@prodapt.com>"
+]
 readme = "README.md"
 
 
@@ -18,18 +18,19 @@ uvicorn = { extras = ["standard"], version = "^0.23.2" }
 gunicorn = "^21.2.0"
 # Middleware for request ID propagation
 asgi-correlation-id = "^4.2.0"
+# Async database driver for MySQL/MariaDB
+aiomysql = "^0.2.0"
 # Database schema migration tool
-alembic = "^1.12.0"
+alembic = { version = "^1.12.0", extras = ["tz"] }
 # Database ORM
-sqlalchemy = "^2.0.21"
+sqlalchemy = { version = "^2.0.21", extras = ["asyncio"] }
 # Type validation schemas used within FastAPI
-pydantic = "^2.2.1"
+pydantic = "^2.4.1"
 # Settings management using Pydantic
 pydantic-settings = "^2.0.3"
-# DB driver for MySQL/MariaDB
-pymysql = "^1.1.0"
-# HTTP library for API calls
-requests = "^2.31.0"
+# Generic retry library
+tenacity = "^8.2.3"
+pyjwt = "^2.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -45,6 +46,10 @@ mypy = "^1.5.0"
 pre-commit = "^3.4.0"
 # Linter
 ruff = "^0.0.285"
+# Unit testing framework
+pytest = "^7.4.2"
+# The test client uses HTTPX to make requests against the app
+httpx = "^0.25.0"
 
 
 [[tool.poetry.source]]
@@ -75,10 +80,11 @@ target-version = ['py311']
 
 [tool.isort]
 profile = "black"
+line_length = 88  # Same as Black
 include_trailing_comma = true
 force_grid_wrap = 0
-# Same as Black
-line_length = 88
+known_first_party = ["app"]
+known_third_party = ["alembic"]
 
 
 [tool.mypy]
@@ -95,10 +101,22 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 
+[tool.pytest.ini_options]
+# The pytest team intends to fully utilize the rich TOML data format for configuration
+# in the future, reserving the [tool.pytest] table for that. The ini_options table is
+# being used, for now, as a bridge between the existing .ini configuration system and
+# the future configuration format.
+
+# Ignore deprecation warnings produced by FastAPI internal calls to Pydantic
+filterwarnings = """
+ignore:.*use `with_info_plain_validator_function` instead.:DeprecationWarning
+"""
+
+
 [tool.ruff]
-# Enable pycodestyle (`E`), Pyflakes (`F`), isort (`I`), pep8-naming (`N`)
-# and Pylint (`PL`) codes by default
-select = ["E", "F", "I", "N", "PL"]
+# Enable pycodestyle (`E`), Pyflakes (`F`), pep8-naming (`N`) and Pylint (`PL`) codes
+# by default
+select = ["E", "F", "N", "PL"]
 ignore = []
 # Same as Black
 line-length = 88
@@ -106,6 +124,10 @@ line-length = 88
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Assume Python 3.11
 target-version = "py311"
+
+
+[tool.ruff.per-file-ignores]
+"app/models/__init__.py" = ["F401"]
 
 
 [build-system]
