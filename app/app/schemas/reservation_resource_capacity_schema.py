@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
 from app import schemas
 
 _NAME_DESCRIPTION = "A string used to give a name to the reservation"
@@ -21,7 +22,7 @@ class ReservationResourceCapacity(BaseModel):
         alias="capacityDemandAmount",
         description="When sub-classing, this defines the super-class",
     )
-    external_party_characteristics:schemas.ExternalPartyCharacteristics=Field(
+    external_party_characteristics: schemas.ExternalPartyCharacteristics = Field(
         alias="externalPartyCharacteristics",
         description="Array of objects (RelatedParty)",
     )

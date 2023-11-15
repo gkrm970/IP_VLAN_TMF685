@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import schemas
@@ -30,5 +30,5 @@ class ExternalPartyCharacteristics(BaseDbModel):
         return cls(
             id=str(uuid.uuid4()),
             ipam_description=schema.ipam_description,
-            ipam_details=schema.ipam_details
+            ipam_details=schema.ipam_details,
         )

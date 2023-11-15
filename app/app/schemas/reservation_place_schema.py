@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
 from app import schemas
 
 _NAME_DESCRIPTION = "A string used to give a name to the reservation"

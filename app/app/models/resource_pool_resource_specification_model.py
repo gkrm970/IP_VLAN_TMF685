@@ -26,14 +26,20 @@ class ResourcePoolResourceSpecification(BaseDbModel):
     href: Mapped[str] = mapped_column(String(255))
     resource_specification_id: Mapped[str] = mapped_column(String(255))
 
-    resource_pool_capacity_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_capacity.id"))
-    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="resource_specification")
+    resource_pool_capacity_id: Mapped[str] = mapped_column(
+        ForeignKey("resource_pool_capacity.id")
+    )
+    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(
+        back_populates="resource_specification"
+    )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolResourceSpecification) -> "ResourcePoolResourceSpecification":
+    def from_schema(
+        cls, schema: schemas.ResourcePoolResourceSpecification
+    ) -> "ResourcePoolResourceSpecification":
         return cls(
             id=str(uuid.uuid4()),
             type=schema.type,
             href=schema.href,
-            resource_specification_id=schema.resource_specification_id
+            resource_specification_id=schema.resource_specification_id,
         )

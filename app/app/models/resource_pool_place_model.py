@@ -25,13 +25,13 @@ class ResourcePoolPlace(BaseDbModel):
     name: Mapped[str] = mapped_column(String(255))
     type: Mapped[str] = mapped_column(String(255))
 
-    resource_pool_capacity_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_capacity.id"))
-    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="place")
+    resource_pool_capacity_id: Mapped[str] = mapped_column(
+        ForeignKey("resource_pool_capacity.id")
+    )
+    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(
+        back_populates="place"
+    )
 
     @classmethod
     def from_schema(cls, schema: schemas.ResourcePoolPlace) -> "ResourcePoolPlace":
-        return cls(
-            id=str(uuid.uuid4()),
-            name=schema.name,
-            type=schema.type
-        )
+        return cls(id=str(uuid.uuid4()), name=schema.name, type=schema.type)

@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas, log
+from app import log, models, schemas
 from app.core.exceptions import ConflictError, NotFoundError
 
 
@@ -15,7 +15,6 @@ class ReservationCRUD:
                 models.ReservationResourcePool.id == id
             )
         )
-        print("result", result)
         return result.scalars().first()
 
     @staticmethod

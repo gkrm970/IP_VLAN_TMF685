@@ -35,13 +35,23 @@ pyjwt = "^2.8.0"
 
 tinaa-logger = "^0.1.4"
 
-[tool.poetry.dev-dependencies]
-mypy = "^0.790"
-black = "22.3.0"
-isort = "^4.3.21"
-autoflake = "^1.3.1"
-flake8 = "^3.7.9"
-pytest = "^5.4.1"
+[tool.poetry.group.dev.dependencies]
+# Removes unused library imports and variables
+autoflake = "^2.2.1"
+# Auto-formatter
+black = { extras = ["d"], version = "^23.9.1" }
+# Sorting library imports
+isort = "^5.12.0"
+# Static type checker
+mypy = "^1.5.0"
+# Easy git pre-commit hooks
+pre-commit = "^3.4.0"
+# Linter
+ruff = "^0.0.285"
+# Unit testing framework
+pytest = "^7.4.2"
+# The test client uses HTTPX to make requests against the app
+httpx = "^0.25.0"
 
 sqlalchemy-stubs = "^0.3"
 

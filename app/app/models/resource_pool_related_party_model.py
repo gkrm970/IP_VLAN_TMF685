@@ -26,14 +26,20 @@ class ResourcePoolRelatedParty(BaseDbModel):
     name: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(255))
 
-    resource_pool_capacity_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_capacity.id"))
-    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="related_party")
+    resource_pool_capacity_id: Mapped[str] = mapped_column(
+        ForeignKey("resource_pool_capacity.id")
+    )
+    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(
+        back_populates="related_party"
+    )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolRelatedParty) -> "ResourcePoolRelatedParty":
+    def from_schema(
+        cls, schema: schemas.ResourcePoolRelatedParty
+    ) -> "ResourcePoolRelatedParty":
         return cls(
             id=str(uuid.uuid4()),
             party_id=schema.party_id,
             name=schema.name,
-            role=schema.role
+            role=schema.role,
         )

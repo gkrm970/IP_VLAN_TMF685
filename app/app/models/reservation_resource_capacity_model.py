@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
@@ -26,7 +26,9 @@ class ReservationResourceCapacity(BaseDbModel):
     )
     capacity_demand_amount: Mapped[str] = mapped_column(String(255))
 
-    external_party_characteristics: Mapped[models.ExternalPartyCharacteristics] = relationship(
+    external_party_characteristics: Mapped[
+        models.ExternalPartyCharacteristics
+    ] = relationship(
         back_populates="reservation_resource_capacity",
         lazy="selectin",
         cascade=_ALL_DELETE_ORPHAN,
