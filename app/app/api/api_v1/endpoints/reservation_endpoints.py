@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, log, models, schemas
 from app.api import deps, utils
 from app.api.responses import reservation_responses
+from app.api.utils.reservation_alias_mapping import get_include_fields_for_response
 
 router = APIRouter()
 
@@ -28,18 +29,23 @@ async def get_reservations(
     """
     This operation lists or finds Resource objects.
     """
-    [column.strip() for column in fields.split(",")] if fields else None
-
-    resources, total = await crud.reservation.get_multi(db, limit, offset)
-
-    no_of_reservations = len(resources)
+    # [column.strip() for column in fields.split(",")] if fields else None
+    #
+    # resources, total = await crud.reservation.get_multi(db, limit, offset)
+    #
+    # no_of_reservations = len(resources)
+    include = get_include_fields_for_response(fields)
+    reservations, total = await crud.reservation.get_multi(db, limit, offset)
+    no_of_reservations = len(reservations)
 
     log.info(f"Retrieved {no_of_reservations} Reservations(s)")
     log.info(f"Total available Reservations(s): {total}")
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder([resource.to_dict() for resource in resources]),
+        content=jsonable_encoder(
+            [resource.to_dict(include=include) for resource in reservations]
+        ),
         headers={
             "X-Result-Count": str(no_of_reservations),
             "X-Total-Count": str(total),
