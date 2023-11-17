@@ -1,0 +1,19 @@
+# Defines which environments can be referenced by your helm configuration.
+# The environment is specified at the command line when the helmfile script is called using the --environment switch
+environments:
+  develop:
+  qa:
+  preprod:
+  master:
+
+releases:
+  # Primary helm chart. This chart will apply to all environments
+  - name: {{ requiredEnv "SERVICE_IMAGE_NAME" }}
+    namespace: {{ requiredEnv "OCP_PROJECT" }}
+    chart: ./helm
+    # should always be false
+    createNamespace: false
+    # This section defines which variables should be available for your helm charts.
+    # To simplify this process, we organized all variables into a single file.
+    values:
+      - ./resource_inventory.values.yaml.gotmpl

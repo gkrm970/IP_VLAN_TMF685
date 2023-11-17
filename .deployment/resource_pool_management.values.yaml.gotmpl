@@ -1,0 +1,89 @@
+# Global variables
+resource_inventory:
+  namespace: {{ requiredEnv "OCP_PROJECT" }}
+  service_name: {{ requiredEnv "SERVICE_IMAGE_NAME" }}
+  route: {{ requiredEnv "ROUTE" }}
+  image_name: {{ requiredEnv "IMAGE_NAME" }}
+  image_tag: {{ requiredEnv "IMAGE_TAG" }}
+
+  inside_pod_port: 8080
+  outside_pod_port: 8443  # 80, 8080 and 443 are forbidden for prod OCP
+
+  # Certificates for the portal route
+  # NOTE: environments for those are managed in GitLab variables (must be stored in base64, see procedure here (link to come))
+  route_cacertificate: {{ requiredEnv "ROUTE_CACERTIFICATE" }}
+
+{{ if eq .Environment.Name "develop" }}
+  route_certificate: {{ requiredEnv "ROUTE_CERTIFICATE_DEVELOP" }}
+  route_key: {{ requiredEnv "ROUTE_KEY_DEVELOP" }}
+
+{{ else if eq .Environment.Name "qa" }}
+  route_certificate: {{ requiredEnv "ROUTE_CERTIFICATE_QA" }}
+  route_key: {{ requiredEnv "ROUTE_KEY_QA" }}
+
+{{ else if eq .Environment.Name "preprod" }}
+  route_certificate: {{ requiredEnv "ROUTE_CERTIFICATE_PREPROD" }}
+  route_key: {{ requiredEnv "ROUTE_KEY_PREPROD" }}
+
+{{ end }}
+
+# This is where environment variables should be added with the exception of secrets (see next block)
+# Those values will be automatically imported by the deploymentConfig.yaml file and will become environment variables in the deployed container
+# Keys must be uppercase
+  configmap_data: &configmap_data
+    # Base URL of the API, used for href generation
+    API_BASE_URL: https://{{ requiredEnv "ROUTE" }}
+    # Base URL for auth - used for JWK (certs), token and auth endpoint generation
+    AUTH_BASE_URL: https://auth.tinaa.teluslabs.net/auth/realms/tinaa/protocol/openid-connect
+    # The hostname/IP for the database connection
+    DB_HOST: inv-tmf-pgdb-pg-db
+    # The username for the database connection
+    DB_USERNAME: postgres
+    # The name of the database used
+    DB_NAME: tmf639_resource_inventory
+    # The port number that is used by the gunicorn config in the base uvicorn-gunicorn Docker image
+    PORT: 8080
+
+# Below are predefined conditions to override parameters by environment if necessary
+# NOTE: This condition block needs to remain at the bottom of this file
+#
+# The following pattern must be used to override a value in the dictionary
+#
+# configmap_data:
+#  << : *configmap_data
+#  <KEY>: <value>
+{{ if eq .Environment.Name "develop" }}
+  configmap_data:
+    << : *configmap_data
+
+{{ else if eq .Environment.Name "qa" }}
+  configmap_data:
+    << : *configmap_data
+
+{{ else if eq .Environment.Name "preprod" }}
+  configmap_data:
+    << : *configmap_data
+
+{{ end }}
+
+# Secrets
+# Those values will be automatically imported by the deploymentConfig.yaml file and will become environment variables in the deployed container
+# Important note: All secrets must be stored in Gitlab variables so they can be hidden properly.
+# Also, ALL values must be base64 encoded before storing them in Gitlab
+# Keys must be uppercase
+  {{ if eq .Environment.Name "develop" }}
+  secret_data:
+    # The password for the database connection, base64 encoded
+    DB_PASSWORD: {{ requiredEnv "DB_PASSWORD_DEVELOP"}}
+
+  {{ else if eq .Environment.Name "qa" }}
+  secret_data:
+    # The password for the database connection, base64 encoded
+    DB_PASSWORD: {{ requiredEnv "DB_PASSWORD_QA"}}
+
+  {{ else if eq .Environment.Name "preprod" }}
+  secret_data:
+    # The password for the database connection, base64 encoded
+    DB_PASSWORD: {{ requiredEnv "DB_PASSWORD_PREPROD"}}
+
+  {{ end }}
