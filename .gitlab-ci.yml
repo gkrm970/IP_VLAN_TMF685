@@ -81,7 +81,7 @@ trigger_build_deploy:
     # Pass the TCSO root certificate as arg when building the image
     BUILD_OPTS: "--build-arg TCSO_ROOT_CA"
   only:
-#    - develop
+    - develop
     - qa
     - preprod
 
