@@ -2,6 +2,7 @@ from .resource_pool_applicable_time_period_model import ResourcePoolApplicableTi
 from .resource_pool_resource_specification_model import ResourcePoolResourceSpecification
 from .resource_pool_place_model import ResourcePoolPlace
 from .resource_pool_related_party_model import ResourcePoolRelatedParty
+from .resource_pool_resource_model import ResourcePoolResource
 from .resource_pool_capacity_model import ResourcePoolCapacity
 from .resource_pool_model import ResourcePool
 from .reservation_applicable_time_period_model import (

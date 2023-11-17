@@ -131,7 +131,7 @@ async def delete_resource_pool_by_id(
     "/{id}",
     summary="Updates partially a Resource Pool by ID",
     responses=reservation_responses.update_responses,
-    response_model=schemas.ResourcePoolUpdate,
+    response_model=schemas.ResourcePoolCapacity,
 )
 async def update_resource_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],

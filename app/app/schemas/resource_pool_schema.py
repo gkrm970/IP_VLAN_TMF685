@@ -24,7 +24,7 @@ class ResourcePoolBase(BaseModel):
         None, description="Free-text description of the resource"
     )
 
-    capacity: list[schemas.ResourcePoolCapacity] = Field(
+    capacity: list[schemas.ResourcePoolCapacityCreate] = Field(
         default_factory=list,
         description="Configuration features",
     )

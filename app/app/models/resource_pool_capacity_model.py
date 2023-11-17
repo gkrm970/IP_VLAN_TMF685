@@ -39,6 +39,9 @@ class ResourcePoolCapacity(BaseDbModel):
     resource_specification: Mapped[list[models.ResourcePoolResourceSpecification]] = relationship(
         back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
     )
+    resource_pool_resource: Mapped[list[models.ResourcePoolResource]] = relationship(
+        back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+    )
 
     resource_pool_id: Mapped[str] = mapped_column(ForeignKey("resource_pool.id"))
     resource_pool: Mapped["ResourcePool"] = relationship(back_populates="capacity")
@@ -57,6 +60,10 @@ class ResourcePoolCapacity(BaseDbModel):
             models.ResourcePoolResourceSpecification.from_schema(resource_spec)
             for resource_spec in schema.resource_specification
         ]
+        resource_pool_resource = [
+            models.ResourcePoolResource.from_schema(resource)
+            for resource in schema.resource
+        ]
         print(type(resource_specification))
         # resource_pool_capacity_id = str(uuid.uuid4())
 
@@ -70,7 +77,8 @@ class ResourcePoolCapacity(BaseDbModel):
             applicable_time_period=applicable_time_period,
             related_party=related_party,
             place=place,
-            resource_specification=resource_specification
+            resource_specification=resource_specification,
+            resource_pool_resource=resource_pool_resource
         )
 
 
