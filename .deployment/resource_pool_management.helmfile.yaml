@@ -16,4 +16,4 @@ releases:
     # This section defines which variables should be available for your helm charts.
     # To simplify this process, we organized all variables into a single file.
     values:
-      - ./resource_inventory.values.yaml.gotmpl
+      - ./resource_pool_management.values.yaml.gotmpl
