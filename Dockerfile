@@ -17,7 +17,7 @@ WORKDIR /app
 COPY /app/pyproject.toml /app/poetry.lock ./
 
 # Install application dependencies
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+#RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
 # The runtime image stage, used to just run the code provided its virtual environment
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11-slim AS runtime
