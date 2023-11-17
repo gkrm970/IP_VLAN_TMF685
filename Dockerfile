@@ -22,6 +22,15 @@ RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 # The runtime image stage, used to just run the code provided its virtual environment
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11-slim AS runtime
 
+# The TCSO_ROOT_CA is passed via build args to the docker build command in the
+# build_deploy stage of the GitLab pipeline. Certificates are added to the CA
+# certificate database using the update-ca-certificates command.
+ARG TCSO_ROOT_CA
+RUN echo "$TCSO_ROOT_CA" > /usr/local/share/ca-certificates/tcso-root.crt && \
+    update-ca-certificates
+# The HTTPX library uses the SSL_CERT_FILE env variable to load CA certificates
+ENV SSL_CERT_FILE=/usr/local/share/ca-certificates/tcso-root.crt
+
 # Set the path variable to have the venv in front, and copy it from builder stage
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
