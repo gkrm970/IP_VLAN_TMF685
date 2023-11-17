@@ -1,5 +1,5 @@
 # Global variables
-resource_inventory:
+resource_pool_management:
   namespace: {{ requiredEnv "OCP_PROJECT" }}
   service_name: {{ requiredEnv "SERVICE_IMAGE_NAME" }}
   route: {{ requiredEnv "ROUTE" }}
@@ -40,7 +40,7 @@ resource_inventory:
     # The username for the database connection
     DB_USERNAME: postgres
     # The name of the database used
-    DB_NAME: tmf639_resource_inventory
+    DB_NAME: tmf685_resource_pool_management
     # The port number that is used by the gunicorn config in the base uvicorn-gunicorn Docker image
     PORT: 8080
 
