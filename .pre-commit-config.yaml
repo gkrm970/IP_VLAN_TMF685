@@ -9,6 +9,7 @@ repos:
       # Verifies that test files are named correctly
       - id: name-tests-test
         args: [ "--pytest" ]  # Ensure tests match .*_test\.py
+        exclude: ^app/app/tests/mocks/
       # Trims trailing whitespace
       - id: trailing-whitespace
       # Makes sure files end in a newline and only a newline
