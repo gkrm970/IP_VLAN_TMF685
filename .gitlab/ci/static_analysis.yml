@@ -1,0 +1,29 @@
+.install_dev_dependencies: &install_dev_dependencies
+    # Print out the versions of the tools and the location we are using for debugging
+    - python --version
+    - pip --version
+    - pwd
+    # Change directory to where the pyproject.toml and the configs are located
+    - cd app
+    # Install Poetry and the dev dependencies, activate the newly created venv
+    - pip install poetry==$POETRY_VERSION
+    - poetry install --only dev --no-root
+    - source `poetry env info --path`/bin/activate
+
+.base_job_dev_dependencies:
+  image:
+    name: python:$PYTHON_VERSION-slim
+    # Overwrite the default `python3` entrypoint
+    entrypoint: ['']
+  stage: static_analysis
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == "develop"
+  before_script:
+    *install_dev_dependencies
+
+.base_job:
+  extends: .base_job_dev_dependencies
+  before_script:
+    - *install_dev_dependencies
+    - poetry install --no-root

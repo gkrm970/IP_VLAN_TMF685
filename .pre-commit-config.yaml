@@ -1,0 +1,48 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_language_version:
+  python: python3.11
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # Verifies that test files are named correctly
+      - id: name-tests-test
+        args: [ "--pytest" ]  # Ensure tests match .*_test\.py
+        exclude: ^app/app/tests/mocks/
+      # Trims trailing whitespace
+      - id: trailing-whitespace
+      # Makes sure files end in a newline and only a newline
+      - id: end-of-file-fixer
+      # Attempts to load all TOML files to verify syntax
+      - id: check-toml
+      # Attempts to load all yaml files to verify syntax
+      - id: check-yaml
+      # Attempts to load all json files to verify syntax
+      - id: check-json
+      # Prevent giant files from being committed
+      - id: check-added-large-files
+        args: [ '--maxkb=500' ]
+      # Simply check whether files parse as valid python
+      - id: check-ast
+      # Check for files that contain merge conflict strings
+      - id: check-merge-conflict
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [ "--profile", "black" ]
+        name: isort (python)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.285
+    hooks:
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix ]
