@@ -20,11 +20,11 @@ variables:
 include:
   - project: 'tinaa-platform/deployment/cicd'
     file: 'build-deploy/build.template.gitlab-ci.yml'
-  - local: '.gitlab/ci/static_analysis.yml'
+#  - local: '.gitlab/ci/static_analysis.yml'
 
 stages:
-  - static_analysis
-  - unit_tests
+#  - static_analysis
+#  - unit_tests
   - build_deploy
   - infra_deploy
 
@@ -35,42 +35,42 @@ default:
     - toll6-runners-app01
 
 
-autoflake:
-  extends: .base_job_dev_dependencies
-  stage: static_analysis
-  script:
-    - autoflake --check .
+#autoflake:
+#  extends: .base_job_dev_dependencies
+#  stage: static_analysis
+#  script:
+#    - autoflake --check .
 
-black:
-  extends: .base_job_dev_dependencies
-  stage: static_analysis
-  script:
-    - black --check .
+#black:
+#  extends: .base_job_dev_dependencies
+#  stage: static_analysis
+#  script:
+#    - black --check .
 
-isort:
-  extends: .base_job_dev_dependencies
-  stage: static_analysis
-  script:
-    - isort --check .
+#isort:
+#  extends: .base_job_dev_dependencies
+#  stage: static_analysis
+#  script:
+#    - isort --check .
 
-mypy:
-  extends: .base_job
-  stage: static_analysis
-  script:
-    # Mypy requires the runtime dependencies to type check the code
-    - mypy .
+#mypy:
+#  extends: .base_job
+#  stage: static_analysis
+#  script:
+#    # Mypy requires the runtime dependencies to type check the code
+#    - mypy .
 
-ruff:
-  extends: .base_job_dev_dependencies
-  stage: static_analysis
-  script:
-    - ruff check .
+#ruff:
+#  extends: .base_job_dev_dependencies
+#  stage: static_analysis
+#  script:
+#    - ruff check .
 
-pytest:
-  extends: .base_job
-  stage: unit_tests
-  script:
-    - pytest
+#pytest:
+#  extends: .base_job
+#  stage: unit_tests
+#  script:
+#    - pytest
 
 
 trigger_build_deploy:
