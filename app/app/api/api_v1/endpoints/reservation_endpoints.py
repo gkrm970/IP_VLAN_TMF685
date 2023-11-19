@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, log, models, schemas
 from app.api import deps
 from app.api.responses import reservation_responses
-from app.api.utils.reservation_alias_mapping import get_include_fields_for_response
+from app.core import security
+from app.schemas import TokenPayload
 
 router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
 
@@ -25,27 +26,25 @@ async def get_reservations(
     limit: Annotated[int, deps.LimitQuery] = 100,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:reservation:ro"])
+    ),
 ) -> JSONResponse:
     """
     This operation lists or finds Resource objects.
     """
-    # [column.strip() for column in fields.split(",")] if fields else None
-    #
-    # resources, total = await crud.reservation.get_multi(db, limit, offset)
-    #
-    # no_of_reservations = len(resources)
-    include = get_include_fields_for_response(fields)
-    reservations, total = await crud.reservation.get_multi(db, limit, offset)
-    no_of_reservations = len(reservations)
+    [column.strip() for column in fields.split(",")] if fields else None
+
+    resources, total = await crud.reservation.get_multi(db, limit, offset)
+
+    no_of_reservations = len(resources)
 
     log.info(f"Retrieved {no_of_reservations} Reservations(s)")
     log.info(f"Total available Reservations(s): {total}")
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(
-            [resource.to_dict(include=include) for resource in reservations]
-        ),
+        content=jsonable_encoder([resource.to_dict() for resource in resources]),
         headers={
             "X-Result-Count": str(no_of_reservations),
             "X-Total-Count": str(total),
@@ -65,6 +64,9 @@ async def create_reservation(
         schemas.ReservationCreate, Body(description="The Reservation to be created")
     ],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:reservation:rw"])
+    ),
 ) -> JSONResponse:
     """
     This operation creates a Reservation entity.
@@ -90,6 +92,9 @@ async def get_reservation_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
     *,
     resource: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:reservation:ro"])
+    ),
 ) -> JSONResponse:
     """
     This operation retrieves a Resource entity. Attribute selection is enabled for all
@@ -116,6 +121,9 @@ async def delete_reservation_by_id(
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
     reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:reservation:rw"])
+    ),
 ) -> Response:
     """
     This operation deletes a Reservation by ID.
@@ -138,6 +146,9 @@ async def update_reservation_by_id(
     reservation_update: Annotated[
         schemas.ReservationUpdate, Body(description="The Reservation to be updated")
     ],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:reservation:rw"])
+    ),
 ) -> JSONResponse:
     """
     This operation updates partially a Reservation entity.
