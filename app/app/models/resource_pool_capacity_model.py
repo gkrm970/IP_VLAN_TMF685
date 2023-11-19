@@ -10,10 +10,6 @@ from sqlalchemy.orm import (
 from app import models, schemas
 from app.db.base import BaseDbModel
 
-# Cascade rule for SQLAlchemy relationship. The all symbol is a synonym for save-update,
-# merge, refresh-expire, expunge, delete, and using it in conjunction with delete-orphan
-# indicates that the child object should follow along with its parent in all cases, and
-# be deleted once it is no longer associated with that parent
 _ALL_DELETE_ORPHAN = "all, delete-orphan"
 if TYPE_CHECKING:
     from app.models import ResourcePool

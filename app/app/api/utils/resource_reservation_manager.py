@@ -1,7 +1,11 @@
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
 
-from app import providers, schemas, log
+from fastapi import Depends
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload, joinedload
+
+from app import providers, schemas, log, models
 from app.api import deps
 from app.api.deps import get_db_session
 from app.core.exceptions import InternalServerError
@@ -12,69 +16,96 @@ class ResourceReservationManager:
     def __init__(self):
         self.resource_inventory_provider = providers.resource_inventory_provider
         self.resource_pool_provider = providers.resource_pool_provider
-        # self.vlan_manager = providers.vlan_manager
 
-    async def _reserve_tinaa_resources(self, demand_amount: int, capacity_amount_remaining: int, used_vlans: set[int],
+    async def _reserve_tinaa_resources(self, demand_amount: int, capacity_amount_remaining: int,
+                                       capacity_amount_from: int, capacity_amount_to: int, used_vlans: set[int],
                                        resource):
-        # print("capacity_amount_remaining", demand_amount)
-        reserved_vlans = []
         if demand_amount <= capacity_amount_remaining:
             available_capacity_amount = capacity_amount_remaining - demand_amount
-            print("resource!=", resource)
+            log.info(f"resource value: {resource}")
             if not resource:
-                print("inside")
-                # for _ in range(demand_amount):
-                unique_vlan = \
-                    await self.resource_pool_provider.generate_unique_vlan(demand_amount)
-                print("unique_vlan", unique_vlan)
-                # if unique_vlan is not None:
-                #     reserved_vlans.append(unique_vlan)
-                #     print("reserved_vlans", reserved_vlans)
-                return unique_vlan
+                log.info(f"resource object is not empty: {resource}")
+                unique_vlan_numbers = \
+                    await self.resource_pool_provider.generate_unique_vlan(demand_amount, capacity_amount_from,
+                                                                           capacity_amount_to, used_vlans)
+                log.info(f"unique_vlan_numbers: {unique_vlan_numbers}")
+                return unique_vlan_numbers, available_capacity_amount
         else:
-            print("Not enough resources available to reserve VLANs.")
+            log.info("Not enough resources available to reserve VLANs.")
             raise InternalServerError("Not enough resources available to reserve VLANs.")
 
     async def _reserve_netcracker_resources(self):
         pass
 
-    async def reserve(self, reservation_create: schemas.ReservationCreate, db):
+    async def reserve(self, reservation_create: schemas.ReservationCreate, db: AsyncSession):
         used_vlans = set()
         reservation_responses = []
         for reservation_item in reservation_create.reservation_item:
-            resource_pool_href = reservation_item.reservation_resource_capacity.resource_pool.href
-            print("resource_pool_href", resource_pool_href)
             resource_pool_id = reservation_item.reservation_resource_capacity.resource_pool.pool_id
-            resource_pool_response = await self.resource_pool_provider.get_resource(resource_pool_href)
-            print("resource_pool_response!=", resource_pool_response)
 
+            result = await db.execute(
+                select(models.ResourcePool).filter(
+                    models.ResourcePool.id == resource_pool_id
+                )
+            )
+            resource_pool_response = result.scalars().first().to_dict()
+            log.info(f"resource_pool_response, {resource_pool_response}")
+
+            # resource_pool_response = await self.resource_pool_provider.get_resource(resource_pool_href)
             capacity_list = resource_pool_response.get("capacity")
-            print("capacity_list", capacity_list)
-
+            log.info(f"capacity_list, {capacity_list}")
             for capacity in capacity_list:
-                print("capacity", capacity)
+                log.info("capacity", capacity)
                 resource_specification_list = capacity.get("resource_specification")
-                capacity_amount_remaining, capacity_amount_from, capacity_amount_to, resource = \
-                    await self.resource_pool_provider.extract_capacity_amount(capacity)
-                related_party_id = await self.resource_pool_provider.extract_related_party(capacity)
-                print("related_party_id", related_party_id)
+                log.info(f"resource_specification_list: {resource_specification_list}")
+                capacity_amount_remaining = capacity.get("capacity_amount_remaining")
+                capacity_amount_from = capacity.get("capacity_amount_from")
+                capacity_amount_to = capacity.get("capacity_amount_to")
+                resource = capacity.get("resource")
+                related_party_id = capacity.get("relatedParty").get("party_id")
+                log.info("related_party_id_r", related_party_id)
+
                 if related_party_id == "tinaa":
-                    print("inside if")
+                    log.info("inside if")
                     demand_amount = int(reservation_item.reservation_resource_capacity.capacity_demand_amount)
-                    reserved_vlans = \
+                    reserved_vlans, available_capacity_amount = \
                         await self._reserve_tinaa_resources(demand_amount,
                                                             int(capacity_amount_remaining),
+                                                            int(capacity_amount_from),
+                                                            int(capacity_amount_to),
                                                             used_vlans, resource)
-                    print("reserved_vlans", reserved_vlans)
+                    log.info("reserved_vlans", reserved_vlans)
                     resource_inventory_response = \
                         await self.resource_inventory_provider.create_resource(related_party_id,
                                                                                reservation_item,
                                                                                resource_specification_list,
                                                                                reserved_vlans)
-                    print("resource_inventory_response", resource_inventory_response)
+                    print("resource_inventory_response_json", resource_inventory_response)
+
                     resource_inventory_href = resource_inventory_response.get("href")
                     resource_inventory_id = resource_inventory_response.get("id")
-                    # call PATCH Api for resource pool to update the capacity amount
+
+                    # Call PATCH Api for resource pool to update the capacity amount
+                    resource_data = [
+                        {"href": "http://ResourcePool/KJEKYR4YBKSB", "resource_id": "3473t4873tbskbcsbcks"}]
+                    result = await db.execute(
+                        select(models.ResourcePool).filter(
+                            models.ResourcePool.id == resource_pool_id
+                        )
+                    )
+
+                    resource_pool_response = result.scalars().first()
+                    new_resource_data = models.ResourcePoolResource(
+                        id=str(uuid.uuid4()),
+                        resource_id="17r276r32763t26te",
+                        href="http://ResourcePool/HF5R653R37R"
+                    )
+
+                    resource_pool_response.capacity[0].resource_pool_resource.append(new_resource_data)
+
+                    await db.commit()
+                    log.info("Update successfully resource_pool record data")
+
                     tmf685_patch_response = await self.resource_pool_provider.patch_resource_pool(
                         resource_inventory_href,
                         resource_inventory_id,

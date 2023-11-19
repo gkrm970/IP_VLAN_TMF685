@@ -30,13 +30,13 @@ class ResourcePool(BaseDbModel):
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolCreate) -> "ResourcePool":
+    def from_schema(cls, schema: schemas.ResourcePool) -> "ResourcePool":
         resource_pool_id = str(uuid.uuid4())
         capacity = [
             models.ResourcePoolCapacity.from_schema(capacity)
             for capacity in schema.capacity
         ]
-
+        print("capacity_response", capacity)
         return cls(
             id=resource_pool_id,
             href=f"resource/{resource_pool_id}",

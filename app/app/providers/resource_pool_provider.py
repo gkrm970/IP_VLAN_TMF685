@@ -1,68 +1,13 @@
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias, Literal
 import aiohttp
 import httpx
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from app import schemas, log, models
 from app.core.config import settings
-from app.core.exceptions import NotFoundError, InternalServerError
+from app.core.exceptions import BadRequestError
 
-
-# class VLANPoolManager:
-#     async def initialize_vlan_pool(self, db):
-#         try:
-#             for vlan_number in range(1, 4096):
-#                 vlan_allocation = models.VlanAllocation(vlan_number=vlan_number)
-#                 db.add(vlan_allocation)
-#             await db.commit()
-#         except IntegrityError:
-#             await db.rollback()
-#
-#     async def reserve_vlan_numbers(self, demand_amount, db):
-#         try:
-#             vlan_numbers = []
-#             offset = 0
-#             for _ in range(demand_amount):
-#                 result = await db.execute(
-#                     select(models.VlanAllocation).filter(models.VlanAllocation.is_reserved == False)
-#                     .order_by(models.VlanAllocation.vlan_number).offset(offset)
-#                     .limit(1).with_for_update()
-#                 )
-#                 vlan_allocation = result.scalars().first()
-#                 if vlan_allocation:
-#                     vlan_allocation.is_reserved = True
-#                     vlan_numbers.append(vlan_allocation.vlan_number)
-#                     offset += 1
-#                     print("vlan_numbers", vlan_numbers)
-#                 else:
-#                     raise NotFoundError("No available VLANs in the pool.")
-#             await db.commit()
-#             return vlan_numbers
-#         except Exception as e:
-#             await db.rollback()
-#             raise e
-#
-#     async def release_vlan_numbers(self, vlan_numbers, db):
-#         # session = self.Session()
-#         try:
-#             offset = 0
-#             for vlan_number in vlan_numbers:
-#                 result = await db.execute(
-#                     select(models.VlanAllocation).filter(models.VlanAllocation.is_reserved == True)
-#                     .order_by(models.VlanAllocation.vlan_number).offset(offset)
-#                     .limit(1).with_for_update()
-#                 )
-#                 vlan_allocation = result.scalars().first()
-#                 print("vlan_allocation", vlan_allocation.vlan_number)
-#                 if vlan_allocation:
-#                     vlan_allocation.is_reserved = False
-#                     offset += 1
-#                 else:
-#                     raise Exception(f"VLAN {vlan_number} is not reserved.")
-#             await db.commit()
-#         except Exception as e:
-#             await db.rollback()
-#             raise e
+Method: TypeAlias = Literal["GET", "POST", "PATCH"]
 
 
 async def final_reservation_response(reservation_response):
@@ -103,14 +48,14 @@ async def create_reservation_response(reservation_item, applied_capacity_amount)
 
 class ResourcePoolProvider:
     def __init__(self):
-        self.base_url = settings.RI_PROVIDER_BASE_URL
-        self.api_prefix = settings.RI_PROVIDER_API_PREFIX
+        self.resource_pool_base_url = settings.API_BASE_URL
+        self.resource_pool_api_prefix = settings.API_PREFIX
 
     async def extract_capacity_amount(self, capacity):
         capacity_amount_remaining = capacity.get("capacity_amount_remaining")
-        print("amount", capacity_amount_remaining)
+        log.info(f"amount, {capacity_amount_remaining}")
         capacity_amount_from = capacity.get("capacity_amount_from")
-        print("from", capacity_amount_from)
+        log.info(f"from, {capacity_amount_from}")
         capacity_amount_to = capacity.get("capacity_amount_to")
         resource = capacity.get("resource")
         return capacity_amount_remaining, capacity_amount_from, capacity_amount_to, resource
@@ -119,15 +64,17 @@ class ResourcePoolProvider:
         related_party_id = capacity.get("relatedParty").get("party_id")
         return related_party_id
 
-    async def generate_unique_vlan(self, capacity_amount):
-        print("capacity_amount_", capacity_amount)
+    @staticmethod
+    async def generate_unique_vlan(demand_amount, capacity_amount_from, capacity_amount_to, used_vlans):
+        log.info(f"demand_amount: {demand_amount}")
         vlans_list = []
-        for vlan in range(1, capacity_amount + 1):
-            if vlan not in vlans_list:
+        for vlan in range(capacity_amount_from, capacity_amount_to + 1):
+            if vlan not in used_vlans and vlan not in vlans_list:
                 vlans_list.append(vlan)
-                print("vlans_list_", vlans_list)
+                log.info(f"vlans_list: {vlans_list}")
+                if len(vlans_list) == demand_amount:
+                    break
         return vlans_list
-        # return None
 
     async def _send_request(self, method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
         try:
@@ -141,38 +88,35 @@ class ResourcePoolProvider:
         except httpx.RequestError:
             pass
 
-    async def _send_patch_request(self, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
+    async def get_resource(self, href: str) -> dict[str, Any]:
+        response = await self._send_request("GET", href)
+        try:
+            if response.status_code == 200:
+                return response.json()
+            else:
+                error_message = f"Bad request. Expected status code 200, but received {response.status_code}."
+                raise BadRequestError(error_message)
+        except Exception as e:
+            raise BadRequestError(f"Bad request. Status code: {response.status_code}")
+
+    @staticmethod
+    async def _send_patch_request(method: Method, url: str,
+                                  request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
         try:
             async with httpx.AsyncClient() as client:
                 log.info("data=%s", request_body)
                 response = await client.patch(url, json=request_body)
-                # tmf_685_patch = response.content.decode('utf-8')
                 tmf_685_patch = response.json()
                 log.info("tmf_685_patch_status_code=%s", response.status_code)
                 log.info("tmf_685_patch_content_response=%s", tmf_685_patch)
 
                 return tmf_685_patch
         except httpx.HTTPStatusError as e:
-            print(f"Failed to send PATCH request. HTTP status error: {e}")
+            log.info(f"Failed to send PATCH request. HTTP status error: {e}")
             raise e
         except httpx.RequestError as e:
-            print(f"Failed to send PATCH request. Request error: {e}")
+            log.info(f"Failed to send PATCH request. Request error: {e}")
             raise e
-
-    # async def get_resource(self, resource_pool_href: str) -> dict[str, Any]:
-    #     print("href",resource_pool_href)
-    #     response = await self._send_request("GET", resource_pool_href)
-    #     # print("resource_pool_response", response.json())
-    #     # response = await self._send_request("GET", urljoin(self.base_url, resource_pool_href))
-    #     return response.json()
-    async def get_resource(self, resource_pool_href):
-        async with httpx.AsyncClient() as client:
-            response = await client.get(resource_pool_href, timeout=30)
-            response.raise_for_status()
-            return response.json()
-    # else:
-    #             print(f"Error fetching resource pool: {response.status_code}")
-            # return response.json() if response.status_code == 200 else None
 
     async def create_resource_reservation_response(self, reservation_item, used_vlans,
                                                    resource_inventory_href,
@@ -198,22 +142,13 @@ class ResourcePoolProvider:
         reservation_response = await create_reservation_response(reservation_item, applied_capacity_amount)
         return reservation_response
 
-    # async def _undo_generate_vlan_numbers(self, used_vlans: set[int], generated_vlans: set[int]):
-    #     used_vlans -= generated_vlans
-    #
-    # async def _undo_create_resource(self, related_party_id: str, reserved_vlans: set[int]):
-    #     await self.resource_inventory_provider.undo_create_resource(related_party_id, reserved_vlans)
-
     async def patch_resource_pool(self, resource_inventory_href, resource_inventory_id, available_capacity_amount,
                                   resource_pool_id, reserved_vlans, db):
-        print("available_capacity_amount", available_capacity_amount)
-
-        # try:
-        tmf685_patch_url = "http://127.0.0.1:8000/resourcePoolManagement/v1/resourcePool"
+        log.info("available_capacity_amount", available_capacity_amount)
+        resource_pool_patch_url = f"{self.resource_pool_base_url}/{self.resource_pool_api_prefix}/{resource_pool_id}"
 
         async with aiohttp.ClientSession() as session:
-            patch_url = f"{tmf685_patch_url}/{resource_pool_id}"
-            log.info("patch_url=%s", patch_url)
+            log.info("patch_url=%s", resource_pool_patch_url)
 
             patch_data = {
                 "@type": "VLAN_ResourcePool",
@@ -263,99 +198,14 @@ class ResourcePoolProvider:
                 "name": "Some ABC VLAN Pool"
             }
 
-            print("patch_data", patch_data)
-
-            # resource_data = {
-            #     "resource": [
-            #         {
-            #             "href": resource_inventory_href,
-            #             "id": resource_inventory_id
-            #         }
-            #     ]
-            # }
-            # patch_data.update(resource_data)
-
-            async with session.patch(patch_url, json=patch_data) as response:
-                # response_text = await response.text()
+            async with session.patch(resource_pool_patch_url, json=patch_data) as response:
                 log.info("response_685=%s", response.json())
-                if response.status == 201:
+                if response.status == 200:
                     log.info("Resource pool patched successfully")
                     return response.json()
                 else:
                     log.error(f"Failed to patch resource pool. Status code: {response.status}")
-                    # await vlan_manager.release_vlan_numbers(reserved_vlans, db)
-                    # url = f'{self.base_url}/{self.api_prefix}/{resource_inventory_id}'
-                    # response = await self._send_request("DELETE", url)
-                    # if response.status_code == 204:
-                    #     raise InternalServerError(
-                    #         "TMF685 patch resource pool fails: An error occurred during resource pool updation.")
-
-        # for resource_info in reservation_place:
-        #     create_resource_request["place"].append({
-        #         "name": place_info.name,
-        #         "role": place_info.type
-        #     })
-
-        #     {
-        #
-        #     "capacityAmountRemaining": "new_value",  # Replace with the actual new value
-        #     # Add other fields to update as needed
-        # }
-
-        # patch_data = {
-        #     "capacityAmountRemaining": available_capacity_amount,
-        #     # Add other fields that you want to update
-        # }
-
-        # patch_url = "https://f26c51a2-3e80-496e-884f-e600ff462378.mock.pstmn.io"
-        # response = await self._send_patch_request(patch_url, patch_data)
-        # log.info(f'status_code', response.status_code)
-        # if response.status_code == 200:
-        #     log.info(f'685_patch_response_12300, {response}')
-        #     return response
-        # else:
-        #     log.error("Failed to update resource pool")
-        #     raise HTTPException(status_code=response.status_code, detail="Failed to update resource pool")
-
-        # return response
-    # except Exception as e:
-    #     # Undo operations in case of failure
-    #     await self._undo_generate_vlan_numbers(used_vlans, reserved_vlans)
-    #     await self._undo_create_resource("tinaa", reserved_vlans)
-    #     raise e
-
-    # data_list = []
-    #
-    # for item in reservation_item:
-    #     item_data = {
-    #         "reservationItem": [
-    #             {
-    #                 "appliedCapacityAmount": applied_capacity_amount,
-    #                 "quantity": item.quantity,
-    #                 "resourceCapacity": {
-    #                     "@type": item.reservation_resource_capacity.type,
-    #                     "applicableTimePeriod": {
-    #                         "from": item.reservation_resource_capacity.reservation_applicable_time_period.from_.isoformat(),
-    #                     },
-    #                     "place": [
-    #                         {
-    #                             "name": place.name,
-    #                             "type": place.type
-    #                         } for place in item.reservation_resource_capacity.reservation_place],
-    #                     "capacityDemandAmount": item.reservation_resource_capacity.capacity_demand_amount,
-    #                     "resourcePool": {
-    #                         "href": item.reservation_resource_capacity.resource_pool.href,
-    #                         "id": item.reservation_resource_capacity.resource_pool.pool_id,
-    #                     }
-    #                 }
-    #             }
-    #         ]
-    #     }
-    #     data_list.append(item_data)
-    #
-    # print("reservation_item_1", data_list)
-    # return data_list
+                    raise BadRequestError(f"Failed to patch resource pool. Status code: {response.status}")
 
 
 resource_pool_provider = ResourcePoolProvider()
-# vlan_manager = VLANPoolManager()
