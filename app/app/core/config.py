@@ -9,20 +9,24 @@ LogLevel: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 JWKSet: TypeAlias = dict[str, list[dict[str, Any]]]
 
+
 class APISettings(BaseSettings):
     API_BASE_URL: AnyHttpUrl
     API_NAME: str = "resourcePoolManagement"
     API_VERSION: str = "v1"
     API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
 
+
 class AuthSettings(BaseSettings):
-    AUTH_BASE_URL: AnyHttpUrl = "https://auth.tinaa.teluslabs.net/auth/realms/tinaa/protocol/openid-connect"
+    AUTH_BASE_URL: AnyHttpUrl = None
     AUTH_AUTHORIZATION_URL: AnyHttpUrl | None = None
     AUTH_JWK_SET_URL: AnyHttpUrl | None = None
     AUTH_TOKEN_URL: AnyHttpUrl | None = None
-
+    AUTH_CERTS_URL: AnyHttpUrl | None = None
+    SSL_VERIFY: Any = False
     # This will be set after application startup, getting it from the JWK_SET_URL above
     AUTH_JWK_SET: Json[JWKSet] | None = None
+    JWK: str = ""
 
     @field_validator("AUTH_AUTHORIZATION_URL", mode="before")
     def assemble_authorization_url(
@@ -56,7 +60,6 @@ class AuthSettings(BaseSettings):
         base_url = str(field_info.data.get("AUTH_BASE_URL"))
 
         return Url(urljoin(f"{base_url}/", "token"))
-
 
 
 class ResourceInventoryProviderSettings(BaseSettings):
@@ -102,7 +105,11 @@ class LoggerSettings(BaseSettings):
 
 
 class Settings(
-    AuthSettings, APISettings, DatabaseSettings, LoggerSettings, ResourceInventoryProviderSettings
+    AuthSettings,
+    APISettings,
+    DatabaseSettings,
+    LoggerSettings,
+    ResourceInventoryProviderSettings,
 ):
     model_config = SettingsConfigDict(
         case_sensitive=True,

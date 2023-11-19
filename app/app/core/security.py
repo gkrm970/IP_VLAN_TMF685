@@ -3,13 +3,14 @@ from typing import Annotated
 import httpx
 import jose.jwt
 import pydantic
-from fastapi import Request, Security
+from fastapi import Request, Security, Depends
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.security.utils import get_authorization_scheme_param
 
 from app import log, schemas
 from app.core.config import JWKSet, settings
 from app.core.exceptions import InternalError, UnauthorizedError
+from app.schemas import TokenPayload
 
 
 class OAuth2AuthCodeBearer(OAuth2AuthorizationCodeBearer):
@@ -73,3 +74,21 @@ async def validate_token_signature(
         raise UnauthorizedError("Invalid authentication details")
 
     return payload
+
+
+class ValidateAccessRoles:
+    def __init__(self, perms: list):
+        self.perms = perms
+
+    async def __call__(self, token: TokenPayload = Depends(validate_token_signature)):
+        resource_access_dict = token.resource_access
+        access_roles = access_roles = resource_access_dict.get(
+            "pltf-develop-uinv-tmf685", {}
+        ).roles
+        if resource_access_dict and access_roles:
+            if any(perm in access_roles for perm in self.perms):
+                return token
+
+        raise UnauthorizedError(
+            f"User does not have the necessary permissions to access the resource: {', '.join(self.perms)}"
+        )
