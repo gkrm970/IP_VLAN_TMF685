@@ -29,3 +29,6 @@ from .reservation_schemas import (
     ReservationCreate,
     ReservationUpdate,
 )  # isort: split
+
+
+from .token_schema import TokenAccessDetails, TokenPayload  # noqa F401

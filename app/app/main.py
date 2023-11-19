@@ -1,7 +1,7 @@
 from asgi_correlation_id.middleware import CorrelationIdMiddleware
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import router as api_router
 from app.core.config import settings

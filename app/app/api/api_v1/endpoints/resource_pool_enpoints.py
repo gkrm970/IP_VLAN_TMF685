@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Response, status
+from fastapi import APIRouter, Body, Depends, Response, status, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,8 +9,10 @@ from app import crud, log, models, schemas
 from app.api import deps
 from app.api.responses import reservation_responses
 from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
+from app.core import security
+from app.schemas import TokenPayload
 
-router = APIRouter()
+router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
 
 
 @router.post(
@@ -26,6 +28,9 @@ async def create_resource_pool(
         Body(description="The Resource pool to be created"),
     ],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
+    ),
 ) -> JSONResponse:
     """
     This operation creates a Resource pool entity.
@@ -60,6 +65,9 @@ async def get_resource_pools(
     limit: Annotated[int, deps.LimitQuery] = 100,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:ro"])
+    ),
 ) -> JSONResponse:
     """
     This operation retrieves a list of Resource Pools.
@@ -93,6 +101,9 @@ async def get_resource_pool_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
     *,
     resource_pool: Annotated[models.ResourcePool, Depends(deps.get_resource)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:ro"])
+    ),
 ) -> JSONResponse:
     """
     This operation retrieves a Resource Pool by ID.
@@ -117,6 +128,9 @@ async def delete_resource_pool_by_id(
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
     resource: Annotated[models.ResourcePool, Depends(deps.get_resource)],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
+    ),
 ) -> Response:
     """
     This operation deletes a Resource Pool by ID.
@@ -140,6 +154,9 @@ async def update_resource_by_id(
         schemas.ResourcePoolUpdate,
         Body(description="The Resource Pool to be updated"),
     ],
+    current_user: TokenPayload = Depends(
+        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
+    ),
 ) -> JSONResponse:
     """
     This operation updates partially a Resource entity.
