@@ -24,6 +24,8 @@ aiomysql = "^0.2.0"
 alembic = { version = "^1.12.0", extras = ["tz"] }
 # Database ORM
 sqlalchemy = { version = "^2.0.21", extras = ["asyncio"] }
+# Async database driver for PostgreSQL
+asyncpg = "^0.28.0"
 # Type validation schemas used within FastAPI
 pydantic = "^2.4.1"
 # Settings management using Pydantic
