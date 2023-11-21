@@ -59,11 +59,11 @@ class Reservation(ReservationBase):
         description="When sub-classing, this defines the super-class",
     )
 
-    related_parties: schemas.RelatedParty | dict | None = Field(
+    related_parties: schemas.RelatedParty | None = Field(
         alias="relatedParty",
         description="Array of objects (RelatedParty)",
     )
-    requested_period: schemas.ReservationRequestedPeriod | dict | None = Field(
+    requested_period: schemas.ReservationRequestedPeriod | None = Field(
         None,
         alias="requestedPeriod",
         description="Array of objects (RelatedParty)",

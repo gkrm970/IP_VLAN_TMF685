@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 import httpx
 
-from app import schemas, log
+from app import log, schemas
 from app.core.config import settings
 
 

@@ -1,4 +1,4 @@
-from app import providers, schemas, log
+from app import log, providers, schemas
 
 
 class ResourceReservationManager:
