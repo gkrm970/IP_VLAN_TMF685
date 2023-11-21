@@ -99,7 +99,7 @@ class LoggerSettings(BaseSettings):
 
 
 class ResourceInventoryProviderSettings(BaseSettings):
-    RI_BASE_URL: str
+    RI_API_BASE_URL: str
     RI_API_NAME: str = "plan/inventory/resourceInventoryManagement"
     RI_API_VERSION: str = "v1"
     RI_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"

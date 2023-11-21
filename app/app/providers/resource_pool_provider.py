@@ -14,7 +14,7 @@ async def final_reservation_response(reservation_response):
 
 class ResourcePoolProvider:
     def __init__(self):
-        self.base_url = settings.RI_BASE_URL
+        self.base_url = settings.RI_API_BASE_URL
         self.api_prefix = settings.RI_API_PREFIX
 
     async def extract_capacity_amount(self, capacity):
