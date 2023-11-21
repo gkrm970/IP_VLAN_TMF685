@@ -18,15 +18,16 @@ class APISettings(BaseSettings):
 
 
 class AuthSettings(BaseSettings):
-    AUTH_BASE_URL: AnyHttpUrl = None
+    AUTH_BASE_URL: AnyHttpUrl
     AUTH_AUTHORIZATION_URL: AnyHttpUrl | None = None
     AUTH_JWK_SET_URL: AnyHttpUrl | None = None
     AUTH_TOKEN_URL: AnyHttpUrl | None = None
-    AUTH_CERTS_URL: AnyHttpUrl | None = None
     SSL_VERIFY: Any = False
     # This will be set after application startup, getting it from the JWK_SET_URL above
     AUTH_JWK_SET: Json[JWKSet] | None = None
-    JWK: str = ""
+
+    AUTH_CLIENT_ID: str
+    AUTH_CLIENT_SECRET: str
 
     @field_validator("AUTH_AUTHORIZATION_URL", mode="before")
     def assemble_authorization_url(
@@ -62,18 +63,11 @@ class AuthSettings(BaseSettings):
         return Url(urljoin(f"{base_url}/", "token"))
 
 
-class ResourceInventoryProviderSettings(BaseSettings):
-    RI_PROVIDER_BASE_URL: str = "http://127.0.0.1:8000"
-    API_NAME: str = "plan/inventory/resourceInventoryManagement"
-    API_VERSION: str = "v1"
-    RI_PROVIDER_API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
-
-
 class DatabaseSettings(BaseSettings):
     DB_USERNAME: str
     DB_PASSWORD: str
     DB_HOST: str
-    DB_PORT: int
+    DB_PORT: int = 5432
     DB_NAME: str
     DB_SQLALCHEMY_URI: str | None = None
 
@@ -102,6 +96,13 @@ class LoggerSettings(BaseSettings):
         "[%(filename)s.%(lineno)s -> %(funcName)s()] %(message)s"
     )
     LOGGER_DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+
+
+class ResourceInventoryProviderSettings(BaseSettings):
+    RI_BASE_URL: str
+    RI_API_NAME: str = "plan/inventory/resourceInventoryManagement"
+    RI_API_VERSION: str = "v1"
+    RI_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"
 
 
 class Settings(

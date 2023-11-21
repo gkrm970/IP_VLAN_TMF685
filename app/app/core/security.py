@@ -3,14 +3,13 @@ from typing import Annotated
 import httpx
 import jose.jwt
 import pydantic
-from fastapi import Request, Security, Depends
+from fastapi import Request, Security
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.security.utils import get_authorization_scheme_param
 
 from app import log, schemas
 from app.core.config import JWKSet, settings
 from app.core.exceptions import InternalError, UnauthorizedError
-from app.schemas import TokenPayload
 
 
 class OAuth2AuthCodeBearer(OAuth2AuthorizationCodeBearer):
@@ -33,7 +32,7 @@ class OAuth2AuthCodeBearer(OAuth2AuthorizationCodeBearer):
 async def _get_jwk_set() -> JWKSet:
     if settings.AUTH_JWK_SET is None:
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(verify=False) as client:
                 response = await client.get(str(settings.AUTH_JWK_SET_URL))
 
                 response.raise_for_status()
@@ -76,19 +75,25 @@ async def validate_token_signature(
     return payload
 
 
-class ValidateAccessRoles:
-    def __init__(self, perms: list):
-        self.perms = perms
+class AccessRoleValidator:
+    def __init__(self, roles: list[str]) -> None:
+        self.roles = roles
 
-    async def __call__(self, token: TokenPayload = Depends(validate_token_signature)):
-        resource_access_dict = token.resource_access
-        access_roles = access_roles = resource_access_dict.get(
-            "pltf-develop-uinv-tmf685", {}
-        ).roles
-        if resource_access_dict and access_roles:
-            if any(perm in access_roles for perm in self.perms):
-                return token
+    async def __call__(
+        self, token: Annotated[schemas.TokenPayload, Security(validate_token_signature)]
+    ) -> schemas.TokenPayload:
+        client_resource_access = token.resource_access.get(settings.AUTH_CLIENT_ID)
 
-        raise UnauthorizedError(
-            f"User does not have the necessary permissions to access the resource: {', '.join(self.perms)}"
-        )
+        if client_resource_access is None:
+            raise UnauthorizedError(
+                f"No permission to access the requested resource, "
+                f"missing resource access: '{settings.AUTH_CLIENT_ID}'"
+            )
+
+        if not any(role in client_resource_access.roles for role in self.roles):
+            raise UnauthorizedError(
+                f"Not enough permissions to access the requested resource, "
+                f"missing role: one of '{' '.join(self.roles)}'"
+            )
+
+        return token
