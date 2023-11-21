@@ -1,8 +1,10 @@
 import datetime
 import json
+
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
+
 from app import log
 
 

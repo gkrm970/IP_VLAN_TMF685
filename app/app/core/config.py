@@ -1,4 +1,4 @@
-from typing import Literal, Any, TypeAlias
+from typing import Any, Literal, TypeAlias
 from urllib.parse import urljoin
 
 from pydantic import AnyHttpUrl, Json, ValidationInfo, field_validator
