@@ -55,8 +55,10 @@ class ResourceReservationManager:
                         pass
 
                     elif related_party_id == "netcracker":
-                        log.info("Entering into net cracker reserve IP address block if in case of "
-                                 "related party id is netcracker")
+                        log.info(
+                            "Entering into net cracker reserve IP address block if in case of "
+                            "related party id is netcracker"
+                        )
                         await self.net_cracker_reservation_provider.create_net_cracker_resource(
                             reservation_item,
                             related_party_id,

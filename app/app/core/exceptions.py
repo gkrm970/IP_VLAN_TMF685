@@ -137,8 +137,6 @@ class NotFoundError(HTTPException):
         )
 
 
-
-
 class InternalError(HTTPException):
     def __init__(
         self,

@@ -1,6 +1,5 @@
 import json
 from typing import Any, Optional
-from urllib.parse import urljoin
 
 import httpx
 
@@ -15,8 +14,8 @@ async def final_reservation_response(reservation_response):
 
 class ResourcePoolProvider:
     def __init__(self):
-        self.base_url = settings.RI_PROVIDER_BASE_URL
-        self.api_prefix = settings.RI_PROVIDER_API_PREFIX
+        self.base_url = settings.RI_BASE_URL
+        self.api_prefix = settings.RI_API_PREFIX
 
     async def extract_capacity_amount(self, capacity):
         capacity_amount = capacity.get("capacityAmount")
@@ -37,7 +36,9 @@ class ResourcePoolProvider:
                 return vlan
         return None
 
-    async def _send_request(self, method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
+    async def _send_request(
+        self, method, url: str, request_body: Optional[dict[str, Any]] = None
+    ) -> httpx.Response:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.request(method, url, json=request_body)
@@ -60,9 +61,13 @@ class ResourcePoolProvider:
 
         return {}  # Return an empty dictionary or handle the error case appropriately
 
-    async def create_resource_reservation_response(self, reservation_item, used_vlans,
-                                                   resource_inventory_href,
-                                                   resource_inventory_id) -> None | dict | Any:
+    async def create_resource_reservation_response(
+        self,
+        reservation_item,
+        used_vlans,
+        resource_inventory_href,
+        resource_inventory_id,
+    ) -> None | dict | Any:
         log.info(f"in reservation capacity_amount: {reservation_item}")
         # Import the necessary classes and modules
         from datetime import datetime
@@ -71,8 +76,12 @@ class ResourcePoolProvider:
         def convert_to_dict(obj):
             if isinstance(obj, list):
                 return [convert_to_dict(item) for item in obj]
-            elif hasattr(obj, '__dict__'):
-                return {key: convert_to_dict(value) for key, value in obj.__dict__.items() if not callable(value)}
+            elif hasattr(obj, "__dict__"):
+                return {
+                    key: convert_to_dict(value)
+                    for key, value in obj.__dict__.items()
+                    if not callable(value)
+                }
             elif isinstance(obj, datetime):
                 return obj.isoformat()
             else:
@@ -85,24 +94,26 @@ class ResourcePoolProvider:
         print("converted_data", converted_data)
 
         log.info(f"type_of reservation_item {type(reservation_item)}")
-        demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
+        demand_amount = reservation_item[
+            0
+        ].reservation_resource_capacity.capacity_demand_amount
         print("demand_amount_var", demand_amount)
 
         applied_capacity_amount = {
             "appliedCapacityAmount": str(demand_amount),
-            "resource": []
+            "resource": [],
         }
         for vlan in used_vlans:
-            characteristic = {
-                "8021qVLAN": vlan
-            }
+            characteristic = {"8021qVLAN": vlan}
 
-            applied_capacity_amount["resource"].append({
-                "@referredType": "VLAN",
-                "href": resource_inventory_href,
-                "resource_id": resource_inventory_id,
-                "characteristic": characteristic
-            })
+            applied_capacity_amount["resource"].append(
+                {
+                    "@referredType": "VLAN",
+                    "href": resource_inventory_href,
+                    "resource_id": resource_inventory_id,
+                    "characteristic": characteristic,
+                }
+            )
 
         converted_data.append(applied_capacity_amount)
 

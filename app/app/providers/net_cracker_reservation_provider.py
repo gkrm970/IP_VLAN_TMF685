@@ -35,16 +35,16 @@ class NetCrackerReservationProvider:
         pass
 
     async def create_net_cracker_resource(
-            self,
-            reservation_item,
-            related_party_id,
-            related_party_role,
-            reservation_item_quantity,
-            reservation_item_resource_capacity_type,
-            reservation_item_resource_capacity_capacity_demand_amount,
-            reservation_item_resource_capacity_resource_pool_id,
-            ip_am_description,
-            ip_am_detail
+        self,
+        reservation_item,
+        related_party_id,
+        related_party_role,
+        reservation_item_quantity,
+        reservation_item_resource_capacity_type,
+        reservation_item_resource_capacity_capacity_demand_amount,
+        reservation_item_resource_capacity_resource_pool_id,
+        ip_am_description,
+        ip_am_detail,
     ):
         log.info("Creating net cracker resource")
         reservation_place = (
@@ -114,9 +114,7 @@ class NetCrackerReservationProvider:
             ],
         }
 
-        net_cracker_reservation_url = (
-            "https://apigw-private-nane-np-001.tsl.telus.com/resource/resourcePoolManagement/v1/reservation"
-        )
+        net_cracker_reservation_url = "https://apigw-private-nane-np-001.tsl.telus.com/resource/resourcePoolManagement/v1/reservation"
 
         log.info("Before creating netcracker resource")
         response = await post_with_retry(
