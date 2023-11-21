@@ -84,7 +84,6 @@ trigger_build_deploy:
     - develop
     - qa
     - preprod
-    - tmf-acl-roles
 
 
 trigger_infra_deploy:
@@ -93,14 +92,6 @@ trigger_infra_deploy:
   environment:
     name: $CI_COMMIT_BRANCH
   rules:
-    - if: $CI_COMMIT_BRANCH == "tmf-acl-roles"
-      variables:
-        OCP_ENVIRONMENT: develop
-        OCP_PROJECT: $PROJECT_DEVELOP
-        OCP_TOKEN: $DEPLOYER_TOKEN_DEVELOP
-        ROUTE: $SERVICE_IMAGE_NAME.develop.app01.toll6.tinaa.tlabs.ca
-        IMAGE_TAG: develop
-        IMAGE_NAME: $CI_REGISTRY_IMAGE/$SERVICE_IMAGE_NAME:$CI_COMMIT_REF_NAME
     - if: $CI_COMMIT_BRANCH == "develop"
       variables:
         OCP_ENVIRONMENT: develop
