@@ -15,8 +15,11 @@ from .reservation_resource_pool_schema import ReservationResourcePool  # noqa F4
 from .reservation_resource_capacity_schema import (
     ReservationResourceCapacity,
 )  # noqa F401
+from .reservation_characteristic_schema import ReservationCharacteristic
+from .reservation_resource_schema import ReservationResource
+from .reservation_applied_capacity_amount_schema import AppliedCapacityAmount
 from .reservation_item_schema import ReservationItem  # noqa F401
-
+from .reservation_item_schema import ReservationItemCreate, ReservationItemUpdate
 
 # from .applicable_time_period_schema import ApplicableTimePeriod  # noqa F401
 # from .resource_ref_schema import ResourceRef
@@ -31,6 +34,7 @@ from .reservation_item_schema import ReservationItem  # noqa F401
 
 from .reservation_related_party_schema import RelatedParty
 from .reservation_requested_period_schema import ReservationRequestedPeriod
+from .reservation_valid_for_schema import ReservationValidFor
 
 from .reservation_schemas import (
     ReservationBase,

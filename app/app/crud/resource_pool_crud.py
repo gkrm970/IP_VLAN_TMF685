@@ -7,7 +7,7 @@ from app import models, schemas
 class ResourcePoolCRUD:
     @staticmethod
     async def create(
-        db: AsyncSession, obj_in: schemas.ResourcePool
+        db: AsyncSession, obj_in: schemas.ResourcePoolCreate
     ) -> models.ResourcePool:
         db_obj = models.ResourcePool.from_schema(obj_in)
 

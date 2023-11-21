@@ -6,7 +6,6 @@ _NAME_DESCRIPTION = "A string used to give a name to the reservation"
 
 
 class ReservationBase(BaseModel):
-
     type: str | None = Field(
         None,
         alias="@type",
@@ -23,7 +22,7 @@ class ReservationBase(BaseModel):
         alias="requestedPeriod",
         description="Array of objects (RelatedParty)",
     )
-    reservation_item: list[schemas.ReservationItem] | None = Field(
+    reservation_item: list[schemas.ReservationItemCreate] | None = Field(
         default_factory=list,
         alias="reservationItem",
         description="Array of objects (Note)",
@@ -74,5 +73,12 @@ class Reservation(ReservationBase):
         alias="reservationItem",
         description="Array of objects (Note)",
     )
-
-
+    reservation_state: str | None = Field(
+        None,
+        alias="reservationState",
+        description="When sub-classing, this defines the super-class",
+    )
+    valid_for: schemas.ReservationValidFor | None = Field(
+        None,
+        description="Array of objects (RelatedParty)",
+    )

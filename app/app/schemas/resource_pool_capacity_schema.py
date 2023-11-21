@@ -1,5 +1,3 @@
-import datetime
-
 from pydantic import BaseModel, ConfigDict, Field
 
 from app import schemas
@@ -37,22 +35,19 @@ class ResourcePoolCapacityBase(BaseModel):
         default_factory=list,
         description="Configuration features",
     )
-    # resource: list[schemas.ResourcePoolResource] = Field(
-    #     default_factory=list,
-    #     description="Configuration features",
-    # )
-
-    # class Config:
-    #     # Exclude the 'resource' field from the request body
-    #     exclude = {'resource'}
 
 
 class ResourcePoolCapacityCreate(ResourcePoolCapacityBase):
-    pass
+    resource_pool_resource: list[schemas.ResourcePoolResource] = Field(
+        alias="resource",
+        default_factory=list,
+        description="Configuration features",
+    )
 
 
 class ResourcePoolCapacityUpdate(ResourcePoolCapacityBase):
-    resource: list[schemas.ResourcePoolResource] = Field(
+    resource_pool_resource: list[schemas.ResourcePoolResource] = Field(
+        alias="resource",
         default_factory=list,
         description="Configuration features",
     )
@@ -94,7 +89,8 @@ class ResourcePoolCapacity(ResourcePoolCapacityBase):
         default_factory=list,
         description="Configuration features",
     )
-    resource: list[schemas.ResourcePoolResource] = Field(
+    resource_pool_resource: list[schemas.ResourcePoolResource] = Field(
+        alias="resource",
         default_factory=list,
         description="Configuration features",
     )

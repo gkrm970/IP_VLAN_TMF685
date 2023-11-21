@@ -1,15 +1,9 @@
 import uuid
-
-from fastapi import Depends
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
-
+from sqlalchemy.orm import selectinload
 from app import providers, schemas, log, models
-from app.api import deps
-from app.api.deps import get_db_session
 from app.core.exceptions import InternalServerError
-from app.providers.resource_pool_provider import final_reservation_response
 
 
 class ResourceReservationManager:
@@ -29,6 +23,15 @@ class ResourceReservationManager:
                     await self.resource_pool_provider.generate_unique_vlan(demand_amount, capacity_amount_from,
                                                                            capacity_amount_to, used_vlans)
                 log.info(f"unique_vlan_numbers: {unique_vlan_numbers}")
+                used_vlans.update(unique_vlan_numbers)
+                return unique_vlan_numbers, available_capacity_amount
+            else:
+                remaining_demand = demand_amount - len(used_vlans)
+                unique_vlan_numbers = \
+                    await self.resource_pool_provider.generate_unique_vlan(remaining_demand, capacity_amount_from,
+                                                                           capacity_amount_to, used_vlans)
+                log.info(f"unique_vlan_numbers: {unique_vlan_numbers}")
+                used_vlans.update(unique_vlan_numbers)
                 return unique_vlan_numbers, available_capacity_amount
         else:
             log.info("Not enough resources available to reserve VLANs.")
@@ -50,8 +53,6 @@ class ResourceReservationManager:
             )
             resource_pool_response = result.scalars().first().to_dict()
             log.info(f"resource_pool_response, {resource_pool_response}")
-
-            # resource_pool_response = await self.resource_pool_provider.get_resource(resource_pool_href)
             capacity_list = resource_pool_response.get("capacity")
             log.info(f"capacity_list, {capacity_list}")
             for capacity in capacity_list:
@@ -85,37 +86,42 @@ class ResourceReservationManager:
                     resource_inventory_href = resource_inventory_response.get("href")
                     resource_inventory_id = resource_inventory_response.get("id")
 
-                    # Call PATCH Api for resource pool to update the capacity amount
-                    resource_data = [
-                        {"href": "http://ResourcePool/KJEKYR4YBKSB", "resource_id": "3473t4873tbskbcsbcks"}]
-                    result = await db.execute(
-                        select(models.ResourcePool).filter(
-                            models.ResourcePool.id == resource_pool_id
-                        )
-                    )
-
-                    resource_pool_response = result.scalars().first()
-                    new_resource_data = models.ResourcePoolResource(
-                        id=str(uuid.uuid4()),
-                        resource_id="17r276r32763t26te",
-                        href="http://ResourcePool/HF5R653R37R"
-                    )
-
-                    resource_pool_response.capacity[0].resource_pool_resource.append(new_resource_data)
-
-                    await db.commit()
                     log.info("Update successfully resource_pool record data")
+                    try:
 
-                    tmf685_patch_response = await self.resource_pool_provider.patch_resource_pool(
-                        resource_inventory_href,
-                        resource_inventory_id,
-                        resource_pool_id,
-                        reserved_vlans, db)
-                    log.info("tmf685_patch_response=%s", tmf685_patch_response)
+                        result = await db.execute(
+                            select(models.ResourcePool)
+                            .options(selectinload(models.ResourcePool.capacity))
+                            .filter(models.ResourcePool.id == resource_pool_id)
+                        )
+
+                        resource_pool_response = result.scalars().first()
+
+                        if resource_pool_response:
+                            resource_pool_response.capacity[0].capacity_amount_remaining = str(available_capacity_amount)
+                            new_resource_data = models.ResourcePoolResource(
+                                id=str(uuid.uuid4()),
+                                resource_id="17r276r32763t26te",
+                                href="http://ResourcePool/HF5R653R37R"
+                            )
+
+                            resource_pool_response.capacity[0].resource_pool_resource.append(new_resource_data)
+                            print("data_capacity_response", resource_pool_response.to_dict())
+                            await db.commit()
+                        else:
+                            print(f"ResourcePool with id {resource_pool_id} not found.")
+                    except Exception as e:
+                        delete_response = await self.resource_inventory_provider.delete_request(resource_inventory_id)
+                        if delete_response.status_code == 204:
+                            log.info(f'Deleted resource successfully with this id: {resource_inventory_id}')
+                            raise InternalServerError(
+                                f"update resource pool fails, an error occurred during resource pool updating {e}")
+                        else:
+                            print(f"Failed to delete resource. Status code: {delete_response.status_code}")
 
                     reservation_res = \
                         await self.resource_pool_provider.create_resource_reservation_response(
-                            reservation_create.reservation_item, used_vlans,
+                            reservation_create, used_vlans,
                             resource_inventory_href,
                             resource_inventory_id)
                     log.info("reservation_res=%s", reservation_res)

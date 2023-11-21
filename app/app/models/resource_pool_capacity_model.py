@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, Integer
+from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -58,7 +58,7 @@ class ResourcePoolCapacity(BaseDbModel):
         ]
         resource_pool_resource = [
             models.ResourcePoolResource.from_schema(resource)
-            for resource in schema.resource
+            for resource in schema.resource_pool_resource
         ]
         print(type(resource_specification))
         # resource_pool_capacity_id = str(uuid.uuid4())

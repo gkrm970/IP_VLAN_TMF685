@@ -36,6 +36,13 @@ class Reservation(BaseDbModel):
     reservation_item: Mapped[list[models.ReservationItem]] = relationship(
         back_populates="reservation", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
     )
+    reservation_state: Mapped[str | None] = mapped_column(String(255))
+    valid_for: Mapped[models.ValidFor] = relationship(
+        back_populates="reservation",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
+    )
 
     @classmethod
     def from_schema(cls, schema: schemas.ReservationCreate) -> "Reservation":
@@ -50,6 +57,10 @@ class Reservation(BaseDbModel):
             models.ReservationItem.from_schema(reservation_item)
             for reservation_item in schema.reservation_item
         ]
+        valid_for = models.ValidFor.from_schema(
+            schema.valid_for
+        )
+
         print("reservation_item_list", reservation_item_list)
 
         return cls(
@@ -58,7 +69,9 @@ class Reservation(BaseDbModel):
             type=schema.type,
             related_parties=related_parties,
             requested_period=requested_period,
-            reservation_item=reservation_item_list
+            reservation_item=reservation_item_list,
+            reservation_state=schema.reservation_state,
+            valid_for=valid_for
         )
 
     def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:

@@ -118,94 +118,96 @@ class ResourcePoolProvider:
             log.info(f"Failed to send PATCH request. Request error: {e}")
             raise e
 
-    async def create_resource_reservation_response(self, reservation_item, used_vlans,
+    async def create_resource_reservation_response(self, reservation_create, used_vlans,
                                                    resource_inventory_href,
                                                    resource_inventory_id) -> None | dict | Any:
 
-        demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
-        applied_capacity_amount = {
-            "appliedCapacityAmount": str(demand_amount),
-            "resource": []
-        }
-        for vlan in used_vlans:
-            characteristic = {
-                "8021qVLAN": vlan
-            }
+        print("reservation_create", reservation_create)
 
-            applied_capacity_amount["resource"].append({
-                "@referredType": "VLAN",
-                "href": resource_inventory_href,
-                "resource_id": resource_inventory_id,
-                "characteristic": characteristic
-            })
-
-        reservation_response = await create_reservation_response(reservation_item, applied_capacity_amount)
-        return reservation_response
-
-    async def patch_resource_pool(self, resource_inventory_href, resource_inventory_id, available_capacity_amount,
-                                  resource_pool_id, reserved_vlans, db):
-        log.info("available_capacity_amount", available_capacity_amount)
-        resource_pool_patch_url = f"{self.resource_pool_base_url}/{self.resource_pool_api_prefix}/{resource_pool_id}"
-
-        async with aiohttp.ClientSession() as session:
-            log.info("patch_url=%s", resource_pool_patch_url)
-
-            patch_data = {
-                "@type": "VLAN_ResourcePool",
-                "capacity": [
-                    {
-                        "applicableTimePeriod": {
-                            "from": "2019-08-24T14:15:22Z"
-                        },
-                        "capacityAmount": "100",
-                        "capacityAmountFrom": "2000",
-                        "capacityAmountRemaining": str(available_capacity_amount),
-                        "capacityAmountTo": "2099",
-                        "place": [
-                            {
-                                "name": "AB",
-                                "type": "region"
-                            },
-                            {
-                                "name": "Viger-1",
-                                "type": "pod"
-                            }
-                        ],
-                        "rangeInterval": "1",
-                        "relatedParty": {
-                            "party_id": "tinaa",
-                            "name": "CNM Network",
-                            "role": "tinaaVLANPool"
-                        },
-                        "resourceSpecification": [
-                            {
-                                "@type": "8021qVLAN_ResourceSpecification",
-                                "href": "https://api.develop.tinaa.teluslabs.net/plan/inventory"
-                                        "/resourceCatalogManagement"
-                                        "/resourceSpecification/99214f4f-6cfc-41a8-9c8e-3b94707ec939",
-                                "resource_specification_id": "99214f4f-6cfc-41a8-9c8e-3b94707ec939"
-                            }
-                        ],
-                        "resource": [
-                            {
-                                "href": resource_inventory_href,
-                                "id": resource_inventory_id
-                            }
-                        ]
-                    }
-                ],
-                "description": "VLAN Resource Pool",
-                "name": "Some ABC VLAN Pool"
-            }
-
-            async with session.patch(resource_pool_patch_url, json=patch_data) as response:
-                log.info("response_685=%s", response.json())
-                if response.status == 200:
-                    log.info("Resource pool patched successfully")
-                    return response.json()
-                else:
-                    log.error(f"Failed to patch resource pool. Status code: {response.status}")
-                    raise BadRequestError(f"Failed to patch resource pool. Status code: {response.status}")
+    #     demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
+    #     applied_capacity_amount = {
+    #         "appliedCapacityAmount": str(demand_amount),
+    #         "resource": []
+    #     }
+    #     for vlan in used_vlans:
+    #         characteristic = {
+    #             "8021qVLAN": vlan
+    #         }
+    #
+    #         applied_capacity_amount["resource"].append({
+    #             "@referredType": "VLAN",
+    #             "href": resource_inventory_href,
+    #             "resource_id": resource_inventory_id,
+    #             "characteristic": characteristic
+    #         })
+    #
+    #     reservation_response = await create_reservation_response(reservation_item, applied_capacity_amount)
+    #     return reservation_response
+    #
+    # async def patch_resource_pool(self, resource_inventory_href, resource_inventory_id, available_capacity_amount,
+    #                               resource_pool_id, reserved_vlans, db):
+    #     log.info("available_capacity_amount", available_capacity_amount)
+    #     resource_pool_patch_url = f"{self.resource_pool_base_url}/{self.resource_pool_api_prefix}/{resource_pool_id}"
+    #
+    #     async with aiohttp.ClientSession() as session:
+    #         log.info("patch_url=%s", resource_pool_patch_url)
+    #
+    #         patch_data = {
+    #             "@type": "VLAN_ResourcePool",
+    #             "capacity": [
+    #                 {
+    #                     "applicableTimePeriod": {
+    #                         "from": "2019-08-24T14:15:22Z"
+    #                     },
+    #                     "capacityAmount": "100",
+    #                     "capacityAmountFrom": "2000",
+    #                     "capacityAmountRemaining": str(available_capacity_amount),
+    #                     "capacityAmountTo": "2099",
+    #                     "place": [
+    #                         {
+    #                             "name": "AB",
+    #                             "type": "region"
+    #                         },
+    #                         {
+    #                             "name": "Viger-1",
+    #                             "type": "pod"
+    #                         }
+    #                     ],
+    #                     "rangeInterval": "1",
+    #                     "relatedParty": {
+    #                         "party_id": "tinaa",
+    #                         "name": "CNM Network",
+    #                         "role": "tinaaVLANPool"
+    #                     },
+    #                     "resourceSpecification": [
+    #                         {
+    #                             "@type": "8021qVLAN_ResourceSpecification",
+    #                             "href": "https://api.develop.tinaa.teluslabs.net/plan/inventory"
+    #                                     "/resourceCatalogManagement"
+    #                                     "/resourceSpecification/99214f4f-6cfc-41a8-9c8e-3b94707ec939",
+    #                             "resource_specification_id": "99214f4f-6cfc-41a8-9c8e-3b94707ec939"
+    #                         }
+    #                     ],
+    #                     "resource": [
+    #                         {
+    #                             "href": resource_inventory_href,
+    #                             "id": resource_inventory_id
+    #                         }
+    #                     ]
+    #                 }
+    #             ],
+    #             "description": "VLAN Resource Pool",
+    #             "name": "Some ABC VLAN Pool"
+    #         }
+    #
+    #         async with session.patch(resource_pool_patch_url, json=patch_data) as response:
+    #             log.info("response_685=%s", response.json())
+    #             if response.status == 200:
+    #                 log.info("Resource pool patched successfully")
+    #                 return response.json()
+    #             else:
+    #                 log.error(f"Failed to patch resource pool. Status code: {response.status}")
+    #                 raise BadRequestError(f"Failed to patch resource pool. Status code: {response.status}")
 
 
 resource_pool_provider = ResourcePoolProvider()

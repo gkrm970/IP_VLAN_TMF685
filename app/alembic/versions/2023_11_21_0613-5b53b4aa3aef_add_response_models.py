@@ -1,9 +1,9 @@
 """
-Intial
+Add response models
 
-Revision ID: 17b4755d875f
+Revision ID: 5b53b4aa3aef
 Revises: 
-Create Date: 2023-11-07 06:51:09.138843+00:00
+Create Date: 2023-11-21 06:13:48.828952+00:00
 """
 from collections.abc import Sequence
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # Revision identifiers, used by Alembic
-revision: str = "17b4755d875f"
+revision: str = "5b53b4aa3aef"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("href", sa.String(length=255), nullable=False),
         sa.Column("type", sa.String(length=255), nullable=True),
+        sa.Column("reservation_state", sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_reservation_id"), "reservation", ["id"], unique=False)
@@ -42,6 +43,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("quantity", sa.Integer(), nullable=False),
         sa.Column("reservation_id", sa.String(length=255), nullable=False),
+        sa.Column("sub_reservation_state", sa.String(length=255), nullable=True),
         sa.ForeignKeyConstraint(
             ["reservation_id"],
             ["reservation.id"],
@@ -104,6 +106,35 @@ def upgrade() -> None:
     op.create_index(
         op.f("ix_resource_pool_capacity_id"),
         "resource_pool_capacity",
+        ["id"],
+        unique=False,
+    )
+    op.create_table(
+        "valid_for",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("start_date", sa.String(length=255), nullable=False),
+        sa.Column("reservation_id", sa.String(length=255), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["reservation_id"],
+            ["reservation.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_valid_for_id"), "valid_for", ["id"], unique=False)
+    op.create_table(
+        "applied_capacity_amount",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("applied_capacity_amount", sa.String(length=255), nullable=False),
+        sa.Column("reservation_item_id", sa.String(length=255), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["reservation_item_id"],
+            ["reservation_item.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_applied_capacity_amount_id"),
+        "applied_capacity_amount",
         ["id"],
         unique=False,
     )
@@ -177,6 +208,24 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
+        "resource_pool_resource",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("resource_id", sa.String(length=255), nullable=False),
+        sa.Column("href", sa.String(length=255), nullable=False),
+        sa.Column("resource_pool_capacity_id", sa.String(length=255), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["resource_pool_capacity_id"],
+            ["resource_pool_capacity.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_resource_pool_resource_id"),
+        "resource_pool_resource",
+        ["id"],
+        unique=False,
+    )
+    op.create_table(
         "resource_pool_resource_specification",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("type", sa.String(length=255), nullable=False),
@@ -198,7 +247,7 @@ def upgrade() -> None:
     op.create_table(
         "external_party_characteristics",
         sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column("ipam_description", sa.String(length=255), nullable=False),
+        sa.Column("ipam_description", sa.String(length=255), nullable=True),
         sa.Column("ipam_details", sa.String(length=255), nullable=True),
         sa.Column(
             "reservation_resource_capacity_id", sa.String(length=255), nullable=False
@@ -252,6 +301,22 @@ def upgrade() -> None:
         op.f("ix_reservation_place_id"), "reservation_place", ["id"], unique=False
     )
     op.create_table(
+        "reservation_resource",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("referred_type", sa.String(length=255), nullable=False),
+        sa.Column("href", sa.String(length=255), nullable=True),
+        sa.Column("resource_id", sa.String(length=255), nullable=True),
+        sa.Column("applied_capacity_amount_id", sa.String(length=255), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["applied_capacity_amount_id"],
+            ["applied_capacity_amount.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_reservation_resource_id"), "reservation_resource", ["id"], unique=False
+    )
+    op.create_table(
         "reservation_resource_pool",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("pool_id", sa.String(length=255), nullable=False),
@@ -271,15 +336,33 @@ def upgrade() -> None:
         ["id"],
         unique=False,
     )
+    op.create_table(
+        "characteristic",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("ipv4_subnet", sa.String(length=255), nullable=False),
+        sa.Column("reservation_resource_id", sa.String(length=255), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["reservation_resource_id"],
+            ["reservation_resource.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_characteristic_id"), "characteristic", ["id"], unique=False
+    )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f("ix_characteristic_id"), table_name="characteristic")
+    op.drop_table("characteristic")
     op.drop_index(
         op.f("ix_reservation_resource_pool_id"), table_name="reservation_resource_pool"
     )
     op.drop_table("reservation_resource_pool")
+    op.drop_index(op.f("ix_reservation_resource_id"), table_name="reservation_resource")
+    op.drop_table("reservation_resource")
     op.drop_index(op.f("ix_reservation_place_id"), table_name="reservation_place")
     op.drop_table("reservation_place")
     op.drop_index(
@@ -298,6 +381,10 @@ def downgrade() -> None:
     )
     op.drop_table("resource_pool_resource_specification")
     op.drop_index(
+        op.f("ix_resource_pool_resource_id"), table_name="resource_pool_resource"
+    )
+    op.drop_table("resource_pool_resource")
+    op.drop_index(
         op.f("ix_resource_pool_related_party_id"),
         table_name="resource_pool_related_party",
     )
@@ -314,6 +401,12 @@ def downgrade() -> None:
         table_name="reservation_resource_capacity",
     )
     op.drop_table("reservation_resource_capacity")
+    op.drop_index(
+        op.f("ix_applied_capacity_amount_id"), table_name="applied_capacity_amount"
+    )
+    op.drop_table("applied_capacity_amount")
+    op.drop_index(op.f("ix_valid_for_id"), table_name="valid_for")
+    op.drop_table("valid_for")
     op.drop_index(
         op.f("ix_resource_pool_capacity_id"), table_name="resource_pool_capacity"
     )
