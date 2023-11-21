@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from .endpoints.reservation_endpoints import router as reservation_router
-from .endpoints.resource_pool_enpoints import router as resource_pool_router
+from .endpoints.resource_pool_endpoints import router as resource_pool_router
 
 router = APIRouter()
 router.include_router(reservation_router, prefix="/reservation", tags=["Reservation"])

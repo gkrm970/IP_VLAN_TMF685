@@ -9,10 +9,13 @@ from app import crud, log, models, schemas
 from app.api import deps
 from app.api.responses import reservation_responses
 from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
-from app.core import security
-from app.schemas import TokenPayload
 
-router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
+router = APIRouter()
+
+_read_access_validator = deps.AccessRoleValidator(
+    ["uinv:tmf685:resourcepool:ro", "uinv:tmf685:resourcepool:rw"]
+)
+_read_write_access_validator = deps.AccessRoleValidator(["uinv:tmf685:resourcepool:rw"])
 
 
 @router.post(
@@ -21,6 +24,7 @@ router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
     responses=reservation_responses.create_responses,
     response_model=schemas.ResourcePoolCreate,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Security(_read_write_access_validator)],
 )
 async def create_resource_pool(
     resource_create: Annotated[
@@ -28,9 +32,6 @@ async def create_resource_pool(
         Body(description="The Resource pool to be created"),
     ],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
-    ),
 ) -> JSONResponse:
     """
     This operation creates a Resource pool entity.
@@ -58,6 +59,7 @@ async def create_resource_pool(
     responses=reservation_responses.get_responses,
     response_model=list[schemas.ResourcePool],
     status_code=status.HTTP_200_OK,
+    dependencies=[Security(_read_access_validator)],
 )
 async def get_resource_pools(
     fields: Annotated[str, deps.FieldsQuery] = "",
@@ -65,9 +67,6 @@ async def get_resource_pools(
     limit: Annotated[int, deps.LimitQuery] = 100,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:ro"])
-    ),
 ) -> JSONResponse:
     """
     This operation retrieves a list of Resource Pools.
@@ -96,14 +95,12 @@ async def get_resource_pools(
     responses=reservation_responses.get_responses,
     response_model=schemas.ResourcePoolCreate,
     status_code=status.HTTP_200_OK,
+    dependencies=[Security(_read_access_validator)],
 )
 async def get_resource_pool_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
     *,
     resource_pool: Annotated[models.ResourcePool, Depends(deps.get_resource)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:ro"])
-    ),
 ) -> JSONResponse:
     """
     This operation retrieves a Resource Pool by ID.
@@ -122,15 +119,13 @@ async def get_resource_pool_by_id(
     summary="Deletes a Resource Pool by ID",
     responses=reservation_responses.delete_responses,
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Security(_read_access_validator)],
 )
 async def delete_resource_pool_by_id(
     id: str,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
     resource: Annotated[models.ResourcePool, Depends(deps.get_resource)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
-    ),
 ) -> Response:
     """
     This operation deletes a Resource Pool by ID.
@@ -146,6 +141,7 @@ async def delete_resource_pool_by_id(
     summary="Updates partially a Resource Pool by ID",
     responses=reservation_responses.update_responses,
     response_model=schemas.ResourcePoolUpdate,
+    dependencies=[Security(_read_access_validator)],
 )
 async def update_resource_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
@@ -154,9 +150,6 @@ async def update_resource_by_id(
         schemas.ResourcePoolUpdate,
         Body(description="The Resource Pool to be updated"),
     ],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
-    ),
 ) -> JSONResponse:
     """
     This operation updates partially a Resource entity.

@@ -8,10 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, log, models, schemas
 from app.api import deps
 from app.api.responses import reservation_responses
-from app.core import security
-from app.schemas import TokenPayload
 
-router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
+router = APIRouter()
+
+
+_read_access_validator = deps.AccessRoleValidator(
+    ["uinv:tmf685:reservation:ro", "uinv:tmf685:reservation:rw"]
+)
+_read_write_access_validator = deps.AccessRoleValidator(["uinv:tmf685:reservation:rw"])
 
 
 @router.get(
@@ -19,6 +23,7 @@ router = APIRouter(dependencies=[Security(deps.validate_token_signature)])
     summary="Lists or finds Reservation objects",
     responses=reservation_responses.get_responses,
     response_model=list[schemas.Reservation],
+    dependencies=[Security(_read_access_validator)],
 )
 async def get_reservations(
     fields: Annotated[str, deps.FieldsQuery] = "",
@@ -26,9 +31,6 @@ async def get_reservations(
     limit: Annotated[int, deps.LimitQuery] = 100,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:reservation:ro"])
-    ),
 ) -> JSONResponse:
     """
     This operation lists or finds Resource objects.
@@ -58,15 +60,13 @@ async def get_reservations(
     responses=reservation_responses.create_responses,
     response_model=schemas.Reservation,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Security(_read_write_access_validator)],
 )
 async def create_reservation(
     reservation_create: Annotated[
         schemas.ReservationCreate, Body(description="The Reservation to be created")
     ],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:reservation:rw"])
-    ),
 ) -> JSONResponse:
     """
     This operation creates a Reservation entity.
@@ -87,14 +87,12 @@ async def create_reservation(
     summary="Retrieves a Reservation by ID",
     responses=reservation_responses.get_responses,
     response_model=schemas.Reservation,
+    dependencies=[Security(_read_access_validator)],
 )
 async def get_reservation_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
     *,
     resource: Annotated[models.Reservation, Depends(deps.get_reservation)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:reservation:ro"])
-    ),
 ) -> JSONResponse:
     """
     This operation retrieves a Resource entity. Attribute selection is enabled for all
@@ -115,15 +113,13 @@ async def get_reservation_by_id(
     summary="Deletes a Reservation by ID",
     responses=reservation_responses.delete_responses,
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Security(_read_write_access_validator)],
 )
 async def delete_reservation_by_id(
     id: str,
     *,
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
     reservation: Annotated[models.Reservation, Depends(deps.get_reservation)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:reservation:rw"])
-    ),
 ) -> Response:
     """
     This operation deletes a Reservation by ID.
@@ -139,6 +135,7 @@ async def delete_reservation_by_id(
     summary="Updates partially a Reservation by ID",
     responses=reservation_responses.update_responses,
     response_model=schemas.ReservationUpdate,
+    dependencies=[Security(_read_write_access_validator)],
 )
 async def update_reservation_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
@@ -146,9 +143,6 @@ async def update_reservation_by_id(
     reservation_update: Annotated[
         schemas.ReservationUpdate, Body(description="The Reservation to be updated")
     ],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:reservation:rw"])
-    ),
 ) -> JSONResponse:
     """
     This operation updates partially a Reservation entity.
