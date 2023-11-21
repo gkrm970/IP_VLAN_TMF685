@@ -56,6 +56,8 @@ resource_pool_management:
 {{ if eq .Environment.Name "develop" }}
   configmap_data:
     << : *configmap_data
+    # The keycloak client secret for external API authentication
+    AUTH_CLIENT_ID: {{ requiredEnv "CLIENT_ID_DEVELOP" }}
 
 {{ else if eq .Environment.Name "qa" }}
   configmap_data:
@@ -74,6 +76,8 @@ resource_pool_management:
 # Keys must be uppercase
   {{ if eq .Environment.Name "develop" }}
   secret_data:
+    # The keycloak client secret for external API authentication, base64 encoded
+    AUTH_CLIENT_SECRET: {{ requiredEnv "CLIENT_SECRET_DEVELOP" }}
     # The password for the database connection, base64 encoded
     DB_PASSWORD: {{ requiredEnv "DB_PASSWORD_DEVELOP"}}
 
