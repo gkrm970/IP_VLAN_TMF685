@@ -1,7 +1,7 @@
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import schemas
@@ -21,7 +21,9 @@ class ReservationResourceName(BaseDbModel):
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationResourceName) -> "ReservationResourceName":
+    def from_schema(
+        cls, schema: schemas.ReservationResourceName
+    ) -> "ReservationResourceName":
         return cls(
             id=str(uuid.uuid4()),
             name=schema.name,

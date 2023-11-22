@@ -1,10 +1,10 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import models, schemas
+from app import schemas
 from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
@@ -27,8 +27,4 @@ class ReservationResourcePool(BaseDbModel):
     def from_schema(
         cls, schema: schemas.ReservationResourcePool
     ) -> "ReservationResourcePool":
-        return cls(
-            id=str(uuid.uuid4()),
-            pool_id=schema.pool_id,
-            href=schema.href
-        )
+        return cls(id=str(uuid.uuid4()), pool_id=schema.pool_id, href=schema.href)

@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import log, models, schemas
-from app.core.exceptions import ConflictError, NotFoundError
+from app import models, schemas
+from app.core.exceptions import ConflictError
 
 
 class ReservationCRUD:
@@ -54,7 +54,9 @@ class ReservationCRUD:
         current_datetime = datetime.utcnow()
         # valid_for_dict = {"startDate": current_datetime}
 
-        db_obj = models.Reservation.from_schema(obj_in, reservation_state=reservation_state, valid_for=current_datetime)
+        db_obj = models.Reservation.from_schema(
+            obj_in, reservation_state=reservation_state, valid_for=current_datetime
+        )
         print("db_obj", db_obj)
 
         db.add(db_obj)

@@ -4,13 +4,15 @@ from urllib.parse import urljoin
 
 from sqlalchemy import String
 from sqlalchemy.orm import (
+    ColumnProperty,
+    InstrumentedAttribute,
     Mapped,
     mapped_column,
-    relationship, InstrumentedAttribute, ColumnProperty,
+    relationship,
 )
-from app import models, settings
+
+from app import models, schemas, settings
 from app.db.base import BaseDbModel
-from app import schemas
 
 # Cascade rule for SQLAlchemy relationship. The all symbol is a synonym for save-update,
 # merge, refresh-expire, expunge, delete, and using it in conjunction with delete-orphan
@@ -43,8 +45,7 @@ class ResourcePool(BaseDbModel):
             name=schema.name,
             description=schema.description,
             type=schema.type,
-            capacity=capacity
-
+            capacity=capacity,
         )
 
     def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:

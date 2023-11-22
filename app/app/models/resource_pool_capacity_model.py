@@ -1,12 +1,9 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import (
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app import models, schemas
 from app.db.base import BaseDbModel
 
@@ -88,9 +85,5 @@ class ResourcePoolCapacity(BaseDbModel):
             related_party=related_party,
             place=place,
             resource_specification=resource_specification,
-            resource_pool_resource=resource_pool_resource
+            resource_pool_resource=resource_pool_resource,
         )
-
-
-
-

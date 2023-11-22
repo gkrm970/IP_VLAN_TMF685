@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import models, schemas
 from app.db.base import BaseDbModel
-from app.providers import resource_inventory_provider
 
 _ALL_DELETE_ORPHAN = "all, delete-orphan"
 
@@ -40,9 +39,12 @@ class ReservationItem(BaseDbModel):
     sub_reservation_state: Mapped[str | None] = mapped_column(String(255))
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationItem, sub_reservation_state: str,
-                    applied_capacity_amount: schemas.AppliedCapacityAmount) -> "ReservationItem":
-
+    def from_schema(
+        cls,
+        schema: schemas.ReservationItem,
+        sub_reservation_state: str,
+        applied_capacity_amount: schemas.AppliedCapacityAmount,
+    ) -> "ReservationItem":
         reservation_item = str(uuid.uuid4())
 
         # applied_capacity_amount_instance = (models.AppliedCapacityAmount. from_schema(applied_capacity_amount,
@@ -62,8 +64,5 @@ class ReservationItem(BaseDbModel):
             quantity=schema.quantity,
             resource_name=resource_name,
             reservation_resource_capacity=reservation_resource_capacity,
-            sub_reservation_state=sub_reservation_state
+            sub_reservation_state=sub_reservation_state,
         )
-
-
-

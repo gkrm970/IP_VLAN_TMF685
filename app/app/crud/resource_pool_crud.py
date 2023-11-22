@@ -20,9 +20,7 @@ class ResourcePoolCRUD:
     @staticmethod
     async def get(db: AsyncSession, id: str) -> models.ResourcePool | None:
         result = await db.execute(
-            select(models.ResourcePool).filter(
-                models.ResourcePool.id == id
-            )
+            select(models.ResourcePool).filter(models.ResourcePool.id == id)
         )
 
         return result.scalars().first()
@@ -36,9 +34,7 @@ class ResourcePoolCRUD:
         result = await db.execute(
             select(models.ResourcePool).limit(limit).offset(offset)
         )
-        total = await db.execute(
-            select(func.count()).select_from(models.ResourcePool)
-        )
+        total = await db.execute(select(func.count()).select_from(models.ResourcePool))
 
         return list(result.scalars().all()), total.scalar() or 0
 

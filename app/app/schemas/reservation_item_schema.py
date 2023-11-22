@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
 from app import schemas
 
 _NAME_DESCRIPTION = "A string used to give a name to the reservation"
@@ -51,4 +52,6 @@ class ReservationItem(ReservationItemBase):
         alias="resourceCapacity",
         description="Array of objects (RelatedParty)",
     )
-    sub_reservation_state: str | None = Field(None, alias="subReservationState", description=_NAME_DESCRIPTION)
+    sub_reservation_state: str | None = Field(
+        None, alias="subReservationState", description=_NAME_DESCRIPTION
+    )

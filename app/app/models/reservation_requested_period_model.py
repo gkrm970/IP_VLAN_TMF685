@@ -14,16 +14,13 @@ if TYPE_CHECKING:
 
 class ReservationRequestedPeriod(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
-    from_: Mapped[datetime.datetime | None] = mapped_column(
-        DateTime(timezone=True)
-    )
+    from_: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True))
 
     reservation_id: Mapped[str] = mapped_column(ForeignKey("reservation.id"))
     reservation: Mapped["Reservation"] = relationship(back_populates="requested_period")
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationRequestedPeriod) -> "ReservationRequestedPeriod":
-        return cls(
-            id=str(uuid.uuid4()),
-            from_=schema.from_
-        )
+    def from_schema(
+        cls, schema: schemas.ReservationRequestedPeriod
+    ) -> "ReservationRequestedPeriod":
+        return cls(id=str(uuid.uuid4()), from_=schema.from_)

@@ -1,4 +1,3 @@
-import json
 import uuid
 from datetime import datetime
 from typing import Any, Type
@@ -6,16 +5,15 @@ from urllib.parse import urljoin
 
 from sqlalchemy import String
 from sqlalchemy.orm import (
+    ColumnProperty,
+    InstrumentedAttribute,
     Mapped,
     mapped_column,
     relationship,
-    InstrumentedAttribute,
-    ColumnProperty,
 )
 
 from app import models, schemas, settings
 from app.db.base import BaseDbModel
-from app.providers import resource_inventory_provider
 
 _ALL_DELETE_ORPHAN = "all, delete-orphan"
 
@@ -48,12 +46,19 @@ class Reservation(BaseDbModel):
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationCreate, reservation_state: str, valid_for: datetime) -> "Reservation":
+    def from_schema(
+        cls,
+        schema: schemas.ReservationCreate,
+        reservation_state: str,
+        valid_for: datetime,
+    ) -> "Reservation":
         reservation_id = str(uuid.uuid4())
         related_parties = models.ReservationRelatedParty.from_schema(
             schema.related_parties
         )
-        requested_period = models.ReservationRequestedPeriod.from_schema(schema.requested_period)
+        requested_period = models.ReservationRequestedPeriod.from_schema(
+            schema.requested_period
+        )
         sub_reservation_state = "completed"
 
         # resource_inventory_id, resource_inventory_href, resource_type = resource_inventory_provider.create_resource()
@@ -75,25 +80,32 @@ class Reservation(BaseDbModel):
         # resource_type = created_resource_data["resource_type"]
         # resource_inventory_id, resource_inventory_href, resource_type = resource_inventory_provider.create_resource()
         reservation_resource = [
-            models.ReservationResource.from_schema(href="https://api.develop.tinaa.teluslabs.net/plan/inventory"
-                                                        "/resourceInventoryManagement/v1/resource/eb5ea7bd-29c7-41e4"
-                                                        "-90d3-7e7caf0b858a",
-                                                   resource_id="eb5ea7bd-29c7-41e4-90d3-7e7caf0b858a",
-                                                   characteristic="172.7.6.4/30",
-                                                   referred_type="ipv4Subnet",
-                                                   )
+            models.ReservationResource.from_schema(
+                href="https://api.develop.tinaa.teluslabs.net/plan/inventory"
+                "/resourceInventoryManagement/v1/resource/eb5ea7bd-29c7-41e4"
+                "-90d3-7e7caf0b858a",
+                resource_id="eb5ea7bd-29c7-41e4-90d3-7e7caf0b858a",
+                characteristic="172.7.6.4/30",
+                referred_type="ipv4Subnet",
+            )
         ]
 
-        demand_amount = schema.reservation_item[0].reservation_resource_capacity.capacity_demand_amount
+        demand_amount = schema.reservation_item[
+            0
+        ].reservation_resource_capacity.capacity_demand_amount
 
         applied_capacity_amount = models.AppliedCapacityAmount.from_schema(
-            applied_capacity_amount=demand_amount, reservation_resource=reservation_resource
+            applied_capacity_amount=demand_amount,
+            reservation_resource=reservation_resource,
         )
 
         print("sub_reservation_state", sub_reservation_state)
         reservation_item_list = [
-            models.ReservationItem.from_schema(reservation_item, sub_reservation_state=sub_reservation_state,
-                                               applied_capacity_amount=applied_capacity_amount)
+            models.ReservationItem.from_schema(
+                reservation_item,
+                sub_reservation_state=sub_reservation_state,
+                applied_capacity_amount=applied_capacity_amount,
+            )
             for reservation_item in schema.reservation_item
         ]
         valid_for_instance = models.ValidFor.from_schema(valid_for)
@@ -108,7 +120,7 @@ class Reservation(BaseDbModel):
             requested_period=requested_period,
             reservation_item=reservation_item_list,
             reservation_state=reservation_state,
-            valid_for=valid_for_instance
+            valid_for=valid_for_instance,
         )
 
     def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:

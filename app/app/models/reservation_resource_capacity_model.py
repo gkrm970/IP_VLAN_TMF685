@@ -78,5 +78,5 @@ class ReservationResourceCapacity(BaseDbModel):
             capacity_demand_amount=schema.capacity_demand_amount,
             external_party_characteristics=external_party_characteristics,
             reservation_place=reservation_place,
-            resource_pool=resource_pool
+            resource_pool=resource_pool,
         )

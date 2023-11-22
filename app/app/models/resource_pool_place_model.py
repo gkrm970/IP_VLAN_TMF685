@@ -1,12 +1,9 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, Integer
-from sqlalchemy.orm import (
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app import schemas
 from app.db.base import BaseDbModel
 

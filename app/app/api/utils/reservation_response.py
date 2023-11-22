@@ -4,10 +4,7 @@ import requests
 from app import log, schemas
 
 BASE_URL = "http://127.0.0.1:8000"
-headers = {
-    "Content-Type": "application/json",
-    "accept": "application/json"
-}
+headers = {"Content-Type": "application/json", "accept": "application/json"}
 
 
 def generate_unique_vlan(capacity_amount, used_vlans):
@@ -24,7 +21,8 @@ def create_resource_item(request_body):
     return response
 
 
-from typing import TypeAlias, Literal
+from typing import Literal, TypeAlias
+
 from asgi_correlation_id import correlation_id
 
 Method: TypeAlias = Literal["GET"]
@@ -32,7 +30,9 @@ Method: TypeAlias = Literal["GET"]
 
 async def _send_request(method: Method, href: str) -> httpx.Response:
     async with httpx.AsyncClient() as client:
-        await client.request(method, href, headers={"X-Request-ID": correlation_id.get() or ""})
+        await client.request(
+            method, href, headers={"X-Request-ID": correlation_id.get() or ""}
+        )
 
 
 async def fetch_resource_pool_data(url):
@@ -40,14 +40,18 @@ async def fetch_resource_pool_data(url):
     if response.status_code == 200:
         return response.json()
     else:
-        raise Exception(f"Failed to fetch data from {url}. Status code: {response.status_code}")
+        raise Exception(
+            f"Failed to fetch data from {url}. Status code: {response.status_code}"
+        )
 
 
 def process_reservation_item(item, used_vlans: set[int]):
     item.reservation_resource_capacity.resource_pool.href
     href = item.reservation_resource_capacity.resource_pool.href
-    resource_pool_href_url = item["reservation_resource_capacity"]["resource_pool"]["href"]
-    resource_pool_id = item["reservation_resource_capacity"]["resource_pool"]["pool_id"]
+    resource_pool_href_url = item["reservation_resource_capacity"]["resource_pool"][
+        "href"
+    ]
+    item["reservation_resource_capacity"]["resource_pool"]["pool_id"]
     resource_pool_data = fetch_resource_pool_data(resource_pool_href_url)
     demand_amount = int(item["reservation_resource_capacity"]["capacity_demand_amount"])
     reserved_vlans = set()
@@ -87,21 +91,18 @@ def process_reservation_item(item, used_vlans: set[int]):
             "category": "UPF NFs",
             "description": "Ericsson UPF 25 IOT NF",
             "href": "https://api.develop.tinaa.teluslabs.net/plan/inventory/resourceInventoryManagement/v1"
-                    "/resource/5ca5aaa7-edd5-49b1-b5c2-05390ca87a35",
+            "/resource/5ca5aaa7-edd5-49b1-b5c2-05390ca87a35",
             "id": "5ca5aaa7-edd5-49b1-b5c2-05390ca87a35",
             "name": "Eric_IOT_UPF_25_MTLXPQVV-IOTUPF-01",
             "operationalState": "enable",
             "place": [
-                {
-                    "name": "Montreal",
-                    "role": "geographicRegion"
-                },
-                {
-                    "name": "Viger_POD 1",
-                    "role": "podId"
-                }
+                {"name": "Montreal", "role": "geographicRegion"},
+                {"name": "Viger_POD 1", "role": "podId"},
             ],
-            "resourceCharacteristic": [{"name": related_party_id, "value": vlan} for vlan in applied_capacity_amount]
+            "resourceCharacteristic": [
+                {"name": related_party_id, "value": vlan}
+                for vlan in applied_capacity_amount
+            ],
         }
         response = create_resource_item(create_resource_request)
 
@@ -110,7 +111,6 @@ def process_reservation_item(item, used_vlans: set[int]):
             href = resource_pool_json.get("href")
             pool_id = resource_pool_json.get("id")
 
-            resource_pool_patch_url = f"http://127.0.0.1:8000/resourcePoolManagement/v1/resourcePool/{resource_pool_id}"
             resource_pool_patch_response = {
                 "@type": "VLAN",
                 "name": "VLAN",
@@ -122,18 +122,12 @@ def process_reservation_item(item, used_vlans: set[int]):
                         "relatedParty": {
                             "id": "TINAA",
                             "name": "8021qVLAN",
-                            "role": "VLANPool"
+                            "role": "VLANPool",
                         },
                         "place": [
-                            {
-                                "name": "AB",
-                                "type": "region"
-                            },
-                            {
-                                "name": "Viger-1",
-                                "type": "pod"
-                            }
-                        ]
+                            {"name": "AB", "type": "region"},
+                            {"name": "Viger-1", "type": "pod"},
+                        ],
                     },
                     {
                         "capacityAmount": 5,
@@ -142,44 +136,37 @@ def process_reservation_item(item, used_vlans: set[int]):
                         "relatedParty": {
                             "id": "TINAA",
                             "name": "8021qVLAN",
-                            "role": "VLANPool"
+                            "role": "VLANPool",
                         },
                         "place": [
-                            {
-                                "name": "BC",
-                                "type": "region"
-                            },
-                            {
-                                "name": "Viger-2",
-                                "type": "pod"
-                            }
-                        ]
-                    }
+                            {"name": "BC", "type": "region"},
+                            {"name": "Viger-2", "type": "pod"},
+                        ],
+                    },
                 ],
                 "id": "fe18c37c-c92c-4e0b-9f3f-826c3928aa5a",
-                "href": "/resourcePoolManagement/v1/resourcePool/fe18c37c-c92c-4e0b-9f3f-826c3928aa5a"
+                "href": "/resourcePoolManagement/v1/resourcePool/fe18c37c-c92c-4e0b-9f3f-826c3928aa5a",
             }
 
             for resource_pool_item in resource_pool_patch_response["capacity"]:
                 resource_pool_item["capacityAmount"] = remaining_amount
             log.info("resource_pool_patch_response", resource_pool_patch_response)
 
-            characteristic_list = []
             applied_capacity_amount = {
                 "appliedCapacityAmount": str(demand_amount),
-                "resource": []
+                "resource": [],
             }
             for vlan in used_vlans:
-                characteristic = {
-                    "8021qVLAN": vlan
-                }
+                characteristic = {"8021qVLAN": vlan}
 
-                applied_capacity_amount["resource"].append({
-                    "@referredType": "VLAN",
-                    "href": href,
-                    "resource_id": pool_id,
-                    "characteristic": characteristic
-                })
+                applied_capacity_amount["resource"].append(
+                    {
+                        "@referredType": "VLAN",
+                        "href": href,
+                        "resource_id": pool_id,
+                        "characteristic": characteristic,
+                    }
+                )
 
             log.info("applied_capacity_amount", applied_capacity_amount)
 

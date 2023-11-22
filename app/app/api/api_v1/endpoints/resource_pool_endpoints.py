@@ -9,8 +9,6 @@ from app import crud, log, models, schemas
 from app.api import deps
 from app.api.responses import reservation_responses
 from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
-from app.core import security
-from app.schemas import TokenPayload
 
 router = APIRouter()
 

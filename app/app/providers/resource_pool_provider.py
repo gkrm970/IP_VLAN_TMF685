@@ -1,14 +1,10 @@
-import uuid
-from typing import Any, Optional, TypeAlias, Literal
-import aiohttp
-import httpx
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any, Literal, Optional, TypeAlias
 
-from app import schemas, log, models
+import httpx
+
+from app import log, schemas
 from app.core.config import settings
-from app.core.exceptions import BadRequestError, InternalServerError
+from app.core.exceptions import BadRequestError
 
 Method: TypeAlias = Literal["GET", "POST", "PATCH"]
 
@@ -32,16 +28,15 @@ async def create_reservation_response(reservation_item, applied_capacity_amount)
                             "from": item.reservation_resource_capacity.reservation_applicable_time_period.from_.isoformat(),
                         },
                         "place": [
-                            {
-                                "name": place.name,
-                                "type": place.type
-                            } for place in item.reservation_resource_capacity.reservation_place],
+                            {"name": place.name, "type": place.type}
+                            for place in item.reservation_resource_capacity.reservation_place
+                        ],
                         "capacityDemandAmount": item.reservation_resource_capacity.capacity_demand_amount,
                         "resourcePool": {
                             "href": item.reservation_resource_capacity.resource_pool.href,
                             "id": item.reservation_resource_capacity.resource_pool.pool_id,
-                        }
-                    }
+                        },
+                    },
                 }
             ]
         }
@@ -61,14 +56,21 @@ class ResourcePoolProvider:
         log.info(f"from, {capacity_amount_from}")
         capacity_amount_to = capacity.get("capacity_amount_to")
         resource = capacity.get("resource")
-        return capacity_amount_remaining, capacity_amount_from, capacity_amount_to, resource
+        return (
+            capacity_amount_remaining,
+            capacity_amount_from,
+            capacity_amount_to,
+            resource,
+        )
 
     async def extract_related_party(self, capacity: schemas.ResourcePool):
         related_party_id = capacity.get("relatedParty").get("party_id")
         return related_party_id
 
     @staticmethod
-    async def generate_unique_vlan(demand_amount, capacity_amount_from, capacity_amount_to, used_vlans):
+    async def generate_unique_vlan(
+        demand_amount, capacity_amount_from, capacity_amount_to, used_vlans
+    ):
         log.info(f"demand_amount: {demand_amount}")
         vlans_list = []
         available_vlans = list(range(capacity_amount_from, capacity_amount_to + 1))
@@ -91,7 +93,9 @@ class ResourcePoolProvider:
         #             break
         # return vlans_list
 
-    async def _send_request(self, method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
+    async def _send_request(
+        self, method, url: str, request_body: Optional[dict[str, Any]] = None
+    ) -> httpx.Response:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.request(method, url, json=request_body)
@@ -111,12 +115,13 @@ class ResourcePoolProvider:
             else:
                 error_message = f"Bad request. Expected status code 200, but received {response.status_code}."
                 raise BadRequestError(error_message)
-        except Exception as e:
+        except Exception:
             raise BadRequestError(f"Bad request. Status code: {response.status_code}")
 
     @staticmethod
-    async def _send_patch_request(method: Method, url: str,
-                                  request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
+    async def _send_patch_request(
+        method: Method, url: str, request_body: Optional[dict[str, Any]] = None
+    ) -> httpx.Response:
         try:
             async with httpx.AsyncClient() as client:
                 log.info("data=%s", request_body)
@@ -141,27 +146,27 @@ class ResourcePoolProvider:
     #     # try:
     #     print("inside try")
     #         applied_capacity = models.AppliedCapacityAmount(
-        #         id=str(uuid.uuid4()),
-        #         applied_capacity_amount=demand_amount
-        #     )
-        #     db.add(applied_capacity)
-        #     await db.commit()
-        #
-        #     models.ReservationResource(
-        #         # id=str(uuid.uuid4()),
-        #         referred_type=related_party_id,
-        #         href=resource_inventory_href,
-        #         resource_id=resource_inventory_id
-        #     )
-        #     await db.commit()
-        #     models.Characteristic(
-        #         # id=str(uuid.uuid4()),
-        #         ipv4_subnet=used_vlans
-        #     )
-        #     await db.commit()
-        #     return True
-        # except Exception as e:
-        #     raise InternalServerError("An error occurred while creating resource reservation response") from e
+    #         id=str(uuid.uuid4()),
+    #         applied_capacity_amount=demand_amount
+    #     )
+    #     db.add(applied_capacity)
+    #     await db.commit()
+    #
+    #     models.ReservationResource(
+    #         # id=str(uuid.uuid4()),
+    #         referred_type=related_party_id,
+    #         href=resource_inventory_href,
+    #         resource_id=resource_inventory_id
+    #     )
+    #     await db.commit()
+    #     models.Characteristic(
+    #         # id=str(uuid.uuid4()),
+    #         ipv4_subnet=used_vlans
+    #     )
+    #     await db.commit()
+    #     return True
+    # except Exception as e:
+    #     raise InternalServerError("An error occurred while creating resource reservation response") from e
 
     #     demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
     #     applied_capacity_amount = {

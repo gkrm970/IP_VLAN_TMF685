@@ -1,4 +1,3 @@
-import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -10,7 +9,9 @@ _NAME_DESCRIPTION = "A string used to give a name to the resource"
 class ReservationResource(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    referred_type: str | None = Field(None, alias="@referredType", description=_NAME_DESCRIPTION)
+    referred_type: str | None = Field(
+        None, alias="@referredType", description=_NAME_DESCRIPTION
+    )
 
     characteristic: list[schemas.ReservationCharacteristic] = Field(
         ...,
@@ -24,6 +25,7 @@ class ReservationResource(BaseModel):
     # class Config:
     #     # Exclude the 'resource' field from the request body
     #     exclude = {'resource'}
+
 
 # class ReservationResourceCreate(ReservationResourceBase):
 #     pass

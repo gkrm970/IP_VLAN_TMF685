@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import models, schemas
+from app import schemas
 from app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
@@ -27,7 +27,4 @@ class ReservationApplicableTimePeriod(BaseDbModel):
     def from_schema(
         cls, schema: schemas.ReservationApplicableTimePeriod
     ) -> "ReservationApplicableTimePeriod":
-        return cls(
-            id=str(uuid.uuid4()),
-            from_=schema.from_
-        )
+        return cls(id=str(uuid.uuid4()), from_=schema.from_)

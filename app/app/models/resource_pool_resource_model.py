@@ -1,12 +1,9 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey, Integer
-from sqlalchemy.orm import (
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app import schemas
 from app.db.base import BaseDbModel
 
@@ -25,13 +22,17 @@ class ResourcePoolResource(BaseDbModel):
     resource_id: Mapped[str] = mapped_column(String(255))
     href: Mapped[str] = mapped_column(String(255))
 
-    resource_pool_capacity_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_capacity.id"))
-    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="resource_pool_resource")
+    resource_pool_capacity_id: Mapped[str] = mapped_column(
+        ForeignKey("resource_pool_capacity.id")
+    )
+    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(
+        back_populates="resource_pool_resource"
+    )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolResource) -> "ResourcePoolResource":
+    def from_schema(
+        cls, schema: schemas.ResourcePoolResource
+    ) -> "ResourcePoolResource":
         return cls(
-            id=str(uuid.uuid4()),
-            resource_id=schema.resource_id,
-            href=schema.href
+            id=str(uuid.uuid4()), resource_id=schema.resource_id, href=schema.href
         )
