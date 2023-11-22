@@ -38,8 +38,6 @@ python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 httpx = "^0.25.0"
 
 
-tinaa-logger = "^0.1.4"
-
 [tool.poetry.group.dev.dependencies]
 # Removes unused library imports and variables
 autoflake = "^2.2.1"
@@ -64,11 +62,6 @@ httpx = "^0.25.0"
 # Mypy library stubs for python-jose
 types-python-jose = "^3.3.4.8"
 
-sqlalchemy-stubs = "^0.3"
-
-pytest-cov = "^2.8.1"
-watchdog = "^2.1.3"
-argh = "^0.26.2"
 
 [[tool.poetry.source]]
 name = "PyPI"
@@ -78,7 +71,7 @@ priority = "primary"
 [[tool.poetry.source]]
 # Private TINAA package registry hosted in GitLab
 name = 'tinaa'
-url = 'https://gitlab.tinaa.teluslabs.net/api/v4/projects/1029/packages/pypi/simple'
+url = 'https://gitlab.tinaa.osc.tac.net/api/v4/projects/1029/packages/pypi/simple'
 priority = "supplemental"
 
 
