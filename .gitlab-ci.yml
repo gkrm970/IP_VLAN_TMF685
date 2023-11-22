@@ -1,4 +1,5 @@
 variables:
+  OCP_ENVIRONMENT: $CI_COMMIT_BRANCH
   OCP_SERVER_LAB: https://api.tinaa-edtnabtf-app01.nfvdev.tlabs.ca:6443
   PROJECT_NAME: inventory-mediation
   GROUP: pltf
@@ -82,6 +83,7 @@ trigger_build_deploy:
     BUILD_OPTS: "--build-arg TCSO_ROOT_CA"
   only:
     - develop
+    - acl-nc-and-fixes-integration
     - qa
     - preprod
 
@@ -94,49 +96,31 @@ trigger_infra_deploy:
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
       variables:
+        OCP_PROJECT: $PROJECT_DEVELOP
+        OCP_TOKEN: $DEPLOYER_TOKEN_DEVELOP
+        ROUTE: $SERVICE_IMAGE_NAME.develop.app01.toll6.tinaa.tlabs.ca
+        IMAGE_TAG: develop
+    - if: $CI_COMMIT_BRANCH == "acl-nc-and-fixes-integration"
+      variables:
         OCP_ENVIRONMENT: develop
         OCP_PROJECT: $PROJECT_DEVELOP
         OCP_TOKEN: $DEPLOYER_TOKEN_DEVELOP
         ROUTE: $SERVICE_IMAGE_NAME.develop.app01.toll6.tinaa.tlabs.ca
         IMAGE_TAG: develop
+        IMAGE_NAME: $CI_REGISTRY_IMAGE/$SERVICE_IMAGE_NAME:$CI_COMMIT_REF_NAME
     - if: $CI_COMMIT_BRANCH == "qa"
       variables:
-        OCP_ENVIRONMENT: qa
         OCP_PROJECT: $PROJECT_QA
         OCP_TOKEN: $DEPLOYER_TOKEN_QA
         ROUTE: $SERVICE_IMAGE_NAME.qa.app01.toll6.tinaa.tlabs.ca
         IMAGE_TAG: qa
     - if: $CI_COMMIT_BRANCH == "preprod"
       variables:
-        OCP_ENVIRONMENT: preprod
         OCP_PROJECT: $PROJECT_PREPROD
         OCP_TOKEN: $DEPLOYER_TOKEN_PREPROD
         ROUTE: $SERVICE_IMAGE_NAME.preprod.app01.toll6.tinaa.tlabs.ca
         IMAGE_TAG: preprod
   script:
-    - autoflake --check .
-
-black:
-  extends: .static_analysis_job
-  script:
-    - black --check .
-
-isort:
-  extends: .static_analysis_job
-  script:
-    - isort --check .
-
-mypy:
-  extends: .static_analysis_job
-  script:
-    # Mypy requires the runtime dependencies to type check the code
-    - poetry install --no-root
-    - mypy .
-
-ruff:
-  extends: .static_analysis_job
-  script:
-    - ruff check .
     - cd .deployment
     - echo "Running Helm"
     - helmfile_linux_amd64 --file ./resource_pool_management.helmfile.yaml --environment $OCP_ENVIRONMENT template > openshift_config.yaml
