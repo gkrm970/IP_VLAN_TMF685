@@ -22,16 +22,17 @@ if TYPE_CHECKING:
 
 class ResourcePoolApplicableTimePeriod(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
-    from_: Mapped[datetime.datetime | None] = mapped_column(
-        DateTime(timezone=True)
+    from_: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True))
+
+    resource_pool_capacity_id: Mapped[str] = mapped_column(
+        ForeignKey("resource_pool_capacity.id")
+    )
+    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(
+        back_populates="applicable_time_period"
     )
 
-    resource_pool_capacity_id: Mapped[str] = mapped_column(ForeignKey("resource_pool_capacity.id"))
-    resource_pool_capacity: Mapped["ResourcePoolCapacity"] = relationship(back_populates="applicable_time_period")
-
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolApplicableTimePeriod) -> "ResourcePoolApplicableTimePeriod":
-        return cls(
-            id=str(uuid.uuid4()),
-            from_=schema.from_
-        )
+    def from_schema(
+        cls, schema: schemas.ResourcePoolApplicableTimePeriod
+    ) -> "ResourcePoolApplicableTimePeriod":
+        return cls(id=str(uuid.uuid4()), from_=schema.from_)

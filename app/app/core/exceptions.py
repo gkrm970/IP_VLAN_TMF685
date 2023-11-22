@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Literal
 
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder

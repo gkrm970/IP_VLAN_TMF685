@@ -94,5 +94,3 @@ class ResourcePool(BaseDbModel):
                     )
 
                 setattr(self, field_name, update_model)
-
-

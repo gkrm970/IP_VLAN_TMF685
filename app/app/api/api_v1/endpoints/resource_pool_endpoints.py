@@ -34,9 +34,6 @@ async def create_resource_pool(
         Body(description="The Resource pool to be created"),
     ],
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
-    current_user: TokenPayload = Depends(
-        security.ValidateAccessRoles(["uinv:tmf685:resourcepool:rw"])
-    ),
 ) -> JSONResponse:
     """
     This operation creates a Resource pool entity.

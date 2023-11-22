@@ -53,7 +53,7 @@ class ReservationResourceCapacity(BaseDbModel):
 
     @classmethod
     def from_schema(
-            cls, schema: schemas.ReservationResourceCapacity
+        cls, schema: schemas.ReservationResourceCapacity
     ) -> "ReservationResourceCapacity":
         reservation_applicable_time_period = (
             models.ReservationApplicableTimePeriod.from_schema(
@@ -61,7 +61,10 @@ class ReservationResourceCapacity(BaseDbModel):
             )
         )
         external_party_characteristics = (
-            models.ExternalPartyCharacteristics.from_schema(schema.external_party_characteristics))
+            models.ExternalPartyCharacteristics.from_schema(
+                schema.external_party_characteristics
+            )
+        )
         reservation_place = [
             models.ReservationPlace.from_schema(reservation_place)
             for reservation_place in schema.reservation_place
