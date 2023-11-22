@@ -213,6 +213,7 @@ class ResourceReservationManager:
                         reservation_item_resource_capacity_resource_pool_id,
                         ipam_description,
                         ipam_detail,
+                        db,
                     )
 
                 log.info("Before reservation creation")

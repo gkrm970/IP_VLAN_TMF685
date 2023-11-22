@@ -2,6 +2,7 @@ import datetime
 from typing import Any, List, Tuple
 
 import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app import log, providers, settings
@@ -48,6 +49,7 @@ class NetCrackerReservationProvider:
         ipam_description: str,
         ipam_detail: str,
         resource_specification_list: List[Any],
+        db: AsyncSession,
     ) -> Tuple[List[dict[str, Any]], Any, List[Any]]:
         resource_ip_id = None
         ip_names_ids = None
@@ -174,12 +176,13 @@ class NetCrackerReservationProvider:
             resource_inventory_id = resource_inventory_response.json().get("id")
 
             # Partial update resourcePool
-            resource_pool_response = await self.netcracker_resource_pool_patch_provider.patch_resource_pool_netcracker(
+            resource_pool_response = await self.netcracker_resource_pool_patch_provider.netcracker_resource_pool_patch(
                 reservation_item_resource_capacity_resource_pool_id,
                 ip_names_ids,
                 resource_inventory_href,
                 resource_inventory_id,
                 resource_ip_id,
+                db,
             )
             resource_pool_response.raise_for_status()
             log.info("Resource pool updated successfully %s", resource_pool_response)
