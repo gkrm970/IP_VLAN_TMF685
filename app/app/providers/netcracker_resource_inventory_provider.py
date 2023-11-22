@@ -69,7 +69,9 @@ class NetCrackerResourceInventoryProvider:
             )
 
         # Create resource inventory request
-        tmf_639_url = f"{self.ri_api_base_url}/{self.ri_api_name}/{self.ri_api_version}/resource"
+        tmf_639_url = (
+            f"{self.ri_api_base_url}/{self.ri_api_name}/{self.ri_api_version}/resource"
+        )
         try:
             response = await self._send_request(
                 "POST", tmf_639_url, create_resource_request
