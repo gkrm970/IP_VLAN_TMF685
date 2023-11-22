@@ -36,6 +36,8 @@ tenacity = "^8.2.3"
 python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 # HTTP client for external API calls
 httpx = "^0.25.0"
+# OAuth2 client for external API calls
+authlib = "^1.2.1"
 
 
 [tool.poetry.group.dev.dependencies]

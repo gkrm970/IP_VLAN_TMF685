@@ -267,6 +267,20 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "authlib"
+version = "1.2.1"
+description = "The ultimate Python library in building OAuth and OpenID Connect servers and clients."
+optional = false
+python-versions = "*"
+files = [
+    {file = "Authlib-1.2.1-py2.py3-none-any.whl", hash = "sha256:c88984ea00149a90e3537c964327da930779afa4564e354edfd98410bea01911"},
+    {file = "Authlib-1.2.1.tar.gz", hash = "sha256:421f7c6b468d907ca2d9afede256f068f87e34d23dd221c07d13d4c234726afb"},
+]
+
+[package.dependencies]
+cryptography = ">=3.2"
+
+[[package]]
 name = "autoflake"
 version = "2.2.1"
 description = "Removes unused imports and unused variables"
@@ -2155,4 +2169,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4e807249e561384e8d2dcc333701ecc1d54b11f3097010a4c9589e5307896f5d"
+content-hash = "cdab45cbdd926fba2baadcceb9f8144f6efa6a7d3c5b7f1fa6691c0850ff1324"
