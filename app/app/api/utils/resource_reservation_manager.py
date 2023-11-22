@@ -12,6 +12,9 @@ class ResourceReservationManager:
     def __init__(self):
         self.resource_inventory_provider = providers.resource_inventory_provider
         self.resource_pool_provider = providers.resource_pool_provider
+        self.net_cracker_reservation_provider = (
+            providers.net_cracker_reservation_instance
+        )
 
     async def _reserve_tinaa_resources(
         self,
@@ -79,6 +82,26 @@ class ResourceReservationManager:
             log.info("resource_pool_response=%s", resource_pool_response)
             capacity_list = resource_pool_response.get("capacity")
             log.info("capacity_list=%s", capacity_list)
+
+            # Variables for net cracker payload
+            reservation_item_quantity = reservation_item.quantity
+            reservation_item_resource_capacity_type = (
+                reservation_item.reservation_resource_capacity.type
+            )
+            reservation_item_resource_capacity_capacity_demand_amount = (
+                reservation_item.reservation_resource_capacity.capacity_demand_amount
+            )
+            reservation_item_resource_capacity_resource_pool_id = (
+                reservation_item.reservation_resource_capacity.resource_pool.pool_id
+            )
+            ipam_description = (
+                reservation_item.reservation_resource_capacity.external_party_characteristics.ipam_description
+            )
+            ipam_detail = (
+                reservation_item.reservation_resource_capacity.external_party_characteristics.ipam_details
+            )
+            # end here
+
             for capacity in capacity_list:
                 log.info("capacity=%s", capacity)
                 resource_specification_list = capacity.get("resource_specification")
@@ -89,6 +112,7 @@ class ResourceReservationManager:
                 resource = capacity.get("resource")
                 related_party_id = capacity.get("relatedParty").get("party_id")
                 log.info("related_party_id=%s", related_party_id)
+                related_party_role = capacity.get("relatedParty").get("party_role")
 
                 if related_party_id == "tinaa":
                     log.info("inside if")
@@ -174,21 +198,23 @@ class ResourceReservationManager:
                                 "Failed to delete resource Status code=%s",
                                 delete_response.status_code,
                             )
-
-                    # reservation_res = \
-                    #     await self.resource_pool_provider.create_resource_reservation_response(db,
-                    #                                                                            used_vlans,
-                    #                                                                            demand_amount,
-                    #                                                                            related_party_id,
-                    #                                                                            resource_inventory_href,
-                    #                                                                            resource_inventory_id)
-                    # if reservation_res is True:
-                    #     reservation = await crud.reservation.create(db, reservation_create)
-                    # else:
-                    #     raise InternalServerError("Fails Reserve vlans in database")
-
                 elif related_party_id == "netcracker":
-                    await self._reserve_netcracker_resources()
+                    log.info(
+                        "Entering into net cracker reserve IP address block if in case of "
+                        "related party id is netcracker"
+                    )
+                    await self.net_cracker_reservation_provider.reserve_ip(
+                        reservation_item,
+                        related_party_id,
+                        related_party_role,
+                        reservation_item_quantity,
+                        reservation_item_resource_capacity_capacity_demand_amount,
+                        reservation_item_resource_capacity_type,
+                        reservation_item_resource_capacity_resource_pool_id,
+                        ipam_description,
+                        ipam_detail,
+                    )
+
                 log.info("Before reservation creation")
                 reservation = await crud.reservation.create(db, reservation_create)
                 log.info("After reservation creation")
