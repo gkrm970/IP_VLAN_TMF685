@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import schemas, models
 from app.db.base import BaseDbModel
+from app.providers import resource_inventory_provider
 
 if TYPE_CHECKING:
     from app.models import ReservationItem
@@ -26,14 +27,15 @@ class AppliedCapacityAmount(BaseDbModel):
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.AppliedCapacityAmount) -> "AppliedCapacityAmount":
-        reservation_resource = [
-            models.ReservationResource.from_schema(reservation_resource)
-            for reservation_resource in schema.reservation_resource
-        ]
+    def from_schema(cls, applied_capacity_amount: str, reservation_resource: list) -> "AppliedCapacityAmount":
+        # resource_inventory_id, resource_inventory_href, resource_type = resource_inventory_provider.create_resource()
+        # reservation_resource = [
+        #     models.ReservationResource.from_schema(reservation_resource, href=resource_inventory_href,
+        #                                            resource_id=resource_inventory_id, characteristic=resource_type)
+        # ]
 
         return cls(
-            # id=str(uuid.uuid4()),
-            applied_capacity_amount=schema.applied_capacity_amount,
+            id=str(uuid.uuid4()),
+            applied_capacity_amount=applied_capacity_amount,
             reservation_resource=reservation_resource
         )

@@ -20,21 +20,24 @@ class ReservationResource(BaseDbModel):
     )
     href: Mapped[str | None] = mapped_column(String(255))
     resource_id: Mapped[str | None] = mapped_column(String(255))
+    # name: Mapped[str | None] = mapped_column(String(255))
 
     applied_capacity_amount_id: Mapped[str] = mapped_column(ForeignKey("applied_capacity_amount.id"))
     applied_capacity_amount: Mapped["AppliedCapacityAmount"] = relationship(back_populates="reservation_resource")
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationResource) -> "ReservationResource":
+    def from_schema(cls, referred_type: str, characteristic: str, href: str, resource_id: str) -> "ReservationResource":
+        ipv6_subnet = "172.7.6.4/30"
+        vlan_8021q = "2001"
         characteristic = [
-            models.Characteristic.from_schema(characteristic)
-            for characteristic in schema.characteristic
+            models.Characteristic.from_schema(characteristic, ipv6_subnet=ipv6_subnet, vlan_8021q=vlan_8021q)
         ]
 
         return cls(
-            # id=str(uuid.uuid4()),
-            referred_type=schema.referred_type,
+            id=str(uuid.uuid4()),
+            referred_type=referred_type,
             characteristic=characteristic,
-            href=schema.href,
-            resource_id=schema.resource_id
+            href=href,
+            resource_id=resource_id,
+            # name=name
         )

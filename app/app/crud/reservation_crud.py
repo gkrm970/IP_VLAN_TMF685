@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,8 +50,11 @@ class ReservationCRUD:
         # if existing_resource_pool_id_11 is None:
         #     raise NotFoundError(f"resourcePool with id {resource_pool_id} not found")
         # await ReservationCRUD.validate_resource_pool_id(db, resource_pool_id)
+        reservation_state = "completed"
+        current_datetime = datetime.utcnow()
+        # valid_for_dict = {"startDate": current_datetime}
 
-        db_obj = models.Reservation.from_schema(obj_in)
+        db_obj = models.Reservation.from_schema(obj_in, reservation_state=reservation_state, valid_for=current_datetime)
         print("db_obj", db_obj)
 
         db.add(db_obj)

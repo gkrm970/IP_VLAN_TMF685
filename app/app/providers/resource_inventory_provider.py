@@ -13,6 +13,7 @@ class ResourceInventoryProvider:
     def __init__(self):
         self.base_url = settings.RI_PROVIDER_BASE_URL
         self.api_prefix = settings.RI_PROVIDER_API_PREFIX
+        self.created_resource_data = None
 
     @staticmethod
     async def _send_request(method: Method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
@@ -70,14 +71,16 @@ class ResourceInventoryProvider:
             log.error(exc)
             raise
 
-    async def create_resource(self, related_party_id, reservation_item,
+    async def create_resource(self, reservation_item,
                               resource_specification_list, reserved_vlans) -> None | dict | Any:
         try:
             reservation_place = reservation_item.reservation_resource_capacity.reservation_place
+            resource_type = reservation_item.reservation_resource_capacity.type
+            resource_name = reservation_item.resource_name[0].name
 
             create_resource_request = {"category": "vlan_Resource", "description": "Vlan",
-                                       "name": "pcg-loopback-pc-up-N6_SGi_IMS_v4", "operationalState": "enable",
-                                       "resourceCharacteristic": [{"name": related_party_id, "value": vlan} for vlan in
+                                       "name": resource_name, "operationalState": "enable",
+                                       "resourceCharacteristic": [{"name": resource_type, "value": vlan} for vlan in
                                                                   reserved_vlans], "resourceSpecification": [],
                                        "resourceVersion": "0.0.1", "place": []}
 
@@ -94,13 +97,26 @@ class ResourceInventoryProvider:
                     "version": "0.0.1"
                 })
 
+            log.info("create_resource_request=%s", create_resource_request)
+
             tmf_639_url = f"{self.base_url}/{self.api_prefix}"
             tmf_639_url = "https://b70b1998-f6bd-4273-a9cf-681b43041018.mock.pstmn.io"
             response = await self._send_request("POST", tmf_639_url, create_resource_request)
-            print(f"tmf_639_url_status_code: {response.status_code}")
-            print(f"tmf_639_url_response: {response.json()}")
+            log.info("tmf_639_url_status_code=%s", response.status_code)
+            log.info("tmf_639_url_response=%s", response.json())
+
+            # resource_inventory_id = "http://ResourcePool/HF5R653R37R",
+            # resource_inventory_href = "sts65ett7lk56lko89da7t"
+
             if response.status_code == 201:  # 201
                 log.info("TMF-639 Created successfully")
+                # self.created_resource_data = {
+                #     "resource_inventory_href": resource_inventory_href,
+                #     "resource_inventory_id": resource_inventory_id,
+                #     "resource_type": resource_type
+                # }
+                #
+                # return self.created_resource_data, response.json()
                 return response.json()
             else:
                 raise Exception(f"TMF639 create resource fails: {response.status_code} - {response.text}")

@@ -19,11 +19,11 @@ class ReservationResource(BaseModel):
     )
     href: str | None = Field(None, description=_NAME_DESCRIPTION)
     resource_id: str | None = Field(None, description=_NAME_DESCRIPTION)
+    # name: str | None = Field(None, description=_NAME_DESCRIPTION)
 
     # class Config:
     #     # Exclude the 'resource' field from the request body
     #     exclude = {'resource'}
-
 
 # class ReservationResourceCreate(ReservationResourceBase):
 #     pass

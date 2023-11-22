@@ -1,9 +1,9 @@
 """
-Add response models
+initial
 
-Revision ID: 5b53b4aa3aef
+Revision ID: 4805a696deba
 Revises: 
-Create Date: 2023-11-21 06:13:48.828952+00:00
+Create Date: 2023-11-22 14:39:55.233092+00:00
 """
 from collections.abc import Sequence
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # Revision identifiers, used by Alembic
-revision: str = "5b53b4aa3aef"
+revision: str = "4805a696deba"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -112,7 +112,7 @@ def upgrade() -> None:
     op.create_table(
         "valid_for",
         sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column("start_date", sa.String(length=255), nullable=False),
+        sa.Column("start_date", sa.DateTime(timezone=True), nullable=True),
         sa.Column("reservation_id", sa.String(length=255), nullable=False),
         sa.ForeignKeyConstraint(
             ["reservation_id"],
@@ -153,6 +153,23 @@ def upgrade() -> None:
     op.create_index(
         op.f("ix_reservation_resource_capacity_id"),
         "reservation_resource_capacity",
+        ["id"],
+        unique=False,
+    )
+    op.create_table(
+        "reservation_resource_name",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("name", sa.String(length=255), nullable=False),
+        sa.Column("reservation_item_id", sa.String(length=255), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["reservation_item_id"],
+            ["reservation_item.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_reservation_resource_name_id"),
+        "reservation_resource_name",
         ["id"],
         unique=False,
     )
@@ -340,6 +357,8 @@ def upgrade() -> None:
         "characteristic",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("ipv4_subnet", sa.String(length=255), nullable=False),
+        sa.Column("ipv6_subnet", sa.String(length=255), nullable=False),
+        sa.Column("vlan_8021q", sa.String(length=255), nullable=False),
         sa.Column("reservation_resource_id", sa.String(length=255), nullable=False),
         sa.ForeignKeyConstraint(
             ["reservation_resource_id"],
@@ -396,6 +415,10 @@ def downgrade() -> None:
         table_name="resource_pool_applicable_time_period",
     )
     op.drop_table("resource_pool_applicable_time_period")
+    op.drop_index(
+        op.f("ix_reservation_resource_name_id"), table_name="reservation_resource_name"
+    )
+    op.drop_table("reservation_resource_name")
     op.drop_index(
         op.f("ix_reservation_resource_capacity_id"),
         table_name="reservation_resource_capacity",

@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app import providers, schemas, log, models
+from app import providers, schemas, log, models, crud
 from app.core.exceptions import InternalServerError
 
 
@@ -16,13 +16,13 @@ class ResourceReservationManager:
                                        resource):
         if demand_amount <= capacity_amount_remaining:
             available_capacity_amount = capacity_amount_remaining - demand_amount
-            log.info(f"resource value: {resource}")
+            log.info("resource value=%s", resource)
             if not resource:
-                log.info(f"resource object is not empty: {resource}")
+                log.info("resource object is not empty=%s", resource)
                 unique_vlan_numbers = \
                     await self.resource_pool_provider.generate_unique_vlan(demand_amount, capacity_amount_from,
                                                                            capacity_amount_to, used_vlans)
-                log.info(f"unique_vlan_numbers: {unique_vlan_numbers}")
+                log.info("unique_vlan_numbers=%s", unique_vlan_numbers)
                 used_vlans.update(unique_vlan_numbers)
                 return unique_vlan_numbers, available_capacity_amount
             else:
@@ -30,7 +30,7 @@ class ResourceReservationManager:
                 unique_vlan_numbers = \
                     await self.resource_pool_provider.generate_unique_vlan(remaining_demand, capacity_amount_from,
                                                                            capacity_amount_to, used_vlans)
-                log.info(f"unique_vlan_numbers: {unique_vlan_numbers}")
+                log.info("unique_vlan_numbers=%s", unique_vlan_numbers)
                 used_vlans.update(unique_vlan_numbers)
                 return unique_vlan_numbers, available_capacity_amount
         else:
@@ -42,7 +42,7 @@ class ResourceReservationManager:
 
     async def reserve(self, reservation_create: schemas.ReservationCreate, db: AsyncSession):
         used_vlans = set()
-        reservation_responses = []
+        reservation = []
         for reservation_item in reservation_create.reservation_item:
             resource_pool_id = reservation_item.reservation_resource_capacity.resource_pool.pool_id
 
@@ -52,19 +52,19 @@ class ResourceReservationManager:
                 )
             )
             resource_pool_response = result.scalars().first().to_dict()
-            log.info(f"resource_pool_response, {resource_pool_response}")
+            log.info("resource_pool_response=%s", resource_pool_response)
             capacity_list = resource_pool_response.get("capacity")
-            log.info(f"capacity_list, {capacity_list}")
+            log.info("capacity_list=%s", capacity_list)
             for capacity in capacity_list:
-                log.info("capacity", capacity)
+                log.info("capacity=%s", capacity)
                 resource_specification_list = capacity.get("resource_specification")
-                log.info(f"resource_specification_list: {resource_specification_list}")
+                log.info("resource_specification_list=%s", resource_specification_list)
                 capacity_amount_remaining = capacity.get("capacity_amount_remaining")
                 capacity_amount_from = capacity.get("capacity_amount_from")
                 capacity_amount_to = capacity.get("capacity_amount_to")
                 resource = capacity.get("resource")
                 related_party_id = capacity.get("relatedParty").get("party_id")
-                log.info("related_party_id_r", related_party_id)
+                log.info("related_party_id=%s", related_party_id)
 
                 if related_party_id == "tinaa":
                     log.info("inside if")
@@ -75,13 +75,13 @@ class ResourceReservationManager:
                                                             int(capacity_amount_from),
                                                             int(capacity_amount_to),
                                                             used_vlans, resource)
-                    log.info("reserved_vlans", reserved_vlans)
+                    log.info("reserved_vlans=%s", reserved_vlans)
                     resource_inventory_response = \
-                        await self.resource_inventory_provider.create_resource(related_party_id,
+                        await self.resource_inventory_provider.create_resource(
                                                                                reservation_item,
                                                                                resource_specification_list,
                                                                                reserved_vlans)
-                    print("resource_inventory_response_json", resource_inventory_response)
+                    log.info("resource_inventory_response_json=%s", resource_inventory_response)
 
                     resource_inventory_href = resource_inventory_response.get("href")
                     resource_inventory_id = resource_inventory_response.get("id")
@@ -106,30 +106,38 @@ class ResourceReservationManager:
                             )
 
                             resource_pool_response.capacity[0].resource_pool_resource.append(new_resource_data)
-                            print("data_capacity_response", resource_pool_response.to_dict())
+                            log.info("data_capacity_response=%s", resource_pool_response.to_dict())
                             await db.commit()
                         else:
-                            print(f"ResourcePool with id {resource_pool_id} not found.")
+                            log.info(f"ResourcePool with id {resource_pool_id} not found.")
                     except Exception as e:
+                        log.info(f'{e}')
                         delete_response = await self.resource_inventory_provider.delete_request(resource_inventory_id)
                         if delete_response.status_code == 204:
-                            log.info(f'Deleted resource successfully with this id: {resource_inventory_id}')
+                            log.info("Deleted resource successfully with this id=%s", resource_inventory_id)
                             raise InternalServerError(
                                 f"update resource pool fails, an error occurred during resource pool updating {e}")
                         else:
-                            print(f"Failed to delete resource. Status code: {delete_response.status_code}")
+                            log.info("Failed to delete resource Status code=%s", delete_response.status_code)
 
-                    reservation_res = \
-                        await self.resource_pool_provider.create_resource_reservation_response(
-                            reservation_create, used_vlans,
-                            resource_inventory_href,
-                            resource_inventory_id)
-                    log.info("reservation_res=%s", reservation_res)
-                    reservation_responses.append(reservation_res)
+                    # reservation_res = \
+                    #     await self.resource_pool_provider.create_resource_reservation_response(db,
+                    #                                                                            used_vlans,
+                    #                                                                            demand_amount,
+                    #                                                                            related_party_id,
+                    #                                                                            resource_inventory_href,
+                    #                                                                            resource_inventory_id)
+                    # if reservation_res is True:
+                    #     reservation = await crud.reservation.create(db, reservation_create)
+                    # else:
+                    #     raise InternalServerError("Fails Reserve vlans in database")
 
                 elif related_party_id == "netcracker":
                     await self._reserve_netcracker_resources()
-            return reservation_responses
+                log.info("Before reservation creation")
+                reservation = await crud.reservation.create(db, reservation_create)
+                log.info("After reservation creation")
+        return reservation
 
 
 resource_reservation_manager = ResourceReservationManager()

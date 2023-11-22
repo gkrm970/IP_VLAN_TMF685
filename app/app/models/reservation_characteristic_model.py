@@ -14,13 +14,17 @@ if TYPE_CHECKING:
 class Characteristic(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
     ipv4_subnet: Mapped[str] = mapped_column(String(255))
+    ipv6_subnet: Mapped[str] = mapped_column(String(255))
+    vlan_8021q: Mapped[str] = mapped_column(String(255))
 
     reservation_resource_id: Mapped[str] = mapped_column(ForeignKey("reservation_resource.id"))
     reservation_resource: Mapped["ReservationResource"] = relationship(back_populates="characteristic")
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationCharacteristic) -> "Characteristic":
+    def from_schema(cls, ipv4_subnet: str, ipv6_subnet: str, vlan_8021q: str) -> "Characteristic":
         return cls(
-            # id=str(uuid.uuid4()),
-            ipv4_subnet=schema.ipv4_subnet,
+            id=str(uuid.uuid4()),
+            ipv4_subnet=ipv4_subnet,
+            ipv6_subnet=ipv6_subnet,
+            vlan_8021q=vlan_8021q
         )

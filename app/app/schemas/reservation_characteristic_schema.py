@@ -11,6 +11,9 @@ class ReservationCharacteristic(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     ipv4_subnet: str | None = Field(None, alias="ipv4Subnet", description=_NAME_DESCRIPTION)
+    ipv6_subnet: str | None = Field(None, alias="ipv6Subnet", description=_NAME_DESCRIPTION)
+    vlan_8021q: str | None = Field(None, alias="8021q_vlan", description=_NAME_DESCRIPTION)
+
 
     # class Config:
     #     # Exclude the 'resource' field from the request body

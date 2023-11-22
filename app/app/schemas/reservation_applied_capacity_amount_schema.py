@@ -12,12 +12,11 @@ class AppliedCapacityAmount(BaseModel):
 
     applied_capacity_amount: str | None = Field(None, alias="appliedCapacityAmount", description=_NAME_DESCRIPTION)
 
-    reservation_resource: list[schemas.ReservationResource] = Field(
-        ...,
-        alias="resource",
-        default_factory=list,
-        description="Configuration features",
-    )
+    reservation_resource: list[schemas.ReservationResource] | None = Field(None,
+                                                                           alias="resource",
+                                                                           # default_factory=list,
+                                                                           description="Configuration features",
+                                                                           )
 
 #     # class Config:
 #     #     # Exclude the 'resource' field from the request body

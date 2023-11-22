@@ -1,11 +1,14 @@
+import uuid
 from typing import Any, Optional, TypeAlias, Literal
 import aiohttp
 import httpx
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app import schemas, log, models
 from app.core.config import settings
-from app.core.exceptions import BadRequestError
+from app.core.exceptions import BadRequestError, InternalServerError
 
 Method: TypeAlias = Literal["GET", "POST", "PATCH"]
 
@@ -68,13 +71,25 @@ class ResourcePoolProvider:
     async def generate_unique_vlan(demand_amount, capacity_amount_from, capacity_amount_to, used_vlans):
         log.info(f"demand_amount: {demand_amount}")
         vlans_list = []
-        for vlan in range(capacity_amount_from, capacity_amount_to + 1):
-            if vlan not in used_vlans and vlan not in vlans_list:
-                vlans_list.append(vlan)
-                log.info(f"vlans_list: {vlans_list}")
-                if len(vlans_list) == demand_amount:
-                    break
+        available_vlans = list(range(capacity_amount_from, capacity_amount_to + 1))
+
+        # Filter out used VLANs
+        available_vlans = [vlan for vlan in available_vlans if vlan not in used_vlans]
+
+        for vlan in available_vlans:
+            vlans_list.append(vlan)
+            log.info(f"vlans_list: {vlans_list}")
+            if len(vlans_list) == demand_amount:
+                break
+
         return vlans_list
+        # for vlan in range(capacity_amount_from, capacity_amount_to + 1):
+        #     if vlan not in used_vlans and vlan not in vlans_list:
+        #         vlans_list.append(vlan)
+        #         log.info(f"vlans_list: {vlans_list}")
+        #         if len(vlans_list) == demand_amount:
+        #             break
+        # return vlans_list
 
     async def _send_request(self, method, url: str, request_body: Optional[dict[str, Any]] = None) -> httpx.Response:
         try:
@@ -118,11 +133,35 @@ class ResourcePoolProvider:
             log.info(f"Failed to send PATCH request. Request error: {e}")
             raise e
 
-    async def create_resource_reservation_response(self, reservation_create, used_vlans,
-                                                   resource_inventory_href,
-                                                   resource_inventory_id) -> None | dict | Any:
-
-        print("reservation_create", reservation_create)
+    # @staticmethod
+    # async def create_resource_reservation_response(db: AsyncSession, used_vlans,
+    #                                                demand_amount, related_party_id,
+    #                                                resource_inventory_href,
+    #                                                resource_inventory_id) -> None | dict | Any:
+    #     # try:
+    #     print("inside try")
+    #         applied_capacity = models.AppliedCapacityAmount(
+        #         id=str(uuid.uuid4()),
+        #         applied_capacity_amount=demand_amount
+        #     )
+        #     db.add(applied_capacity)
+        #     await db.commit()
+        #
+        #     models.ReservationResource(
+        #         # id=str(uuid.uuid4()),
+        #         referred_type=related_party_id,
+        #         href=resource_inventory_href,
+        #         resource_id=resource_inventory_id
+        #     )
+        #     await db.commit()
+        #     models.Characteristic(
+        #         # id=str(uuid.uuid4()),
+        #         ipv4_subnet=used_vlans
+        #     )
+        #     await db.commit()
+        #     return True
+        # except Exception as e:
+        #     raise InternalServerError("An error occurred while creating resource reservation response") from e
 
     #     demand_amount = reservation_item[0].reservation_resource_capacity.capacity_demand_amount
     #     applied_capacity_amount = {

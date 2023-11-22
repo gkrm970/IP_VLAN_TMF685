@@ -5,7 +5,6 @@ _NAME_DESCRIPTION = "A string used to give a name to the reservation"
 
 
 class ReservationItemBase(BaseModel):
-
     quantity: int | None = Field(
         None,
         description="When sub-classing, this defines the super-class",
