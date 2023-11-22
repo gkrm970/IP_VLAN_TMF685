@@ -9,7 +9,7 @@ from app.core.config import settings
 
 class NetCrackerResourceInventoryProvider:
     def __init__(self):
-        self.ri_provider_base_url = settings.RI_PROVIDER_BASE_URL
+        self.ri_api_base_url = settings.RI_API_BASE_URL
         self.ri_api_name = settings.RI_API_NAME
         self.ri_api_version = settings.RI_API_VERSION
         self.netcracker_release_ip_provider = providers.net_cracker_release_ip_instance
@@ -69,7 +69,7 @@ class NetCrackerResourceInventoryProvider:
             )
 
         # Create resource inventory request
-        tmf_639_url = f"{self.ri_provider_base_url}/{self.ri_api_name}/{self.ri_api_version}/resource"
+        tmf_639_url = f"{self.ri_api_base_url}/{self.ri_api_name}/{self.ri_api_version}/resource"
         try:
             response = await self._send_request(
                 "POST", tmf_639_url, create_resource_request

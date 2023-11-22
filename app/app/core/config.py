@@ -31,7 +31,7 @@ class AuthSettings(BaseSettings):
 
     @field_validator("AUTH_AUTHORIZATION_URL", mode="before")
     def assemble_authorization_url(
-        cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
+            cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
     ) -> AnyHttpUrl:
         if field is not None:
             return field
@@ -42,7 +42,7 @@ class AuthSettings(BaseSettings):
 
     @field_validator("AUTH_JWK_SET_URL", mode="before")
     def assemble_jwk_set_url(
-        cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
+            cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
     ) -> AnyHttpUrl:
         if field is not None:
             return field
@@ -53,7 +53,7 @@ class AuthSettings(BaseSettings):
 
     @field_validator("AUTH_TOKEN_URL", mode="before")
     def assemble_token_url(
-        cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
+            cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
     ) -> AnyHttpUrl:
         if field is not None:
             return field
@@ -73,7 +73,7 @@ class DatabaseSettings(BaseSettings):
 
     @field_validator("DB_SQLALCHEMY_URI", mode="before")
     def assemble_db_sqlalchemy_uri(
-        cls, field: str | None, field_info: ValidationInfo  # noqa: N805
+            cls, field: str | None, field_info: ValidationInfo  # noqa: N805
     ) -> str:
         if isinstance(field, str):
             return field
@@ -96,6 +96,13 @@ class LoggerSettings(BaseSettings):
         "[%(filename)s.%(lineno)s -> %(funcName)s()] %(message)s"
     )
     LOGGER_DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+
+
+class NetCrackerProviderSettings(BaseSettings):
+    NC_CLIENT_ID: str
+    NC_CLIENT_SECRET: str
+    NC_TOKEN_URL: AnyHttpUrl
+    NC_API_BASE_URL: str
 
 
 class ResourceInventoryProviderSettings(BaseSettings):
