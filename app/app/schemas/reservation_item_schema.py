@@ -14,6 +14,11 @@ class ReservationItemBase(BaseModel):
         alias="resourceCapacity",
         description="Array of objects (RelatedParty)",
     )
+    resource_name: list[schemas.ReservationResourceName] | None = Field(
+        default_factory=list,
+        alias="resourceName",
+        description="Array of objects (Note)",
+    )
 
 
 class ReservationItemCreate(ReservationItemBase):

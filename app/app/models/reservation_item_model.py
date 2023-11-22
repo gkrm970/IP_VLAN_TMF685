@@ -23,6 +23,10 @@ class ReservationItem(BaseDbModel):
     )
     quantity: Mapped[int] = mapped_column(Integer)
 
+    resource_name: Mapped[list[models.ReservationResourceName]] = relationship(
+        back_populates="reservation_item", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+    )
+
     reservation_id: Mapped[str] = mapped_column(ForeignKey("reservation.id"))
     reservation: Mapped["Reservation"] = relationship(back_populates="reservation_item")
     reservation_resource_capacity: Mapped[
@@ -46,10 +50,16 @@ class ReservationItem(BaseDbModel):
             schema.reservation_resource_capacity
         )
 
+        resource_name = [
+            models.ReservationResourceName.from_schema(resource_name)
+            for resource_name in schema.resource_name
+        ]
+
         return cls(
             id=reservation_item,
             applied_capacity_amount=applied_capacity_amount,
             quantity=schema.quantity,
+            resource_name=resource_name,
             reservation_resource_capacity=reservation_resource_capacity,
             sub_reservation_state=schema.sub_reservation_state
         )
