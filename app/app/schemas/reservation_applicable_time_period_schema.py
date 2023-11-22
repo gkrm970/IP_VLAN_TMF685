@@ -2,7 +2,6 @@ import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 _NAME_DESCRIPTION = "A string used to give a name to the reservation"
 
 

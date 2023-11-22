@@ -1,8 +1,8 @@
 import datetime
 from typing import Any, List, Tuple
 
-from tenacity import retry, stop_after_attempt, wait_fixed
 import httpx
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app import log, providers, settings
 
@@ -88,8 +88,7 @@ class NetCrackerReservationProvider:
                                             ],
                                             "characteristic": [
                                                 {
-                                                    "ipRangeCIDR":
-                                                        reservation_item_resource_capacity_capacity_demand_amount,
+                                                    "ipRangeCIDR": reservation_item_resource_capacity_capacity_demand_amount,
                                                     # capacity demand amount
                                                     "addressPurpose": "Static",
                                                     "IPAMDescription": ipam_description,

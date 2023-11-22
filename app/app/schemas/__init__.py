@@ -17,6 +17,7 @@ from .reservation_resource_capacity_schema import (  # noqa F401
 from .reservation_resource_name_schema import ReservationResourceName
 from .reservation_resource_pool_schema import ReservationResourcePool  # noqa F401
 from .reservation_resource_schema import ReservationResource
+
 from .reservation_schemas import (  # isort: split
     Reservation,
     ReservationBase,
