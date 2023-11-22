@@ -85,6 +85,7 @@ class ResourceInventoryProvider:
             )
             resource_type = reservation_item.reservation_resource_capacity.type
             resource_name = reservation_item.resource_name[0].name
+            print("resource_name", resource_name)
 
             create_resource_request = {
                 "category": "vlan_Resource",

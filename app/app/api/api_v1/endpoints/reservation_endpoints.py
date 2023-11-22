@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, log, models, schemas
-from app.api import deps
+from app.api import deps, utils
 from app.api.responses import reservation_responses
 
 router = APIRouter()

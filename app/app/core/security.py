@@ -9,7 +9,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 
 from app import log, schemas
 from app.core.config import JWKSet, settings
-from app.core.exceptions import InternalError, UnauthorizedError
+from app.core.exceptions import InternalServerError, UnauthorizedError
 
 
 class OAuth2AuthCodeBearer(OAuth2AuthorizationCodeBearer):
@@ -67,7 +67,7 @@ async def validate_token_signature(
 
     except pydantic.ValidationError as exc:
         log.error(f"Unexpected auth token payload format: {exc}")
-        raise InternalError("Unexpected auth token payload format")
+        raise InternalServerError("Unexpected auth token payload format")
 
     except jose.JWTError:
         raise UnauthorizedError("Invalid authentication details")

@@ -106,10 +106,10 @@ class NetCrackerProviderSettings(BaseSettings):
 
 
 class ResourceInventoryProviderSettings(BaseSettings):
-    RI_API_BASE_URL: str
-    RI_API_NAME: str = "plan/inventory/resourceInventoryManagement"
-    RI_API_VERSION: str = "v1"
-    RI_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"
+    RI_PROVIDER_BASE_URL: str = "http://127.0.0.1:8000"
+    API_NAME: str = "plan/inventory/resourceInventoryManagement"
+    API_VERSION: str = "v1"
+    RI_PROVIDER_API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
 
 
 class Settings(
