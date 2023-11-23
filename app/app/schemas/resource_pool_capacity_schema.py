@@ -74,31 +74,6 @@ class ResourcePoolCapacity(ResourcePoolCapacityBase):
             "of a type"
         ),
     )
-
-    capacity_amount: str | None = Field(None, description=_NAME_DESCRIPTION)
-    capacity_amount_from: str | None = Field(None, description=_NAME_DESCRIPTION)
-    capacity_amount_remaining: str | None = Field(None, description=_NAME_DESCRIPTION)
-    capacity_amount_to: str | None = Field(None, description=_NAME_DESCRIPTION)
-    range_interval: str | None = Field(None, description=_NAME_DESCRIPTION)
-
-    applicable_time_period: schemas.ResourcePoolApplicableTimePeriod = Field(
-        None,
-        alias="applicableTimePeriod",
-        description="Configuration features",
-    )
-    related_party: schemas.ResourcePoolRelatedParty = Field(
-        alias="relatedParty",
-        description="Configuration features",
-    )
-
-    place: list[schemas.ResourcePoolPlace] = Field(
-        default_factory=list,
-        description="Configuration features",
-    )
-    resource_specification: list[schemas.ResourcePoolResourceSpecification] = Field(
-        default_factory=list,
-        description="Configuration features",
-    )
     resource_pool_resource: list[schemas.ResourcePoolResource] = Field(
         alias="resource",
         default_factory=list,

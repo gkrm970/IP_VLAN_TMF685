@@ -53,26 +53,6 @@ class Reservation(ReservationBase):
         ),
     )
     href: str = Field(..., description="The URI for the object itself.")
-    type: str | None = Field(
-        None,
-        alias="@type",
-        description="When sub-classing, this defines the super-class",
-    )
-
-    related_parties: schemas.RelatedParty | None = Field(
-        alias="relatedParty",
-        description="Array of objects (RelatedParty)",
-    )
-    requested_period: schemas.ReservationRequestedPeriod | None = Field(
-        None,
-        alias="requestedPeriod",
-        description="Array of objects (RelatedParty)",
-    )
-    reservation_item: list[schemas.ReservationItem] = Field(
-        default_factory=list,
-        alias="reservationItem",
-        description="Array of objects (Note)",
-    )
     reservation_state: str | None = Field(
         None,
         alias="reservationState",

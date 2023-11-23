@@ -44,14 +44,6 @@ class ReservationItem(ReservationItemBase):
         alias="appliedCapacityAmount",
         description="Array of objects (RelatedParty)",
     )
-    quantity: int | None = Field(
-        None,
-        description="When sub-classing, this defines the super-class",
-    )
-    reservation_resource_capacity: schemas.ReservationResourceCapacity = Field(
-        alias="resourceCapacity",
-        description="Array of objects (RelatedParty)",
-    )
     sub_reservation_state: str | None = Field(
         None, alias="subReservationState", description=_NAME_DESCRIPTION
     )

@@ -22,7 +22,7 @@ class ResourcePoolBase(BaseModel):
         None, description="Free-text description of the resource"
     )
 
-    capacity: list[schemas.ResourcePoolCapacity] = Field(
+    capacity: list[schemas.ResourcePoolCapacityCreate] = Field(
         default_factory=list,
         description="Configuration features",
     )
@@ -52,22 +52,4 @@ class ResourcePool(ResourcePoolBase):
             "the resource type. Used in URIs as the identifier for specific instances "
             "of a type"
         ),
-    )
-    name: str | None = Field(None, description=_NAME_DESCRIPTION)
-
-    type: str | None = Field(
-        None,
-        alias="@type",
-        description=(
-            "Category of the concrete resource, "
-            "e.g Gold, Silver for MSISDN concrete resource"
-        ),
-    )
-    description: str | None = Field(
-        None, description="Free-text description of the resource"
-    )
-
-    capacity: list[schemas.ResourcePoolCapacity] = Field(
-        default_factory=list,
-        description="Configuration features",
     )
