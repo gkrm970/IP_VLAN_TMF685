@@ -1,4 +1,3 @@
-import json
 import uuid
 from datetime import datetime
 from typing import Any, Type
@@ -13,10 +12,8 @@ from sqlalchemy.orm import (
     ColumnProperty,
 )
 
-from app import models, schemas, settings, db
-from app.api.utils import resource_reservation_manager
+from app import models, schemas, settings
 from app.db.base import BaseDbModel
-from app.providers import resource_inventory_provider
 
 _ALL_DELETE_ORPHAN = "all, delete-orphan"
 
