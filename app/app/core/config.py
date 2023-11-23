@@ -54,7 +54,7 @@ class DatabaseSettings(BaseSettings):
     DB_USERNAME: str
     DB_PASSWORD: str
     DB_HOST: str
-    DB_PORT: int
+    DB_PORT: int = 5432
     DB_NAME: str
     DB_SQLALCHEMY_URI: str | None = None
 
