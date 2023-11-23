@@ -33,6 +33,8 @@ resource_pool_management:
   configmap_data: &configmap_data
     # Base URL of the API, used for href generation
     API_BASE_URL: https://{{ requiredEnv "ROUTE" }}
+    # Application version that is displayed in Swagger UI, comes from GitLab CI (the short commit hash)
+    APP_VERSION: {{ requiredEnv "CI_COMMIT_SHORT_SHA" }}
     # Base URL for auth - used for JWK (certs), token and auth endpoint generation
     AUTH_BASE_URL: https://auth.tinaa.teluslabs.net/auth/realms/tinaa/protocol/openid-connect
     # The hostname/IP for the database connection
