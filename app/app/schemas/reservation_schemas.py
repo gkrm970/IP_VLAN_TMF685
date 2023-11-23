@@ -22,11 +22,6 @@ class ReservationBase(BaseModel):
         alias="requestedPeriod",
         description="Array of objects (RelatedParty)",
     )
-    reservation_item: list[schemas.ReservationItem] | None = Field(
-        default_factory=list,
-        alias="reservationItem",
-        description="Array of objects (Note)",
-    )
 
 
 class ReservationCreate(ReservationBase):
@@ -34,6 +29,11 @@ class ReservationCreate(ReservationBase):
         ...,
         alias="relatedParty",
         description="Array of objects (RelatedParty)",
+    )
+    reservation_item: list[schemas.ReservationItemCreate] | None = Field(
+        default_factory=list,
+        alias="reservationItem",
+        description="Array of objects (Note)",
     )
 
 
@@ -61,4 +61,9 @@ class Reservation(ReservationBase):
     valid_for: schemas.ReservationValidFor | None = Field(
         None,
         description="Array of objects (RelatedParty)",
+    )
+    reservation_item: list[schemas.ReservationItem] | None = Field(
+        default_factory=list,
+        alias="reservationItem",
+        description="Array of objects (Note)",
     )
