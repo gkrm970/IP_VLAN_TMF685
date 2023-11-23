@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, List
+from typing import Any,  TypeAlias, Literal
 
 import httpx
 from sqlalchemy import select
@@ -11,24 +11,26 @@ from app import log, models, providers, schemas, settings
 from app.api import utils
 
 
+Method: TypeAlias = Literal["GET", "POST", "PATCH", "DELETE"]
+
+
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-def make_post_request(url: str, payload: dict):
+async def make_post_request(url: str, payload: dict):
     auth_header = providers.nc_auth.get_header()
 
     headers = {
         **auth_header,
         "Content-Type": "application/json",
         "accept": "application/json",
-        "env": "it02",
     }
 
     async with httpx.AsyncClient() as session:
-        response = session.post(url, headers=headers, json=payload)
+        response = session.request(method="POST", url=url, headers=headers, json=payload)
         return response
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-def make_patch_request(url, payload):
+async def make_patch_request(url, payload):
     auth_header = providers.nc_auth.get_header()
 
     headers = {
@@ -43,15 +45,9 @@ def make_patch_request(url, payload):
         return response
 
 
-def _send_request(url, request_body):
+async def _send_request(method: Method, url: str, headers: dict[str, str] | None = None, request_body: dict[str, Any] | None = None) -> httpx.Response:
     async with httpx.AsyncClient() as client:
-        response = client.post(url, json=request_body)
-        return response
-
-
-def _delete_request(url):
-    async with httpx.AsyncClient() as client:
-        response = client.delete(url)
+        response = await client.request(method, url, headers=headers, json=request_body)
         return response
 
 
@@ -134,11 +130,18 @@ class NCReserveIPProvider:
         nc_reservation_url = (
             f"{self.nc_api_base_url}/resource/resourcePoolManagement/v1/reservation"
         )
+        auth_header = providers.nc_auth.get_header()
+
+        headers = {
+            **auth_header,
+            "Content-Type": "application/json",
+            "accept": "application/json",
+            "env": "it02",
+        }
+
         # Create net cracker reservation or Fetch the reserved IP address
         try:
-            response = await make_post_request(
-                nc_reservation_url, create_resource_request_payload
-            )
+            response = await _send_request("POST", nc_reservation_url, headers, create_resource_request_payload)
             response.raise_for_status()
             json_data = response.json()
             if "reservationItem" in json_data:
@@ -228,14 +231,14 @@ nc_release_ip_instance = NCReleaseIPProvider()
 
 class ResourceInventoryProvider:
     def __init__(self):
-        self.ri_api_base_url = settings.RI_API_BASE_URL
+        self.ri_api_base_url = settings.RI_BASE_URL
         self.ri_api_name = settings.RI_API_NAME
         self.ri_api_version = settings.RI_API_VERSION
 
     async def create_resource_inventory(
             self,
             reservation_create: schemas.ReservationItemCreate,
-            resource_specification_list: utils.resource_reservation_manager.resource_specification_list,
+            resource_specification_list: list,
     ) -> None | dict | Any:
         reservation_place = (
             reservation_create.reservation_item.reservation_resource_capacity.reservation_place
@@ -280,7 +283,7 @@ class ResourceInventoryProvider:
         )
         try:
             resource_inventory_response = await _send_request(
-                tmf_639_url, create_resource_request
+                "POST", tmf_639_url, create_resource_request
             )
             log.info(
                 "Resource inventory created successfully", resource_inventory_response
@@ -359,7 +362,7 @@ class ResourcePoolPatchProvider:
                     f"{self.ri_base_url}{self.ri_api_name}/{self.ri_api_version}/resource/"
                     f"{resource_inventory_id}"
                 )
-                response = await _delete_request(url)
+                response = await _send_request("DELETE", url)
                 log.info("Resource inventory deleted successfully", response)
             raise e
 

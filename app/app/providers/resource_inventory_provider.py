@@ -14,7 +14,7 @@ Method: TypeAlias = Literal["GET", "POST"]
 
 class ResourceInventoryProvider:
     def __init__(self):
-        self.base_url = settings.RI_PROVIDER_BASE_URL
+        self.base_url = settings.RI_BASE_URL
         self.api_prefix = settings.RI_PROVIDER_API_PREFIX
         self.created_resource_data = None
 
