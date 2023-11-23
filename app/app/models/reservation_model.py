@@ -61,24 +61,6 @@ class Reservation(BaseDbModel):
         )
         sub_reservation_state = "completed"
 
-        # resource_inventory_id, resource_inventory_href, resource_type = resource_inventory_provider.create_resource()
-        # reservation_resource = [
-        #     models.ReservationResource.from_schema(href=resource_inventory_href,
-        #                                            resource_id=resource_inventory_id,
-        #                                            characteristic=resource_type, referred_type=resource_type)
-        # ]
-        # demand_amount = schema.reservation_item[0].reservation_resource_capacity.capacity_demand_amount
-        #
-        # applied_capacity_amount = (models.AppliedCapacityAmount.
-        #                            from_schema(reservation_resource=reservation_resource,
-        #                                        applied_capacity_amount=demand_amount))
-        # applied_capacity_amount = (models.AppliedCapacityAmount.
-        #                            from_schema())
-        # created_resource_data = resource_inventory_provider.created_resource_data
-        # resource_inventory_href = created_resource_data["resource_inventory_href"]
-        # resource_inventory_id = created_resource_data["resource_inventory_id"]
-        # resource_type = created_resource_data["resource_type"]
-        # resource_inventory_id, resource_inventory_href, resource_type = resource_inventory_provider.create_resource()
         reservation_resource = [
             models.ReservationResource.from_schema(
                 href="https://api.develop.tinaa.teluslabs.net/plan/inventory"

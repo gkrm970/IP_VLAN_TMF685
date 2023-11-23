@@ -21,5 +21,5 @@ class ValidFor(BaseDbModel):
     reservation: Mapped["Reservation"] = relationship(back_populates="valid_for")
 
     @classmethod
-    def from_schema(cls, start_date: datetime) -> "ValidFor":
+    def from_schema(cls, start_date: datetime.datetime) -> "ValidFor":
         return cls(id=str(uuid.uuid4()), start_date=start_date)

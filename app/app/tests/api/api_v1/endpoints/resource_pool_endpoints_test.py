@@ -72,11 +72,11 @@ class TestGetResourcesPool:
 class TestCreateResourcePool:
     @staticmethod
     async def _mock_create(
-        db: AsyncSession, obj_in: schemas.ResourcePoolManagementCreate
-    ) -> models.ResourcePoolManagement:
+        db: AsyncSession, obj_in: schemas.ResourcePoolCreate
+    ) -> models.ResourcePool:
         db_obj_id = uuid.uuid4().hex
 
-        return models.ResourcePoolManagement(
+        return models.ResourcePool(
             name="test_name", id=db_obj_id, href=f"resourcePool/{db_obj_id}"
         )
 

@@ -81,7 +81,7 @@ class ResourcePoolCapacity(ResourcePoolCapacityBase):
     capacity_amount_to: str | None = Field(None, description=_NAME_DESCRIPTION)
     range_interval: str | None = Field(None, description=_NAME_DESCRIPTION)
 
-    applicable_time_period: schemas.ResourcePoolApplicableTimePeriod | None = Field(
+    applicable_time_period: schemas.ResourcePoolApplicableTimePeriod = Field(
         None,
         alias="applicableTimePeriod",
         description="Configuration features",

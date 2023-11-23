@@ -22,7 +22,7 @@ class ReservationBase(BaseModel):
         alias="requestedPeriod",
         description="Array of objects (RelatedParty)",
     )
-    reservation_item: list[schemas.ReservationItemCreate] | None = Field(
+    reservation_item: list[schemas.ReservationItem] | None = Field(
         default_factory=list,
         alias="reservationItem",
         description="Array of objects (Note)",
