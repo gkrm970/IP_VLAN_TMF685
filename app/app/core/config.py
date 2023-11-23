@@ -93,10 +93,10 @@ class NetCrackerProviderSettings(BaseSettings):
 
 
 class ResourceInventoryProviderSettings(BaseSettings):
-    RI_BASE_URL: str
+    RI_BASE_URL: AnyHttpUrl
     RI_API_NAME: str = "plan/inventory/resourceInventoryManagement"
     RI_API_VERSION: str = "v1"
-    RI_PROVIDER_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"
+    RI_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"
 
 
 class Settings(

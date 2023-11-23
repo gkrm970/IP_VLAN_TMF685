@@ -231,7 +231,7 @@ nc_release_ip_instance = NCReleaseIPProvider()
 
 class ResourceInventoryProvider:
     def __init__(self):
-        self.ri_api_base_url = settings.RI_BASE_URL
+        self.ri_api_base_url = str(settings.RI_BASE_URL)
         self.ri_api_name = settings.RI_API_NAME
         self.ri_api_version = settings.RI_API_VERSION
 
@@ -309,7 +309,7 @@ class ResourcePoolPatchProvider:
         self.api_base_url = settings.API_BASE_URL
         self.api_name = settings.API_NAME
         self.api_version = settings.API_VERSION
-        self.ri_base_url = settings.RI_BASE_URL
+        self.ri_base_url = str(settings.RI_BASE_URL)
         self.ri_api_name = settings.RI_API_NAME
         self.ri_api_version = settings.RI_API_VERSION
 
