@@ -7,8 +7,9 @@ from app.api.api_v1.api import router as api_router
 from app.core.config import settings
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
+    title=settings.APP_TITLE,
     docs_url=f"{settings.API_PREFIX}/docs",
+    version=settings.APP_VERSION,
 )
 
 app.add_middleware(

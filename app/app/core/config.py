@@ -112,7 +112,8 @@ class Settings(
         env_file=".env",
     )
 
-    PROJECT_NAME: str = "Resource Pool Management"
+    APP_TITLE: str = "Resource Pool Management"
+    APP_VERSION: str = "0.1.0"
 
     # CORS_ORIGINS is a JSON-formatted list of origins (HTTP URLs),
     # e.g: '["http://localhost", "http://localhost:8050", "http://localhost:8080"]'
