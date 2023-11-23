@@ -19,26 +19,13 @@ class APISettings(BaseSettings):
 
 class AuthSettings(BaseSettings):
     AUTH_BASE_URL: AnyHttpUrl
-    AUTH_AUTHORIZATION_URL: AnyHttpUrl | None = None
     AUTH_JWK_SET_URL: AnyHttpUrl | None = None
     AUTH_TOKEN_URL: AnyHttpUrl | None = None
-    SSL_VERIFY: Any = False
     # This will be set after application startup, getting it from the JWK_SET_URL above
     AUTH_JWK_SET: Json[JWKSet] | None = None
 
     AUTH_CLIENT_ID: str
     AUTH_CLIENT_SECRET: str
-
-    @field_validator("AUTH_AUTHORIZATION_URL", mode="before")
-    def assemble_authorization_url(
-        cls, field: AnyHttpUrl | None, field_info: ValidationInfo  # noqa: N805
-    ) -> AnyHttpUrl:
-        if field is not None:
-            return field
-
-        base_url = str(field_info.data.get("AUTH_BASE_URL"))
-
-        return Url(urljoin(f"{base_url}/", "auth"))
 
     @field_validator("AUTH_JWK_SET_URL", mode="before")
     def assemble_jwk_set_url(

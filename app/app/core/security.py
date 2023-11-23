@@ -1,10 +1,11 @@
-from typing import Annotated
+from typing import Annotated, cast
 
 import httpx
 import jose.jwt
 import pydantic
 from fastapi import Request, Security
-from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.openapi.models import OAuthFlowClientCredentials, OAuthFlows
+from fastapi.security import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
 
 from app import log, schemas
@@ -12,7 +13,24 @@ from app.core.config import JWKSet, settings
 from app.core.exceptions import InternalServerError, UnauthorizedError
 
 
-class OAuth2AuthCodeBearer(OAuth2AuthorizationCodeBearer):
+class OAuth2ClientCredentialsBearer(OAuth2):
+    def __init__(
+        self,
+        token_url: str,
+        scheme_name: str | None = None,
+        scopes: dict | None = None,
+        auto_error: bool = True,
+    ):
+        if not scopes:
+            scopes = {}
+
+        flows = OAuthFlows(
+            clientCredentials=cast(
+                OAuthFlowClientCredentials, {"tokenUrl": token_url, "scopes": scopes}
+            )
+        )
+        super().__init__(flows=flows, scheme_name=scheme_name, auto_error=auto_error)
+
     async def __call__(self, request: Request) -> str | None:
         auth_header: str | None = request.headers.get("Authorization")
         scheme, param = get_authorization_scheme_param(auth_header)
@@ -49,11 +67,7 @@ async def _get_jwk_set() -> JWKSet:
     return settings.AUTH_JWK_SET
 
 
-_oauth2_scheme = OAuth2AuthCodeBearer(
-    tokenUrl=str(settings.AUTH_TOKEN_URL),
-    refreshUrl=str(settings.AUTH_TOKEN_URL),
-    authorizationUrl=str(settings.AUTH_AUTHORIZATION_URL),
-)
+_oauth2_scheme = OAuth2ClientCredentialsBearer(token_url=str(settings.AUTH_TOKEN_URL))
 
 
 async def validate_token_signature(
