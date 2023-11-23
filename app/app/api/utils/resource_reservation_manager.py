@@ -166,12 +166,10 @@ class ResourceReservationManager:
                     except Exception as e:
                         log.info(f"{e}")
                         delete_response = (
-                            await self.resource_inventory_provider.delete_request(
+                            await self.resource_inventory_provider.delete_resource_by_id(
                                 resource_inventory_id
                             )
                         )
-                        log.info(f'{e}')
-                        delete_response = await self.resource_inventory_provider.delete_request(resource_inventory_id)
                         if delete_response.status_code == 204:
                             log.info(
                                 "Deleted resource successfully with this id=%s",
