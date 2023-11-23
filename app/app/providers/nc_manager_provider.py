@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, List, Optional
+from typing import Any, List
 
 import httpx
 from sqlalchemy import select
@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from app import log, providers, settings, schemas, models
+from app import log, models, providers, schemas, settings
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
@@ -59,10 +59,10 @@ class NCReserveIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def reserve_ip(
-            self,
-            reservation_create: schemas.ReservationCreate,
-            related_party_id: str,
-            related_party_role: str
+        self,
+        reservation_create: schemas.ReservationCreate,
+        related_party_id: str,
+        related_party_role: str,
     ):
         reserved_ips: List[Any] = []
 
@@ -73,7 +73,8 @@ class NCReserveIPProvider:
             },
             "@type": "IPRangeReservation",
             "requestedPeriod": {"fromToDateTime": str(datetime.datetime.now())},
-            "reservationItem": [], }
+            "reservationItem": [],
+        }
 
         for item in reservation_create.reservation_item:
             create_resource_request_payload["reservation_item"].append(
@@ -151,7 +152,7 @@ class NCReserveIPProvider:
                     for applied_capacity_amount in item.get("appliedCapacityAmount", {})
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("id") is not None
-                       and resource.get("name") is not None
+                    and resource.get("name") is not None
                 ]
                 ip_names = [
                     resource.get("name")
@@ -179,9 +180,9 @@ class NCReleaseIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def release_ip(
-            self,
-            resource_ip_id,
-            ip_names,
+        self,
+        resource_ip_id,
+        ip_names,
     ) -> None | dict | Any:
         payload = {
             "@baseType": "Network",
@@ -221,11 +222,11 @@ class ResourceInventoryProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def create_resource_inventory(
-            self,
-            reservation_item,
-            resource_specification_list,
-            resource_ip_id,
-            ip_names_ids,
+        self,
+        reservation_item,
+        resource_specification_list,
+        resource_ip_id,
+        ip_names_ids,
     ) -> None | dict | Any:
         reservation_place = (
             reservation_item.reservation_resource_capacity.reservation_place
@@ -270,22 +271,21 @@ class ResourceInventoryProvider:
         )
         try:
             resource_inventory_response = await _send_request(
-                tmf_639_url,
-                create_resource_request
+                tmf_639_url, create_resource_request
             )
-            log.info("Resource inventory created successfully", resource_inventory_response)
+            log.info(
+                "Resource inventory created successfully", resource_inventory_response
+            )
             resource_inventory_response.raise_for_status()
             log.info("Resource inventory created successfully %s")
-            resource_inventory_href = resource_inventory_response.json().get("href")
-            resource_inventory_id = resource_inventory_response.json().get("id")
+            resource_inventory_response.json().get("href")
+            resource_inventory_response.json().get("id")
             return resource_inventory_response
         except httpx.HTTPStatusError as e:
             log.error("HTTPStatusError", e)
             log.exception("Could not able to create resource and raised exception", e)
             # Roll back the net cracker release ip
-            await nc_release_ip_instance.release_ip(
-                resource_ip_id, ip_names_ids
-            )
+            await nc_release_ip_instance.release_ip(resource_ip_id, ip_names_ids)
             raise e
 
 
@@ -302,13 +302,13 @@ class ResourcePoolPatchProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def resource_pool_patch(
-            self,
-            reservation_item_resource_capacity_resource_pool_id,
-            ip_names,
-            resource_inventory_href,
-            resource_inventory_id,
-            resource_ip_id,
-            db: AsyncSession,
+        self,
+        reservation_item_resource_capacity_resource_pool_id,
+        ip_names,
+        resource_inventory_href,
+        resource_inventory_id,
+        resource_ip_id,
+        db: AsyncSession,
     ):
         try:
             result = await db.execute(
