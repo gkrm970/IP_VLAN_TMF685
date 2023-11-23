@@ -81,17 +81,18 @@ class ResourceReservationManager:
             if resource_pool is None:
                 raise InternalServerError("Resource pool not found")
 
+            resource_pool_data = resource_pool.to_dict()
             log.info("resource_pool_response=%s", resource_pool)
-            capacity_list = resource_pool.capacity
+            capacity_list = resource_pool_data.get("capacity")
             log.info("capacity_list=%s", capacity_list)
 
             for capacity in capacity_list:
                 log.info("capacity", capacity)
-                resource_specification_list = capacity.get("resource_specification")
+                resource_specification_list = capacity.get("resourceSpecification")
                 log.info(f"resource_specification_list: {resource_specification_list}")
-                capacity_amount_remaining = capacity.get("capacity_amount_remaining")
-                capacity_amount_from = capacity.get("capacity_amount_from")
-                capacity_amount_to = capacity.get("capacity_amount_to")
+                capacity_amount_remaining = capacity.get("capacityAmountRemaining")
+                capacity_amount_from = capacity.get("capacityAmountFrom")
+                capacity_amount_to = capacity.get("capacityAmountTo")
                 resource = capacity.get("resource")
                 related_party_id = capacity.get("relatedParty").get("party_id")
                 log.info("related_party_id=%s", related_party_id)
