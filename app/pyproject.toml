@@ -152,6 +152,7 @@ target-version = "py311"
 # Ignore Pyflakes `imported but unused` errors in the files below
 "app/api/deps/__init__.py" = ["F401"]
 "app/models/__init__.py" = ["F401"]
+"app/providers/__init__.py" = ["F401"]
 "app/schemas/__init__.py" = ["F401"]
 "app/tests/mocks/__init__.py" = ["F401"]
 "app/tests/overrides/__init__.py" = ["F401"]

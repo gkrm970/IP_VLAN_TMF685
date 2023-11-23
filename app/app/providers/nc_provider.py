@@ -1,5 +1,5 @@
 import datetime
-from typing import Any,  TypeAlias, Literal
+from typing import Any, Literal, TypeAlias
 
 import httpx
 from sqlalchemy import select
@@ -8,8 +8,6 @@ from sqlalchemy.orm import selectinload
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app import log, models, providers, schemas, settings
-from app.api import utils
-
 
 Method: TypeAlias = Literal["GET", "POST", "PATCH", "DELETE"]
 
@@ -25,16 +23,16 @@ async def make_post_request(url: str, payload: dict):
     }
 
     async with httpx.AsyncClient() as session:
-        response = session.request(method="POST", url=url, headers=headers, json=payload)
+        response = session.request(
+            method="POST", url=url, headers=headers, json=payload
+        )
         return response
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
 async def make_patch_request(url, payload):
-    auth_header = providers.nc_auth.get_header()
-
     headers = {
-        **auth_header,
+        "Authorization": f"Bearer {await providers.nc_auth.get_access_token()}",
         "Content-Type": "application/json",
         "accept": "application/json",
         "env": "it02",
@@ -45,7 +43,12 @@ async def make_patch_request(url, payload):
         return response
 
 
-async def _send_request(method: Method, url: str, headers: dict[str, str] | None = None, request_body: dict[str, Any] | None = None) -> httpx.Response:
+async def _send_request(
+    method: Method,
+    url: str,
+    headers: dict[str, str] | None = None,
+    request_body: dict[str, Any] | None = None,
+) -> httpx.Response:
     async with httpx.AsyncClient() as client:
         response = await client.request(method, url, headers=headers, json=request_body)
         return response
@@ -60,10 +63,10 @@ class NCReserveIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def reserve_ip(
-            self,
-            reservation_create: schemas.ReservationCreate,
-            related_party_id: str,
-            related_party_role: str,
+        self,
+        reservation_create: schemas.ReservationCreate,
+        related_party_id: str,
+        related_party_role: str,
     ):
         create_resource_request_payload = {
             "relatedParty": {
@@ -82,7 +85,9 @@ class NCReserveIPProvider:
                     "@type": "IPRangeReservationItem",
                     "resourceCapacity": {
                         "@type": item.reservation_resource_capacity.type,
-                        "capacityDemandAmount": item.reservation_resource_capacity.capacity_demand_amount,
+                        "capacityDemandAmount": (
+                            item.reservation_resource_capacity.capacity_demand_amount
+                        ),
                         "resourcePool": {
                             "@type": "IP Pool",
                             "id": item.reservation_resource_capacity.resource_pool.pool_id,
@@ -102,10 +107,16 @@ class NCReserveIPProvider:
                                             ],
                                             "characteristic": [
                                                 {
-                                                    "ipRangeCIDR": item.reservation_resource_capacity.capacity_demand_amount,
+                                                    "ipRangeCIDR": (
+                                                        item.reservation_resource_capacity.capacity_demand_amount
+                                                    ),
                                                     "addressPurpose": "Static",
-                                                    "IPAMDescription": item.reservation_resource_capacity.external_party_characteristics.ipam_description,
-                                                    "IPAMDetail": item.reservation_resource_capacity.external_party_characteristics.ipam_details,
+                                                    "IPAMDescription": (
+                                                        item.reservation_resource_capacity.external_party_characteristics.ipam_description
+                                                    ),
+                                                    "IPAMDetail": (
+                                                        item.reservation_resource_capacity.external_party_characteristics.ipam_details
+                                                    ),
                                                     "Customer": {
                                                         "name": "TEST CUSTOMER 11",
                                                         "cpid": "77000001",
@@ -141,7 +152,9 @@ class NCReserveIPProvider:
 
         # Create net cracker reservation or Fetch the reserved IP address
         try:
-            response = await _send_request("POST", nc_reservation_url, headers, create_resource_request_payload)
+            response = await _send_request(
+                "POST", nc_reservation_url, headers, create_resource_request_payload
+            )
             response.raise_for_status()
             json_data = response.json()
             if "reservationItem" in json_data:
@@ -164,7 +177,7 @@ class NCReserveIPProvider:
                     for applied_capacity_amount in item.get("appliedCapacityAmount", {})
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("id") is not None
-                       and resource.get("name") is not None
+                    and resource.get("name") is not None
                 ]
                 self.resource_name_id_from_nc.append(ip_names_ids)
 
@@ -176,14 +189,20 @@ class NCReserveIPProvider:
                     if resource.get("name") is not None
                 ]
                 self.reserved_ips_names_from_nc.append(ip_names)
-                log.info("IP names from NC resource in list ", self.reserved_ips_names_from_nc)
+                log.info(
+                    "IP names from NC resource in list ",
+                    self.reserved_ips_names_from_nc,
+                )
 
                 # Now, combined_data is a list of dictionaries with "id" and "name" pairs
                 log.info("combined_data from NC resource ", ip_names_ids)
                 return self.resource_id_list, ip_names_ids
 
         except httpx.RequestError as exc:
-            log.error(f"Failed to create net cracker reservation or failed to reserve IP: {exc}")
+            log.error(
+                "Failed to create net cracker reservation or failed to reserve IP:"
+                f" {exc}"
+            )
             raise Exception(f"Failed to create net cracker reservation: {exc}")
 
 
@@ -195,21 +214,24 @@ class NCReleaseIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def release_ip(
-            self,
+        self,
     ) -> httpx.Response:
         # Access reserved_ips from the nc_reserve_ip_instance
         payload = {
             "@baseType": "Network",
             "@type": "IP Range",
             "id": nc_reserve_ip_instance.resource_ip_id,
-            "name": [ip_name for ip_name in nc_reserve_ip_instance.reserved_ips_names_from_nc],
+            "name": [
+                ip_name for ip_name in nc_reserve_ip_instance.reserved_ips_names_from_nc
+            ],
             "resourceCharacteristic": [
                 {
                     "id": resource_id_from_nc,
                     "name": "Status",
                     "value": "UNASSIGNED",
                     "valueType": "Text",
-                } for resource_id_from_nc in nc_reserve_ip_instance.resource_id_list
+                }
+                for resource_id_from_nc in nc_reserve_ip_instance.resource_id_list
             ],
         }
 
@@ -236,9 +258,9 @@ class ResourceInventoryProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def create_resource_inventory(
-            self,
-            reservation_create: schemas.ReservationItemCreate,
-            resource_specification_list: list,
+        self,
+        reservation_create: schemas.ReservationItemCreate,
+        resource_specification_list: list,
     ) -> None | dict | Any:
         reservation_place = (
             reservation_create.reservation_item.reservation_resource_capacity.reservation_place
@@ -314,12 +336,12 @@ class ResourcePoolPatchProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def resource_pool_patch(
-            self,
-            reservation_item_resource_capacity_resource_pool_id,
-            ip_names,
-            resource_inventory_href,
-            resource_inventory_id,
-            db: AsyncSession,
+        self,
+        reservation_item_resource_capacity_resource_pool_id,
+        ip_names,
+        resource_inventory_href,
+        resource_inventory_id,
+        db: AsyncSession,
     ):
         try:
             result = await db.execute(
@@ -347,7 +369,8 @@ class ResourcePoolPatchProvider:
                 await db.commit()
             else:
                 log.info(
-                    f"ResourcePool with id {reservation_item_resource_capacity_resource_pool_id} not found."
+                    "ResourcePool with id"
+                    f" {reservation_item_resource_capacity_resource_pool_id} not found."
                 )
 
         except httpx.HTTPError as e:

@@ -3,20 +3,18 @@ from urllib.parse import urljoin
 
 import httpx
 from asgi_correlation_id import correlation_id
+from fastapi import status
 
-from app import log, schemas
+from app import log, providers, schemas
 from app.core.config import settings
-from app.core.exceptions import BadRequestError
-from app.core.exceptions import InternalServerError
+from app.core.exceptions import BadRequestError, InternalServerError
 
 Method: TypeAlias = Literal["GET", "POST", "DELETE"]
 
 
 class ResourceInventoryProvider:
     def __init__(self):
-        self.base_api_url = urljoin(
-            str(settings.RI_BASE_URL), settings.RI_API_PREFIX
-        )
+        self.base_api_url = urljoin(str(settings.RI_BASE_URL), settings.RI_API_PREFIX)
         self.created_resource_data = None
 
     @staticmethod
@@ -30,7 +28,12 @@ class ResourceInventoryProvider:
                     method,
                     url,
                     json=request_body,
-                    headers={"X-Request-ID": correlation_id.get() or ""},
+                    headers={
+                        "Authorization": (
+                            f"Bearer {await providers.tinaa_auth.get_access_token()}"
+                        ),
+                        "X-Request-ID": correlation_id.get() or "",
+                    },
                 )
                 log.debug(f"Response status code: {response.status_code}")
 
@@ -56,7 +59,7 @@ class ResourceInventoryProvider:
             "DELETE", f"{self.base_api_url}/resource/{id}"
         )
 
-        if response.status_code == 204:
+        if response.status_code == status.HTTP_204_NO_CONTENT:
             log.info(f"Deleted resource successfully with ID {id}")
         else:
             log.info(f"Failed to delete resource, status code {response.status_code}")
@@ -110,17 +113,19 @@ class ResourceInventoryProvider:
             )
             log.info("tmf_639_url_status_code=%s", response.status_code)
             log.info("tmf_639_url_response=%s", response.json())
-            if response.status_code == 201:  # 201
+            if response.status_code == status.HTTP_201_CREATED:
                 log.info("TMF-639 Created successfully")
                 return response.json()
             else:
                 raise Exception(
-                    f"TMF639 create resource fails: {response.status_code} - {response.text}"
+                    "TMF639 create resource fails: "
+                    f"{response.status_code} - {response.text}"
                 )
         except Exception as e:
             log.info(f"Error creating resource: {e}")
             raise InternalServerError(
-                "TMF639 create resource fails: An error occurred during resource creation."
+                "TMF639 create resource fails: "
+                "An error occurred during resource creation."
             )
 
 
