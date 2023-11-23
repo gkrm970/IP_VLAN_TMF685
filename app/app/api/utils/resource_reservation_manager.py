@@ -199,7 +199,7 @@ class ResourceReservationManager:
 
                 log.info("Before reservation creation")
                 reservation = await crud.reservation.create(db, reservation_create,
-                                                            href=resource_inventory_href, _id=resource_inventory_id)
+                                                            href=resource_inventory_href, _id=resource_inventory_id,vlans=reserved_vlans)
                 log.info("After reservation creation")
         return reservation
 
