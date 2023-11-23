@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app import log, models, providers, schemas, settings
+from app.api import utils
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
@@ -234,7 +235,7 @@ class ResourceInventoryProvider:
     async def create_resource_inventory(
             self,
             reservation_create: schemas.ReservationItemCreate,
-            resource_specification_list: List[dict],
+            resource_specification_list: utils.resource_reservation_manager.resource_specification_list,
     ) -> None | dict | Any:
         reservation_place = (
             reservation_create.reservation_item.reservation_resource_capacity.reservation_place

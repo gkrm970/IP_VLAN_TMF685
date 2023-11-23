@@ -10,6 +10,7 @@ from app.core.exceptions import InternalServerError
 
 class ResourceReservationManager:
     def __init__(self):
+        self.resource_specification_list = []
         self.resource_inventory_provider = providers.resource_inventory_provider
         self.resource_pool_provider = providers.resource_pool_provider
         self.net_cracker_reservation_provider = providers.nc_reserve_ip_instance
