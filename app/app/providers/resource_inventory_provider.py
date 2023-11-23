@@ -100,7 +100,7 @@ class ResourceInventoryProvider:
                 create_resource_request["resourceSpecification"].append(
                     {
                         "href": resource_specification_info.get("href"),
-                        "id": resource_specification_info.get("id"),
+                        "id": resource_specification_info.get("resource_specification_id"),
                         "version": "0.0.1",
                     }
                 )
