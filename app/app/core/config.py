@@ -67,7 +67,7 @@ class DatabaseSettings(BaseSettings):
     DB_USERNAME: str
     DB_PASSWORD: str
     DB_HOST: str
-    DB_PORT: int = 5432
+    DB_PORT: int
     DB_NAME: str
     DB_SQLALCHEMY_URI: str | None = None
 
@@ -106,10 +106,10 @@ class NetCrackerProviderSettings(BaseSettings):
 
 
 class ResourceInventoryProviderSettings(BaseSettings):
-    RI_PROVIDER_BASE_URL: str = "http://127.0.0.1:8000"
-    API_NAME: str = "plan/inventory/resourceInventoryManagement"
-    API_VERSION: str = "v1"
-    RI_PROVIDER_API_PREFIX: str = f"/{API_NAME}/{API_VERSION}"
+    RI_BASE_URL: str
+    RI_API_NAME: str = "plan/inventory/resourceInventoryManagement"
+    RI_API_VERSION: str = "v1"
+    RI_PROVIDER_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"
 
 
 class Settings(
@@ -117,6 +117,7 @@ class Settings(
     APISettings,
     DatabaseSettings,
     LoggerSettings,
+    NetCrackerProviderSettings,
     ResourceInventoryProviderSettings,
 ):
     model_config = SettingsConfigDict(
