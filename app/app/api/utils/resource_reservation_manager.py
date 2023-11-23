@@ -62,7 +62,7 @@ class ResourceReservationManager:
         pass
 
     async def reserve(
-        self, reservation_create: schemas.ReservationCreate, db: AsyncSession
+            self, reservation_create: schemas.ReservationCreate, db: AsyncSession
     ):
         used_vlans = set()
         reservation = []
@@ -76,9 +76,13 @@ class ResourceReservationManager:
                     models.ResourcePool.id == resource_pool_id
                 )
             )
-            resource_pool_response = result.scalars().first().to_dict()
-            log.info("resource_pool_response=%s", resource_pool_response)
-            capacity_list = resource_pool_response.get("capacity")
+            resource_pool: models.ResourcePool | None = result.scalars().first()
+
+            if resource_pool is None:
+                raise InternalServerError("Resource pool not found")
+
+            log.info("resource_pool_response=%s", resource_pool)
+            capacity_list = resource_pool.capacity
             log.info("capacity_list=%s", capacity_list)
 
             for capacity in capacity_list:
@@ -143,8 +147,8 @@ class ResourceReservationManager:
                             ].capacity_amount_remaining = str(available_capacity_amount)
                             new_resource_data = models.ResourcePoolResource(
                                 id=str(uuid.uuid4()),
-                                resource_id="17r276r32763t26te",
-                                href="http://ResourcePool/HF5R653R37R",
+                                resource_id=resource_inventory_id,
+                                href=resource_inventory_href,
                             )
 
                             resource_pool_response.capacity[

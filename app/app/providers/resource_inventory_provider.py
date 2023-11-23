@@ -1,21 +1,22 @@
 from typing import Any, Literal, Optional, TypeAlias
+from urllib.parse import urljoin
 
 import httpx
 from asgi_correlation_id import correlation_id
 
-from app import log
+from app import log, schemas
 from app.core.config import settings
 from app.core.exceptions import BadRequestError
+from app.core.exceptions import InternalServerError
 
-from ..core.exceptions import InternalServerError
-
-Method: TypeAlias = Literal["GET", "POST"]
+Method: TypeAlias = Literal["GET", "POST", "DELETE"]
 
 
 class ResourceInventoryProvider:
     def __init__(self):
-        self.base_url = settings.RI_PROVIDER_BASE_URL
-        self.api_prefix = settings.RI_PROVIDER_API_PREFIX
+        self.base_api_url = urljoin(
+            settings.RI_PROVIDER_BASE_URL, settings.RI_PROVIDER_API_PREFIX
+        )
         self.created_resource_data = None
 
     @staticmethod
@@ -38,46 +39,33 @@ class ResourceInventoryProvider:
 
         except httpx.HTTPStatusError as exc:
             client_error_class = 4
+
             if exc.response.status_code // 100 == client_error_class:
                 log.info(exc)
                 raise BadRequestError(str(exc))
+
             log.error(exc)
             raise
+
         except httpx.RequestError as exc:
             log.error(exc)
             raise
 
-    async def get_resource(self, href: str) -> dict[str, Any]:
-        response = await self._send_request("GET", href)
-        return response.json()
+    async def delete_resource_by_id(self, id: str) -> None:
+        response = await self._send_request(
+            "DELETE", f"{self.base_api_url}/resource/{id}"
+        )
 
-    async def delete_request(self, resource_inventory_id: str) -> httpx.Response:
-        url = f"{self.base_url}/{self.api_prefix}/{resource_inventory_id}"
-        try:
-            async with httpx.AsyncClient() as client:
-                log.debug(f"Sending DELETE request to URL '{url}'")
-                response = await client.delete(
-                    url,
-                    headers={"X-Request-ID": correlation_id.get() or ""},
-                )
-                log.debug(f"Response status code: {response.status_code}")
-
-                response.raise_for_status()
-                return response
-
-        except httpx.HTTPStatusError as exc:
-            client_error_class = 4
-            if exc.response.status_code // 100 == client_error_class:
-                log.info(exc)
-                raise BadRequestError(str(exc))
-            log.error(exc)
-            raise
-        except httpx.RequestError as exc:
-            log.error(exc)
-            raise
+        if response.status_code == 204:
+            log.info(f"Deleted resource successfully with ID {id}")
+        else:
+            log.info(f"Failed to delete resource, status code {response.status_code}")
 
     async def create_resource(
-        self, reservation_item, resource_specification_list, reserved_vlans
+        self,
+        reservation_item: schemas.ReservationItemCreate,
+        resource_specification_list,
+        reserved_vlans,
     ) -> None | dict | Any:
         try:
             reservation_place = (
@@ -116,26 +104,14 @@ class ResourceInventoryProvider:
 
             log.info("create_resource_request=%s", create_resource_request)
 
-            tmf_639_url = f"{self.base_url}/{self.api_prefix}"
-            tmf_639_url = "https://b70b1998-f6bd-4273-a9cf-681b43041018.mock.pstmn.io"
+            tmf_639_url = f"{self.base_api_url}/resource"
             response = await self._send_request(
                 "POST", tmf_639_url, create_resource_request
             )
             log.info("tmf_639_url_status_code=%s", response.status_code)
             log.info("tmf_639_url_response=%s", response.json())
-
-            # resource_inventory_id = "http://ResourcePool/HF5R653R37R",
-            # resource_inventory_href = "sts65ett7lk56lko89da7t"
-
             if response.status_code == 201:  # 201
                 log.info("TMF-639 Created successfully")
-                # self.created_resource_data = {
-                #     "resource_inventory_href": resource_inventory_href,
-                #     "resource_inventory_id": resource_inventory_id,
-                #     "resource_type": resource_type
-                # }
-                #
-                # return self.created_resource_data, response.json()
                 return response.json()
             else:
                 raise Exception(
