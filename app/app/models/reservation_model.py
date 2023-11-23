@@ -5,11 +5,12 @@ from urllib.parse import urljoin
 
 from sqlalchemy import String
 from sqlalchemy.orm import (
+    ColumnProperty,
+    InstrumentedAttribute,
     Mapped,
+    Relationship,
     mapped_column,
     relationship,
-    InstrumentedAttribute,
-    ColumnProperty,
 )
 
 from app import models, schemas, settings
@@ -46,39 +47,56 @@ class Reservation(BaseDbModel):
     )
 
     @classmethod
-    def from_schema(cls, schema: schemas.ReservationCreate, reservation_state: str,
-                    valid_for: datetime, href, _id, vlans) -> "Reservation":
+    def from_schema(
+        cls,
+        schema: schemas.ReservationCreate,
+        reservation_state: str,
+        valid_for: datetime,
+        href,
+        _id,
+        vlans,
+    ) -> "Reservation":
         reservation_id = str(uuid.uuid4())
         related_parties = models.ReservationRelatedParty.from_schema(
             schema.related_parties
         )
-        requested_period = models.ReservationRequestedPeriod.from_schema(schema.requested_period)
+        requested_period = models.ReservationRequestedPeriod.from_schema(
+            schema.requested_period
+        )
         sub_reservation_state = "completed"
-        characteristic = []
-        for vlan in vlans:
-            characteristic_dict = [models.Characteristic.from_schema(ipv4_subnet="",
-                                                                     ipv6_subnet="",
-                                                                     vlan_8021q=str(vlan))]
-            characteristic.append(characteristic_dict)
 
-        reservation_resource = [
-            models.ReservationResource.from_schema(href=href,
-                                                   resource_id=_id,
-                                                   characteristic=characteristic,
-                                                   referred_type="ipv4Subnet",
-                                                   )
+        characteristics = [
+            models.Characteristic.from_schema(
+                ipv4_subnet="", ipv6_subnet="", vlan_8021q=str(vlan)
+            )
+            for vlan in vlans
         ]
 
-        demand_amount = schema.reservation_item[0].reservation_resource_capacity.capacity_demand_amount
+        reservation_resource = [
+            models.ReservationResource.from_schema(
+                href=href,
+                resource_id=_id,
+                characteristic=characteristics,
+                referred_type="ipv4Subnet",
+            )
+        ]
+
+        demand_amount = schema.reservation_item[
+            0
+        ].reservation_resource_capacity.capacity_demand_amount
 
         applied_capacity_amount = models.AppliedCapacityAmount.from_schema(
-            applied_capacity_amount=demand_amount, reservation_resource=reservation_resource
+            applied_capacity_amount=demand_amount,
+            reservation_resource=reservation_resource,
         )
 
         print("sub_reservation_state", sub_reservation_state)
         reservation_item_list = [
-            models.ReservationItem.from_schema(reservation_item, sub_reservation_state=sub_reservation_state,
-                                               applied_capacity_amount=applied_capacity_amount)
+            models.ReservationItem.from_schema(
+                reservation_item,
+                sub_reservation_state=sub_reservation_state,
+                applied_capacity_amount=applied_capacity_amount,
+            )
             for reservation_item in schema.reservation_item
         ]
         valid_for_instance = models.ValidFor.from_schema(valid_for)
@@ -93,7 +111,7 @@ class Reservation(BaseDbModel):
             requested_period=requested_period,
             reservation_item=reservation_item_list,
             reservation_state=reservation_state,
-            valid_for=valid_for_instance
+            valid_for=valid_for_instance,
         )
 
     def to_dict(self, include: set[str] | None = None) -> dict[str, Any]:
@@ -127,7 +145,8 @@ class Reservation(BaseDbModel):
             else:
                 model_relationship: Relationship = model_attr.property  # type: ignore
 
-                # The related model class is defined in the argument property of the relationship
+                # The related model class is defined in the argument property of the
+                # relationship
                 related_model_class: Type[
                     models.Reservation
                 ] = model_relationship.argument
@@ -138,6 +157,6 @@ class Reservation(BaseDbModel):
                         for schema in update_schema_value
                     ]
                 else:
-                    update_model = related_model_class.from_schema(update_schema_value)  # type: ignore
+                    update_model = related_model_class.from_schema(update_schema_value)
 
                 setattr(self, field_name, update_model)
