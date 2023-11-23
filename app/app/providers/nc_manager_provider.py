@@ -306,7 +306,7 @@ class ResourcePoolPatchProvider:
         self.api_base_url = settings.API_BASE_URL
         self.api_name = settings.API_NAME
         self.api_version = settings.API_VERSION
-        self.ri_base_url = settings.RI_PROVIDER_BASE_URL
+        self.ri_base_url = settings.RI_BASE_URL
         self.ri_api_name = settings.RI_API_NAME
         self.ri_api_version = settings.RI_API_VERSION
 
@@ -316,7 +316,6 @@ class ResourcePoolPatchProvider:
             ip_names,
             resource_inventory_href,
             resource_inventory_id,
-            resource_ip_id,
             db: AsyncSession,
     ):
         try:
