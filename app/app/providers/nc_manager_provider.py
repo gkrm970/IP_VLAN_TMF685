@@ -56,16 +56,18 @@ def _delete_request(url):
 
 class NCReserveIPProvider:
     def __init__(self):
+        self.resource_name_id_from_nc = []
+        self.resource_ip_id = str
+        self.reserved_ips_names_from_nc = []
+        self.resource_id_list = []
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def reserve_ip(
-        self,
-        reservation_create: schemas.ReservationCreate,
-        related_party_id: str,
-        related_party_role: str,
+            self,
+            reservation_create: schemas.ReservationCreate,
+            related_party_id: str,
+            related_party_role: str,
     ):
-        reserved_ips: List[Any] = []
-
         create_resource_request_payload = {
             "relatedParty": {
                 "partyRole": related_party_role,
@@ -131,7 +133,7 @@ class NCReserveIPProvider:
         nc_reservation_url = (
             f"{self.nc_api_base_url}/resource/resourcePoolManagement/v1/reservation"
         )
-        # Create net cracker reservation
+        # Create net cracker reservation or Fetch the reserved IP address
         try:
             response = await make_post_request(
                 nc_reservation_url, create_resource_request_payload
@@ -139,9 +141,15 @@ class NCReserveIPProvider:
             response.raise_for_status()
             json_data = response.json()
             if "reservationItem" in json_data:
-                resource_ip_id = json_data["reservationItem"][0][
+                self.resource_ip_id = json_data["reservationItem"][0][
                     "appliedCapacityAmount"
                 ]["resource"][0].get("id")
+
+                for resource in json_data["reservationItem"][0][
+                    "appliedCapacityAmount"
+                ]["resource"]:
+                    if resource.get("id") is not None:
+                        self.resource_id_list.append(resource.get("id"))
 
                 data = json_data.get("reservationItem", [])
 
@@ -152,8 +160,10 @@ class NCReserveIPProvider:
                     for applied_capacity_amount in item.get("appliedCapacityAmount", {})
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("id") is not None
-                    and resource.get("name") is not None
+                       and resource.get("name") is not None
                 ]
+                self.resource_name_id_from_nc.append(ip_names_ids)
+
                 ip_names = [
                     resource.get("name")
                     for item in json_data.get("reservationItem", [])
@@ -161,14 +171,15 @@ class NCReserveIPProvider:
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("name") is not None
                 ]
-                reserved_ips.append(ip_names)
-                log.info("ip_names from NC resource ", reserved_ips)
+                self.reserved_ips_names_from_nc.append(ip_names)
+                log.info("IP names from NC resource in list ", self.reserved_ips_names_from_nc)
 
                 # Now, combined_data is a list of dictionaries with "id" and "name" pairs
                 log.info("combined_data from NC resource ", ip_names_ids)
+                return self.resource_id_list, ip_names_ids
 
         except httpx.RequestError as exc:
-            log.error(f"Failed to create net cracker reservation: {exc}")
+            log.error(f"Failed to create net cracker reservation or failed to reserve IP: {exc}")
             raise Exception(f"Failed to create net cracker reservation: {exc}")
 
 
@@ -180,36 +191,35 @@ class NCReleaseIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def release_ip(
-        self,
-        resource_ip_id,
-        ip_names,
-    ) -> None | dict | Any:
+            self,
+    ) -> httpx.Response:
+        # Access reserved_ips from the nc_reserve_ip_instance
         payload = {
             "@baseType": "Network",
             "@type": "IP Range",
-            "id": resource_ip_id,
-            "name": [ip_name for ip_name in ip_names],
+            "id": nc_reserve_ip_instance.resource_ip_id,
+            "name": [ip_name for ip_name in nc_reserve_ip_instance.reserved_ips_names_from_nc],
             "resourceCharacteristic": [
                 {
-                    "id": resource_ip_id,
+                    "id": resource_id_from_nc,
                     "name": "Status",
                     "value": "UNASSIGNED",
                     "valueType": "Text",
-                }
+                } for resource_id_from_nc in nc_reserve_ip_instance.resource_id_list
             ],
         }
 
         # Release IP address request
         nc_release_ip_url = (
             f"{self.nc_api_base_url}/resource/ncResourceInventoryManagement/v1/resource/"
-            f"{resource_ip_id}"
+            f"{nc_reserve_ip_instance.resource_ip_id}"
         )
         try:
             response = await make_patch_request(nc_release_ip_url, payload)
             return response
         except httpx.RequestError as exc:
             log.error(f"Failed to release IP address: {exc}")
-            return exc
+            raise Exception(f"Failed to release IP address: {exc}")
 
 
 nc_release_ip_instance = NCReleaseIPProvider()
@@ -222,14 +232,12 @@ class ResourceInventoryProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def create_resource_inventory(
-        self,
-        reservation_item,
-        resource_specification_list,
-        resource_ip_id,
-        ip_names_ids,
+            self,
+            reservation_create: schemas.ReservationItemCreate,
+            resource_specification_list: List[dict],
     ) -> None | dict | Any:
         reservation_place = (
-            reservation_item.reservation_resource_capacity.reservation_place
+            reservation_create.reservation_item.reservation_resource_capacity.reservation_place
         )
 
         create_resource_request = {
@@ -242,8 +250,8 @@ class ResourceInventoryProvider:
             "resourceVersion": "0.0.1",
             "place": [],
         }
-
-        for name_id in ip_names_ids:
+        # Reserved IP name and ID from net cracker are appended to the resourceCharacteristic list
+        for name_id in nc_reserve_ip_instance.resource_name_id_from_nc:
             create_resource_request["resourceCharacteristic"].append(
                 {
                     "id": name_id.get("id"),
@@ -255,7 +263,7 @@ class ResourceInventoryProvider:
             create_resource_request["place"].append(
                 {"name": place_info.name, "role": place_info.type}
             )
-
+        # Resource specification info from resource pool is appended to the resourceSpecification list
         for resource_specification_info in resource_specification_list:
             create_resource_request["resourceSpecification"].append(
                 {
@@ -285,7 +293,7 @@ class ResourceInventoryProvider:
             log.error("HTTPStatusError", e)
             log.exception("Could not able to create resource and raised exception", e)
             # Roll back the net cracker release ip
-            await nc_release_ip_instance.release_ip(resource_ip_id, ip_names_ids)
+            await nc_release_ip_instance.release_ip()
             raise e
 
 
@@ -302,13 +310,13 @@ class ResourcePoolPatchProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def resource_pool_patch(
-        self,
-        reservation_item_resource_capacity_resource_pool_id,
-        ip_names,
-        resource_inventory_href,
-        resource_inventory_id,
-        resource_ip_id,
-        db: AsyncSession,
+            self,
+            reservation_item_resource_capacity_resource_pool_id,
+            ip_names,
+            resource_inventory_href,
+            resource_inventory_id,
+            resource_ip_id,
+            db: AsyncSession,
     ):
         try:
             result = await db.execute(
@@ -342,7 +350,7 @@ class ResourcePoolPatchProvider:
         except httpx.HTTPError as e:
             log.error(f"Unable to patch resource pool, HTTP Error: {e}")
             # Roll back code for release IP address
-            await nc_release_ip_instance.release_ip(resource_ip_id, ip_names)
+            await nc_release_ip_instance.release_ip()
             log.info("Roll back of release IP address completed successfully")
 
             # Roll back code for resource inventory - delete
