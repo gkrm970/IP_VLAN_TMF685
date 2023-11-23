@@ -88,11 +88,11 @@ class AuthProvider:
 nc_auth = AuthProvider(
     client_id=settings.NC_CLIENT_ID,
     client_secret=settings.NC_CLIENT_SECRET,
-    token_url=settings.NC_TOKEN_URL,
+    token_url=str(settings.NC_TOKEN_URL),
 )
 
 tinaa_auth = AuthProvider(
     client_id=settings.AUTH_CLIENT_ID,
     client_secret=settings.AUTH_CLIENT_SECRET,
-    token_url=settings.AUTH_TOKEN_URL,
+    token_url=str(settings.AUTH_TOKEN_URL),
 )
