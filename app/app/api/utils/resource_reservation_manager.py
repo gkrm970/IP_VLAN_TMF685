@@ -193,8 +193,6 @@ class ResourceReservationManager:
                         reservation_item,
                         related_party_id,
                         related_party_role,
-                        resource_specification_list,
-                        db,
                     )
 
                 log.info("Before reservation creation")
