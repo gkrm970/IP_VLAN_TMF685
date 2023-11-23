@@ -15,8 +15,13 @@ if TYPE_CHECKING:
 class ResourcePoolCapacity(BaseDbModel):
     id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
 
-    applicable_time_period: Mapped[models.ResourcePoolApplicableTimePeriod] = relationship(
-        back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
+    applicable_time_period: Mapped[
+        models.ResourcePoolApplicableTimePeriod
+    ] = relationship(
+        back_populates="resource_pool_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
     )
     capacity_amount: Mapped[str | None] = mapped_column(String(255))
     capacity_amount_from: Mapped[str | None] = mapped_column(String(255))
@@ -24,31 +29,45 @@ class ResourcePoolCapacity(BaseDbModel):
     capacity_amount_to: Mapped[str | None] = mapped_column(String(255))
     range_interval: Mapped[str | None] = mapped_column(String(255))
     related_party: Mapped[models.ResourcePoolRelatedParty] = relationship(
-        back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN, uselist=False
+        back_populates="resource_pool_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
+        uselist=False,
     )
     place: Mapped[list[models.ResourcePoolPlace]] = relationship(
-        back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+        back_populates="resource_pool_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
     )
-    resource_specification: Mapped[list[models.ResourcePoolResourceSpecification]] = relationship(
-        back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+    resource_specification: Mapped[
+        list[models.ResourcePoolResourceSpecification]
+    ] = relationship(
+        back_populates="resource_pool_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
     )
     resource_pool_resource: Mapped[list[models.ResourcePoolResource]] = relationship(
-        back_populates="resource_pool_capacity", lazy="selectin", cascade=_ALL_DELETE_ORPHAN
+        back_populates="resource_pool_capacity",
+        lazy="selectin",
+        cascade=_ALL_DELETE_ORPHAN,
     )
 
     resource_pool_id: Mapped[str] = mapped_column(ForeignKey("resource_pool.id"))
     resource_pool: Mapped["ResourcePool"] = relationship(back_populates="capacity")
 
     @classmethod
-    def from_schema(cls, schema: schemas.ResourcePoolCapacity) -> "ResourcePoolCapacity":
+    def from_schema(
+        cls, schema: schemas.ResourcePoolCapacity
+    ) -> "ResourcePoolCapacity":
         print("resource_capacity_schema", schema)
-        applicable_time_period = models.ResourcePoolApplicableTimePeriod.from_schema(schema.applicable_time_period)
-        related_party = models.ResourcePoolRelatedParty.from_schema(schema.related_party)
+        applicable_time_period = models.ResourcePoolApplicableTimePeriod.from_schema(
+            schema.applicable_time_period
+        )
+        related_party = models.ResourcePoolRelatedParty.from_schema(
+            schema.related_party
+        )
         print(type(related_party.id))
-        place = [
-            models.ResourcePoolPlace.from_schema(place)
-            for place in schema.place
-        ]
+        place = [models.ResourcePoolPlace.from_schema(place) for place in schema.place]
         resource_specification = [
             models.ResourcePoolResourceSpecification.from_schema(resource_spec)
             for resource_spec in schema.resource_specification

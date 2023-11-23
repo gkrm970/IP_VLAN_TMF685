@@ -9,11 +9,10 @@ from app.core.exceptions import InternalServerError
 
 class ResourceReservationManager:
     def __init__(self):
+        self.resource_specification_list = []
         self.resource_inventory_provider = providers.resource_inventory_provider
         self.resource_pool_provider = providers.resource_pool_provider
-        self.net_cracker_reservation_provider = (
-            providers.net_cracker_reservation_instance
-        )
+        self.net_cracker_reservation_provider = providers.nc_reserve_ip_instance
 
     async def _reserve_tinaa_resources(
         self,
@@ -81,25 +80,6 @@ class ResourceReservationManager:
             log.info("resource_pool_response=%s", resource_pool_response)
             capacity_list = resource_pool_response.get("capacity")
             log.info("capacity_list=%s", capacity_list)
-
-            # Variables for net cracker payload
-            reservation_item_quantity = reservation_item.quantity
-            reservation_item_resource_capacity_type = (
-                reservation_item.reservation_resource_capacity.type
-            )
-            reservation_item_resource_capacity_capacity_demand_amount = (
-                reservation_item.reservation_resource_capacity.capacity_demand_amount
-            )
-            reservation_item_resource_capacity_resource_pool_id = (
-                reservation_item.reservation_resource_capacity.resource_pool.pool_id
-            )
-            ipam_description = (
-                reservation_item.reservation_resource_capacity.external_party_characteristics.ipam_description
-            )
-            ipam_detail = (
-                reservation_item.reservation_resource_capacity.external_party_characteristics.ipam_details
-            )
-            # end here
 
             for capacity in capacity_list:
                 log.info("capacity", capacity)
@@ -210,12 +190,7 @@ class ResourceReservationManager:
                         reservation_item,
                         related_party_id,
                         related_party_role,
-                        reservation_item_quantity,
-                        reservation_item_resource_capacity_capacity_demand_amount,
-                        reservation_item_resource_capacity_type,
-                        reservation_item_resource_capacity_resource_pool_id,
-                        ipam_description,
-                        ipam_detail,
+                        resource_specification_list,
                         db,
                     )
 
