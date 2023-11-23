@@ -33,15 +33,8 @@ class ReservationResource(BaseDbModel):
 
     @classmethod
     def from_schema(
-        cls, referred_type: str, characteristic: str, href: str, resource_id: str
+        cls, referred_type: str, characteristic: list, href: str, resource_id: str
     ) -> "ReservationResource":
-        ipv6_subnet = "172.7.6.4/30"
-        vlan_8021q = "2001"
-        characteristic = [
-            models.Characteristic.from_schema(
-                characteristic, ipv6_subnet=ipv6_subnet, vlan_8021q=vlan_8021q
-            )
-        ]
 
         return cls(
             id=str(uuid.uuid4()),

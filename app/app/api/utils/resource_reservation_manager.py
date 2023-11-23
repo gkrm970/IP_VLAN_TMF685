@@ -1,5 +1,4 @@
 import uuid
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -103,9 +102,9 @@ class ResourceReservationManager:
             # end here
 
             for capacity in capacity_list:
-                log.info("capacity=%s", capacity)
+                log.info("capacity", capacity)
                 resource_specification_list = capacity.get("resource_specification")
-                log.info("resource_specification_list=%s", resource_specification_list)
+                log.info(f"resource_specification_list: {resource_specification_list}")
                 capacity_amount_remaining = capacity.get("capacity_amount_remaining")
                 capacity_amount_from = capacity.get("capacity_amount_from")
                 capacity_amount_to = capacity.get("capacity_amount_to")
@@ -113,6 +112,7 @@ class ResourceReservationManager:
                 related_party_id = capacity.get("relatedParty").get("party_id")
                 log.info("related_party_id=%s", related_party_id)
                 related_party_role = capacity.get("relatedParty").get("party_role")
+                log.info("related_party_id=%s", related_party_id)
 
                 if related_party_id == "tinaa":
                     log.info("inside if")
@@ -143,11 +143,12 @@ class ResourceReservationManager:
                         resource_inventory_response,
                     )
 
-                    resource_inventory_response.get("href")
+                    resource_inventory_href = resource_inventory_response.get("href")
                     resource_inventory_id = resource_inventory_response.get("id")
 
                     log.info("Update successfully resource_pool record data")
                     try:
+
                         result = await db.execute(
                             select(models.ResourcePool)
                             .options(selectinload(models.ResourcePool.capacity))
@@ -185,6 +186,8 @@ class ResourceReservationManager:
                                 resource_inventory_id
                             )
                         )
+                        log.info(f'{e}')
+                        delete_response = await self.resource_inventory_provider.delete_request(resource_inventory_id)
                         if delete_response.status_code == 204:
                             log.info(
                                 "Deleted resource successfully with this id=%s",
@@ -217,7 +220,8 @@ class ResourceReservationManager:
                     )
 
                 log.info("Before reservation creation")
-                reservation = await crud.reservation.create(db, reservation_create)
+                reservation = await crud.reservation.create(db, reservation_create,
+                                                            href=resource_inventory_href, _id=resource_inventory_id)
                 log.info("After reservation creation")
         return reservation
 

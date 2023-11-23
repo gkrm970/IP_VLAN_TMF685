@@ -69,19 +69,15 @@ async def create_reservation(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
 ) -> JSONResponse:
     """
-    This operation creates a Reservation entity.
+    This operation creates a Reservation entity .
     """
     reserved_resources = await utils.resource_reservation_manager.reserve(
         reservation_create, db
     )
-    print("reserved_resources_dataa", reserved_resources)
-
-    reservation = await crud.reservation.create(db, reserved_resources)
-    log.info(f"Created Reservation with ID: {reservation.id}")
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content=jsonable_encoder(reserved_resources),
+        content=jsonable_encoder(reserved_resources.to_dict()),
     )
 
 
