@@ -12,7 +12,6 @@ from app import log, models, providers, schemas, settings
 Method: TypeAlias = Literal["GET", "POST", "PATCH", "DELETE"]
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
 async def _send_request(
         method: Method,
         url: str,
