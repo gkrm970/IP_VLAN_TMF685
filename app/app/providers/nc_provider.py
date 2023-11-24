@@ -64,7 +64,7 @@ class NCReserveIPProvider:
 
     async def reserve_ip(
         self,
-        reservation_create: schemas.ReservationCreate,
+        reservation_item: schemas.ReservationItemCreate,
         related_party_id: str,
         related_party_role: str,
     ):
@@ -75,22 +75,17 @@ class NCReserveIPProvider:
             },
             "@type": "IPRangeReservation",
             "requestedPeriod": {"fromToDateTime": str(datetime.datetime.now())},
-            "reservationItem": [],
-        }
-
-        for item in reservation_create.reservation_item:
-            create_resource_request_payload["reservation_item"].append(
-                {
-                    "quantity": item.quantity,
+            "reservationItem": [{
+                    "quantity": reservation_item.quantity,
                     "@type": "IPRangeReservationItem",
                     "resourceCapacity": {
-                        "@type": item.reservation_resource_capacity.type,
+                        "@type": reservation_item.reservation_resource_capacity.type,
                         "capacityDemandAmount": (
-                            item.reservation_resource_capacity.capacity_demand_amount
+                            reservation_item.reservation_resource_capacity.capacity_demand_amount
                         ),
                         "resourcePool": {
                             "@type": "IP Pool",
-                            "id": item.reservation_resource_capacity.resource_pool.pool_id,
+                            "id": reservation_item.reservation_resource_capacity.resource_pool.pool_id,
                             "resourceCollection": [
                                 {
                                     "@type": "IP Pool",
@@ -103,19 +98,19 @@ class NCReserveIPProvider:
                                                     "name": place_info.name,
                                                     "role": place_info.type,
                                                 }
-                                                for place_info in item.reservation_resource_capacity.reservation_place
+                                                for place_info in reservation_item.reservation_resource_capacity.reservation_place
                                             ],
                                             "characteristic": [
                                                 {
                                                     "ipRangeCIDR": (
-                                                        item.reservation_resource_capacity.capacity_demand_amount
+                                                        reservation_item.reservation_resource_capacity.capacity_demand_amount
                                                     ),
                                                     "addressPurpose": "Static",
                                                     "IPAMDescription": (
-                                                        item.reservation_resource_capacity.external_party_characteristics.ipam_description
+                                                        reservation_item.reservation_resource_capacity.external_party_characteristics.ipam_description
                                                     ),
                                                     "IPAMDetail": (
-                                                        item.reservation_resource_capacity.external_party_characteristics.ipam_details
+                                                        reservation_item.reservation_resource_capacity.external_party_characteristics.ipam_details
                                                     ),
                                                     "Customer": {
                                                         "name": "TEST CUSTOMER 11",
@@ -135,8 +130,8 @@ class NCReserveIPProvider:
                             ],
                         },
                     },
-                }
-            )
+                }],
+        }
 
         nc_reservation_url = (
             f"{self.nc_api_base_url}/resource/resourcePoolManagement/v1/reservation"
@@ -375,7 +370,7 @@ class ResourcePoolPatchProvider:
 
         except httpx.HTTPError as e:
             log.error(f"Unable to patch resource pool, HTTP Error: {e}")
-            # Roll back code for release IP address
+            # Roll-back code for release IP address
             await nc_release_ip_instance.release_ip()
             log.info("Roll back of release IP address completed successfully")
 
