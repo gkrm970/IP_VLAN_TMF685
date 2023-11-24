@@ -5,13 +5,21 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 
 from app import log, models, providers, schemas, settings
 
 Method: TypeAlias = Literal["GET", "POST", "PATCH", "DELETE"]
 
+# Define the exception types that should trigger a retry
+retry_exceptions = (httpx.ConnectError,)
 
+
+@retry(
+    stop=stop_after_attempt(3),  # Retry a maximum of 3 times
+    wait=wait_fixed(2),  # Wait for 2 seconds between retries
+    retry=retry_if_exception_type(retry_exceptions),
+)
 async def _send_request(
         method: Method,
         url: str,
