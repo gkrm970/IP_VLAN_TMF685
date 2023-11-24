@@ -35,7 +35,6 @@ class ReservationResource(BaseDbModel):
     def from_schema(
         cls, referred_type: str, characteristic: list, href: str, resource_id: str
     ) -> "ReservationResource":
-
         return cls(
             id=str(uuid.uuid4()),
             referred_type=referred_type,

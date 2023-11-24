@@ -62,7 +62,7 @@ class ResourceReservationManager:
         pass
 
     async def reserve(
-            self, reservation_create: schemas.ReservationCreate, db: AsyncSession
+        self, reservation_create: schemas.ReservationCreate, db: AsyncSession
     ):
         used_vlans = set()
         reservation = []
@@ -133,7 +133,6 @@ class ResourceReservationManager:
 
                     log.info("Update successfully resource_pool record data")
                     try:
-
                         result = await db.execute(
                             select(models.ResourcePool)
                             .options(selectinload(models.ResourcePool.capacity))
@@ -166,10 +165,8 @@ class ResourceReservationManager:
                             )
                     except Exception as e:
                         log.info(f"{e}")
-                        delete_response = (
-                            await self.resource_inventory_provider.delete_resource_by_id(
-                                resource_inventory_id
-                            )
+                        delete_response = await self.resource_inventory_provider.delete_resource_by_id(
+                            resource_inventory_id
                         )
                         if delete_response.status_code == 204:
                             log.info(
@@ -196,8 +193,13 @@ class ResourceReservationManager:
                     )
 
                 log.info("Before reservation creation")
-                reservation = await crud.reservation.create(db, reservation_create,
-                                                            href=resource_inventory_href, _id=resource_inventory_id,vlans=reserved_vlans)
+                reservation = await crud.reservation.create(
+                    db,
+                    reservation_create,
+                    href=resource_inventory_href,
+                    _id=resource_inventory_id,
+                    vlans=reserved_vlans,
+                )
                 log.info("After reservation creation")
         return reservation
 

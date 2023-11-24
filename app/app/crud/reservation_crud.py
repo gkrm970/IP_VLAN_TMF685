@@ -38,8 +38,14 @@ class ReservationCRUD:
         reservation_state = "completed"
         current_datetime = datetime.utcnow()
 
-        db_obj = models.Reservation.from_schema(obj_in, reservation_state=reservation_state, valid_for=current_datetime,
-                                                href=href, _id=_id, vlans=vlans)
+        db_obj = models.Reservation.from_schema(
+            obj_in,
+            reservation_state=reservation_state,
+            valid_for=current_datetime,
+            href=href,
+            _id=_id,
+            vlans=vlans,
+        )
 
         print("db_obj", db_obj)
 

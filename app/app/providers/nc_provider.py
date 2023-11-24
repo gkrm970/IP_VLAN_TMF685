@@ -75,7 +75,8 @@ class NCReserveIPProvider:
             },
             "@type": "IPRangeReservation",
             "requestedPeriod": {"fromToDateTime": str(datetime.datetime.now())},
-            "reservationItem": [{
+            "reservationItem": [
+                {
                     "quantity": reservation_item.quantity,
                     "@type": "IPRangeReservationItem",
                     "resourceCapacity": {
@@ -130,19 +131,18 @@ class NCReserveIPProvider:
                             ],
                         },
                     },
-                }],
+                }
+            ],
         }
 
         nc_reservation_url = (
             f"{self.nc_api_base_url}/resource/resourcePoolManagement/v1/reservation"
         )
-        auth_header = providers.nc_auth.get_header()
 
         headers = {
-            **auth_header,
+            "Authorization": f"Bearer {await providers.nc_auth.get_access_token()}",
             "Content-Type": "application/json",
             "accept": "application/json",
-            "env": "it02",
         }
 
         # Create net cracker reservation or Fetch the reserved IP address
@@ -235,8 +235,13 @@ class NCReleaseIPProvider:
             f"{self.nc_api_base_url}/resource/ncResourceInventoryManagement/v1/resource/"
             f"{nc_reserve_ip_instance.resource_ip_id}"
         )
+        headers = {
+            "Authorization": f"Bearer {await providers.nc_auth.get_access_token()}",
+            "Content-Type": "application/json",
+            "accept": "application/json",
+        }
         try:
-            response = await make_patch_request(nc_release_ip_url, payload)
+            response = await _send_request("PATCH", nc_release_ip_url, headers, payload)
             return response
         except httpx.RequestError as exc:
             log.error(f"Failed to release IP address: {exc}")
