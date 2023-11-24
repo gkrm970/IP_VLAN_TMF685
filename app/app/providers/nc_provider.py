@@ -111,7 +111,7 @@ class NCReserveIPProvider:
         )
 
         headers = {
-            "Authorization": f"Bearer {await providers.nc_auth.get_access_token()}",
+            "Authorization": f"Bearer {await providers.nc_reserve_auth.get_access_token()}",
             "Content-Type": "application/json",
             "accept": "application/json",
         }
@@ -210,7 +210,7 @@ class NCReleaseIPProvider:
             f"{nc_reserve_ip_instance.resource_ip_id}"
         )
         headers = {
-            "Authorization": f"Bearer {await providers.nc_auth.get_access_token()}",
+            "Authorization": f"Bearer {await providers.nc_release_auth.get_access_token()}",
             "Content-Type": "application/json",
             "accept": "application/json",
         }

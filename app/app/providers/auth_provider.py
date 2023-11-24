@@ -14,13 +14,15 @@ class AuthHeader(TypedDict):
 
 
 class AuthProvider:
-    def __init__(self, client_id: str, client_secret: str, token_url: str) -> None:
+
+    def __init__(self, client_id: str, client_secret: str, token_url: str, scope: list[str] | None = None, ) -> None:
         self._token_url = token_url
         self._token_update_time: int | None = None
 
         self.oauth_client = AsyncOAuth2Client(
             client_id=client_id,
             client_secret=client_secret,
+            scope=scope,
         )
 
         self.lock = threading.Lock()
@@ -89,6 +91,20 @@ nc_auth = AuthProvider(
     client_id=settings.NC_CLIENT_ID,
     client_secret=settings.NC_CLIENT_SECRET,
     token_url=str(settings.NC_TOKEN_URL),
+)
+
+nc_reserve_auth = AuthProvider(
+    client_id=settings.NC_CLIENT_ID,
+    client_secret=settings.NC_CLIENT_SECRET,
+    token_url=str(settings.NC_TOKEN_URL),
+    scope=["55"],
+)
+
+nc_release_auth = AuthProvider(
+    client_id=settings.NC_CLIENT_ID,
+    client_secret=settings.NC_CLIENT_SECRET,
+    token_url=str(settings.NC_TOKEN_URL),
+    scope=["131"],
 )
 
 tinaa_auth = AuthProvider(
