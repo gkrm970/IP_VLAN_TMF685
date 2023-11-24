@@ -114,6 +114,7 @@ class NCReserveIPProvider:
             "Authorization": f"Bearer {await providers.nc_reserve_auth.get_access_token()}",
             "Content-Type": "application/json",
             "accept": "application/json",
+            "env": "it03",
         }
 
         # Create net cracker reservation or Fetch the reserved IP address
@@ -213,6 +214,7 @@ class NCReleaseIPProvider:
             "Authorization": f"Bearer {await providers.nc_release_auth.get_access_token()}",
             "Content-Type": "application/json",
             "accept": "application/json",
+            "env": "it03",
         }
         try:
             response = await _send_request(
