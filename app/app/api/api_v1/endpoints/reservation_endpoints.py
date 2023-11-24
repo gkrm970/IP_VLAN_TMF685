@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Security, status
+from fastapi import APIRouter, Body, Depends, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,18 +12,12 @@ from app.api.responses import reservation_responses
 router = APIRouter()
 
 
-_read_access_validator = deps.AccessRoleValidator(
-    ["uinv:tmf685:reservation:ro", "uinv:tmf685:reservation:rw"]
-)
-_read_write_access_validator = deps.AccessRoleValidator(["uinv:tmf685:reservation:rw"])
-
-
 @router.get(
     "",
     summary="Lists or finds Reservation objects",
     responses=reservation_responses.get_responses,
     response_model=list[schemas.Reservation],
-    dependencies=[Security(_read_access_validator)],
+    dependencies=[deps.reservation_read_access],
 )
 async def get_reservations(
     fields: Annotated[str, deps.FieldsQuery] = "",
@@ -60,7 +54,7 @@ async def get_reservations(
     responses=reservation_responses.create_responses,
     response_model=schemas.Reservation,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Security(_read_write_access_validator)],
+    dependencies=[deps.reservation_read_write_access],
 )
 async def create_reservation(
     reservation_create: Annotated[
@@ -86,7 +80,7 @@ async def create_reservation(
     summary="Retrieves a Reservation by ID",
     responses=reservation_responses.get_responses,
     response_model=schemas.Reservation,
-    dependencies=[Security(_read_access_validator)],
+    dependencies=[deps.reservation_read_access],
 )
 async def get_reservation_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
@@ -112,7 +106,7 @@ async def get_reservation_by_id(
     summary="Deletes a Reservation by ID",
     responses=reservation_responses.delete_responses,
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Security(_read_write_access_validator)],
+    dependencies=[deps.reservation_read_write_access],
 )
 async def delete_reservation_by_id(
     id: str,
@@ -134,7 +128,7 @@ async def delete_reservation_by_id(
     summary="Updates partially a Reservation by ID",
     responses=reservation_responses.update_responses,
     response_model=schemas.ReservationUpdate,
-    dependencies=[Security(_read_write_access_validator)],
+    dependencies=[deps.reservation_read_write_access],
 )
 async def update_reservation_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],

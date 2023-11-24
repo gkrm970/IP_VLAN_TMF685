@@ -1,5 +1,8 @@
 from app.core.security import (  # noqa: F401
-    AccessRoleValidator,
+    resource_pool_read_access,
+    resource_pool_read_write_access,
+    reservation_read_access,
+    reservation_read_write_access,
     validate_token_signature,
 )
 

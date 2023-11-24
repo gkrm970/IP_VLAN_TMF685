@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Response, Security, status
+from fastapi import APIRouter, Body, Depends, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,11 +12,6 @@ from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_res
 
 router = APIRouter()
 
-_read_access_validator = deps.AccessRoleValidator(
-    ["uinv:tmf685:resourcepool:ro", "uinv:tmf685:resourcepool:rw"]
-)
-_read_write_access_validator = deps.AccessRoleValidator(["uinv:tmf685:resourcepool:rw"])
-
 
 @router.post(
     "",
@@ -24,7 +19,7 @@ _read_write_access_validator = deps.AccessRoleValidator(["uinv:tmf685:resourcepo
     responses=reservation_responses.create_responses,
     response_model=schemas.ResourcePoolCreate,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Security(_read_write_access_validator)],
+    dependencies=[deps.resource_pool_read_write_access],
 )
 async def create_resource_pool(
     resource_create: Annotated[
@@ -59,7 +54,7 @@ async def create_resource_pool(
     responses=reservation_responses.get_responses,
     response_model=list[schemas.ResourcePool],
     status_code=status.HTTP_200_OK,
-    dependencies=[Security(_read_access_validator)],
+    dependencies=[deps.resource_pool_read_access],
 )
 async def get_resource_pools(
     fields: Annotated[str, deps.FieldsQuery] = "",
@@ -95,7 +90,7 @@ async def get_resource_pools(
     responses=reservation_responses.get_responses,
     response_model=schemas.ResourcePoolCreate,
     status_code=status.HTTP_200_OK,
-    dependencies=[Security(_read_access_validator)],
+    dependencies=[deps.resource_pool_read_access],
 )
 async def get_resource_pool_by_id(
     fields: Annotated[str, deps.FieldsQuery] = "",
@@ -119,7 +114,7 @@ async def get_resource_pool_by_id(
     summary="Deletes a Resource Pool by ID",
     responses=reservation_responses.delete_responses,
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Security(_read_access_validator)],
+    dependencies=[deps.resource_pool_read_write_access],
 )
 async def delete_resource_pool_by_id(
     id: str,
@@ -141,7 +136,7 @@ async def delete_resource_pool_by_id(
     summary="Updates partially a Resource Pool by ID",
     responses=reservation_responses.update_responses,
     response_model=schemas.ResourcePoolUpdate,
-    dependencies=[Security(_read_access_validator)],
+    dependencies=[deps.resource_pool_read_write_access],
 )
 async def update_resource_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_db_session)],
