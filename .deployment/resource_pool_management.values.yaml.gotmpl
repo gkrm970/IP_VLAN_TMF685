@@ -61,6 +61,11 @@ resource_pool_management:
     # The keycloak client secret for external API authentication
     AUTH_CLIENT_ID: {{ requiredEnv "CLIENT_ID_DEVELOP" }}
     RI_API_BASE_URL: https://inv-tmf639.develop.app01.toll6.tinaa.tlabs.ca
+  hostAliases:
+    # The NetCracker host
+    - ip: "100.66.180.92"
+      hostnames:
+      - "apigw-st.tsl.telus.com"
 
 {{ else if eq .Environment.Name "qa" }}
   configmap_data:
