@@ -13,41 +13,11 @@ Method: TypeAlias = Literal["GET", "POST", "PATCH", "DELETE"]
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-async def make_post_request(url: str, payload: dict):
-    auth_header = providers.nc_auth.get_header()
-
-    headers = {
-        **auth_header,
-        "Content-Type": "application/json",
-        "accept": "application/json",
-    }
-
-    async with httpx.AsyncClient() as session:
-        response = session.request(
-            method="POST", url=url, headers=headers, json=payload
-        )
-        return response
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-async def make_patch_request(url, payload):
-    headers = {
-        "Authorization": f"Bearer {await providers.nc_auth.get_access_token()}",
-        "Content-Type": "application/json",
-        "accept": "application/json",
-        "env": "it02",
-    }
-
-    async with httpx.AsyncClient() as session:
-        response = session.patch(url, headers=headers, json=payload)
-        return response
-
-
 async def _send_request(
-    method: Method,
-    url: str,
-    headers: dict[str, str] | None = None,
-    request_body: dict[str, Any] | None = None,
+        method: Method,
+        url: str,
+        headers: dict[str, str] | None = None,
+        request_body: dict[str, Any] | None = None,
 ) -> httpx.Response:
     async with httpx.AsyncClient() as client:
         response = await client.request(method, url, headers=headers, json=request_body)
@@ -63,10 +33,10 @@ class NCReserveIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def reserve_ip(
-        self,
-        reservation_item: schemas.ReservationItemCreate,
-        related_party_id: str,
-        related_party_role: str,
+            self,
+            reservation_item: schemas.ReservationItemCreate,
+            related_party_id: str,
+            related_party_role: str,
     ):
         create_resource_request_payload = {
             "relatedParty": {
@@ -99,7 +69,8 @@ class NCReserveIPProvider:
                                                     "name": place_info.name,
                                                     "role": place_info.type,
                                                 }
-                                                for place_info in reservation_item.reservation_resource_capacity.reservation_place
+                                                for place_info in
+                                                reservation_item.reservation_resource_capacity.reservation_place
                                             ],
                                             "characteristic": [
                                                 {
@@ -148,7 +119,10 @@ class NCReserveIPProvider:
         # Create net cracker reservation or Fetch the reserved IP address
         try:
             response = await _send_request(
-                "POST", nc_reservation_url, headers, create_resource_request_payload
+                method="POST",
+                url=nc_reservation_url,
+                headers=headers,
+                request_body=create_resource_request_payload
             )
             response.raise_for_status()
             json_data = response.json()
@@ -172,7 +146,7 @@ class NCReserveIPProvider:
                     for applied_capacity_amount in item.get("appliedCapacityAmount", {})
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("id") is not None
-                    and resource.get("name") is not None
+                       and resource.get("name") is not None
                 ]
                 self.resource_name_id_from_nc.append(ip_names_ids)
 
@@ -209,7 +183,7 @@ class NCReleaseIPProvider:
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def release_ip(
-        self,
+            self,
     ) -> httpx.Response:
         # Access reserved_ips from the nc_reserve_ip_instance
         payload = {
@@ -241,7 +215,11 @@ class NCReleaseIPProvider:
             "accept": "application/json",
         }
         try:
-            response = await _send_request("PATCH", nc_release_ip_url, headers, payload)
+            response = await _send_request(
+                method="PATCH",
+                url=nc_release_ip_url,
+                headers=headers,
+                request_body=payload)
             return response
         except httpx.RequestError as exc:
             log.error(f"Failed to release IP address: {exc}")
@@ -258,9 +236,9 @@ class ResourceInventoryProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def create_resource_inventory(
-        self,
-        reservation_create: schemas.ReservationItemCreate,
-        resource_specification_list: list,
+            self,
+            reservation_create: schemas.ReservationItemCreate,
+            resource_specification_list: list,
     ) -> None | dict | Any:
         reservation_place = (
             reservation_create.reservation_item.reservation_resource_capacity.reservation_place
@@ -305,7 +283,9 @@ class ResourceInventoryProvider:
         )
         try:
             resource_inventory_response = await _send_request(
-                "POST", tmf_639_url, create_resource_request
+                method="POST",
+                url=tmf_639_url,
+                request_body=create_resource_request
             )
             log.info(
                 "Resource inventory created successfully", resource_inventory_response
@@ -336,13 +316,13 @@ class ResourcePoolPatchProvider:
         self.ri_api_version = settings.RI_API_VERSION
 
     async def resource_pool_patch(
-        self,
-        reservation_item_resource_capacity_resource_pool_id,
-        ip_names,
-        resource_inventory_href,
-        resource_inventory_id,
-        db: AsyncSession,
-    ):
+            self,
+            reservation_item_resource_capacity_resource_pool_id: str,
+            ip_names: list[str],
+            resource_inventory_href: str,
+            resource_inventory_id: str,
+            db: AsyncSession,
+    ) -> None | dict | Any:
         try:
             result = await db.execute(
                 select(models.ResourcePool)
@@ -367,6 +347,7 @@ class ResourcePoolPatchProvider:
                 )
                 log.info("data_capacity_response=%s", resource_pool_response.to_dict())
                 await db.commit()
+                return resource_pool_response.to_dict()
             else:
                 log.info(
                     "ResourcePool with id"
@@ -385,9 +366,14 @@ class ResourcePoolPatchProvider:
                     f"{self.ri_base_url}{self.ri_api_name}/{self.ri_api_version}/resource/"
                     f"{resource_inventory_id}"
                 )
-                response = await _send_request("DELETE", url)
+                response = await _send_request(
+                    method="DELETE",
+                    url=url
+                )
                 log.info("Resource inventory deleted successfully", response)
+                response.raise_for_status()
             raise e
+        return resource_pool_response
 
 
 resource_pool_patch_instance = ResourcePoolPatchProvider()
