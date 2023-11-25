@@ -23,6 +23,7 @@ class AuthProvider:
             client_id=client_id,
             client_secret=client_secret,
             scope=scope,
+            verify=False
         )
 
         self.lock = threading.Lock()
@@ -62,7 +63,6 @@ class AuthProvider:
             await self.oauth_client.fetch_token(
                 url=self._token_url,
                 grant_type="client_credentials",
-                verify=False
             )
             self.token_update_time = int(time.time())
 
