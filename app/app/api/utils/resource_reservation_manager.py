@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -122,9 +122,11 @@ class ResourceReservationManager:
                         used_vlans,
                         resource,
                     )
-                    models.VlanAllocation(
+                    vlan_object = models.VlanAllocation(
                         id=str(uuid.uuid4()), used_vlan_numbers=reserved_vlans
                     )
+                    vlan_id = vlan_object.id
+                    db.add(vlan_object)
                     await db.commit()
                     log.info("vlan_object=%s", used_vlans)
                     log.info("reserved_vlans_1=%s", reserved_vlans)
@@ -133,6 +135,7 @@ class ResourceReservationManager:
                             reservation_item,
                             resource_specification_list,
                             reserved_vlans,
+                            vlan_id,
                             db,
                         )
                     )
@@ -178,7 +181,12 @@ class ResourceReservationManager:
                             )
                     except Exception as e:
                         log.info(f"{e}")
-                        await db.rollback()
+                        await db.execute(
+                            delete(models.VlanAllocation).where(
+                                models.VlanAllocation.id == vlan_id
+                            )
+                        )
+                        await db.commit()
                         delete_response = await self.resource_inventory_provider.delete_resource_by_id(
                             resource_inventory_id
                         )

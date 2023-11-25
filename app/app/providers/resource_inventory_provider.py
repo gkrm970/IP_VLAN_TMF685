@@ -4,9 +4,10 @@ from urllib.parse import urljoin
 import httpx
 from asgi_correlation_id import correlation_id
 from fastapi import status
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import log, providers, schemas
+from app import log, providers, schemas, models
 from app.core.config import settings
 from app.core.exceptions import BadRequestError, InternalServerError
 
@@ -70,6 +71,7 @@ class ResourceInventoryProvider:
         reservation_item: schemas.ReservationItemCreate,
         resource_specification_list,
         reserved_vlans,
+        vlan_id,
         db: AsyncSession,
     ) -> None | dict | Any:
         try:
@@ -121,14 +123,22 @@ class ResourceInventoryProvider:
                 log.info("TMF-639 Created successfully")
                 return response.json()
             else:
-                await db.rollback()
+                await db.execute(
+                    delete(models.VlanAllocation).where(
+                        models.VlanAllocation.id == vlan_id
+                    )
+                )
+                await db.commit()
                 raise Exception(
                     "TMF639 create resource fails: "
                     f"{response.status_code} - {response.text}"
                 )
 
         except Exception as e:
-            await db.rollback()
+            await db.execute(
+                delete(models.VlanAllocation).where(models.VlanAllocation.id == vlan_id)
+            )
+            await db.commit()
             log.info(f"Error creating resource: {e}")
             raise InternalServerError(
                 "TMF639 create resource fails: "

@@ -28,4 +28,5 @@ from .reservation_requested_period_model import ReservationRequestedPeriod
 from .reservation_valid_for_model import ValidFor
 from .reservation_model import Reservation  # isort: split
 from .vlan_allocation_model import VlanAllocation
+
 # from .resource_specification_model import ResourceSpecification  # isort: split
