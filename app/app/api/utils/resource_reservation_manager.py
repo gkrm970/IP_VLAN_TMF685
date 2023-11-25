@@ -140,7 +140,6 @@ class ResourceReservationManager:
                         )
                     )
                     log.info(
-                        "resource_inventory_response_json=%s",
                         resource_inventory_response,
                     )
 

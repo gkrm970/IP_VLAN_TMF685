@@ -133,6 +133,8 @@ class NCReserveIPProvider:
             )
             response.raise_for_status()
             json_data = response.json()
+            log.info("************Resource Response*************")
+            log.info(json_data)
             if "reservationItem" in json_data:
                 self.resource_ip_id = json_data["reservationItem"][0][
                     "appliedCapacityAmount"
