@@ -2,11 +2,24 @@ import threading
 import time
 from typing import TypedDict
 
+import aiohttp
 from authlib.integrations.httpx_client import AsyncOAuth2Client
 
 from app import log
 from app.core.config import settings
 from app.core.exceptions import UnauthorizedError
+
+
+class MyOAuth2Client(AsyncOAuth2Client):
+    async def fetch_token(self, *args, **kwargs):
+        # Disable SSL verification
+        ssl_context = aiohttp.FakeSSLContext()
+
+        # Modify the HTTP request to use the custom SSL context
+        kwargs['ssl'] = ssl_context
+
+        # Call the parent class's fetch_token method with the modified arguments
+        return await super().fetch_token(*args, **kwargs)
 
 
 class AuthHeader(TypedDict):
@@ -15,14 +28,18 @@ class AuthHeader(TypedDict):
 
 class AuthProvider:
     def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        token_url: str,
-        scope: list[str] | None = None,
+            self,
+            client_id: str,
+            client_secret: str,
+            token_url: str,
+            scope: list[str] | None = None,
     ) -> None:
         self._token_url = token_url
         self._token_update_time: int | None = None
+
+        self.custom_oauth_client = MyOAuth2Client(
+            client_id=client_id, client_secret=client_secret, scope=scope
+        )
 
         self.oauth_client = AsyncOAuth2Client(
             client_id=client_id, client_secret=client_secret, scope=scope, verify=False
@@ -64,11 +81,7 @@ class AuthProvider:
         log.info("****************sathish*******************")
         log.info(self._token_url)
         try:
-            log.info(self.oauth_client.fetch_token(
-                url=self._token_url,
-                grant_type="client_credentials",
-            ))
-            await self.oauth_client.fetch_token(
+            await self.custom_oauth_client.fetch_token(
                 url=self._token_url,
                 grant_type="client_credentials",
             )
