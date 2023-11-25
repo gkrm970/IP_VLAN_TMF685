@@ -63,10 +63,10 @@ class AuthProvider:
 
     async def _fetch_access_token(self) -> None:
         log.debug("Fetching new access token")
-        print("****************sathish*******************")
-        print(self._token_url)
+        log.info("****************sathish*******************")
+        log.info(self._token_url)
         try:
-            print(self.oauth_client.fetch_token(
+            log.info(self.oauth_client.fetch_token(
                 url=self._token_url,
                 grant_type="client_credentials",
             ))
