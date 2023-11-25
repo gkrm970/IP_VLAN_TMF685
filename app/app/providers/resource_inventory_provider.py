@@ -17,7 +17,6 @@ Method: TypeAlias = Literal["GET", "POST", "DELETE"]
 class ResourceInventoryProvider:
     def __init__(self):
         self.base_api_url = urljoin(str(settings.RI_BASE_URL), settings.RI_API_PREFIX)
-        self.created_resource_data = None
 
     @staticmethod
     async def _send_request(
@@ -80,7 +79,6 @@ class ResourceInventoryProvider:
             )
             resource_type = reservation_item.reservation_resource_capacity.type
             resource_name = reservation_item.resource_name[0].name
-            print("resource_name", resource_name)
 
             create_resource_request = {
                 "category": "vlan_Resource",

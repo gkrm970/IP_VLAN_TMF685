@@ -1,21 +1,38 @@
+from app import models, schemas, settings
 from sqlalchemy import func, select
+from urllib.parse import urljoin
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app import models, schemas
+from app.providers import resource_catalog_provider
+from app.core.exceptions import BadRequestError
+from fastapi import status
 
 
 class ResourcePoolCRUD:
-    @staticmethod
+    def __init__(self):
+        self.base_api_url = urljoin(str(settings.RC_BASE_URL), settings.RC_API_PREFIX)
+
     async def create(
-        db: AsyncSession, obj_in: schemas.ResourcePoolCreate
+        self, db: AsyncSession, obj_in: schemas.ResourcePoolCreate
     ) -> models.ResourcePool:
         db_obj = models.ResourcePool.from_schema(obj_in)
-
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
-
-        return db_obj
+        resource_specification_id = (
+            obj_in.capacity[0].resource_specification[0].resource_specification_id
+        )
+        resource_specification_url = (
+            f"{self.base_api_url}/resourceSpecification/{resource_specification_id}"
+        )
+        resource_specification_res = await resource_catalog_provider.send_request(
+            "GET", resource_specification_url
+        )
+        if resource_specification_res.status_code == status.HTTP_200_OK:
+            db.add(db_obj)
+            await db.commit()
+            await db.refresh(db_obj)
+            return db_obj
+        else:
+            raise BadRequestError(
+                f"Resource Specification not found this id {resource_specification_id}"
+            )
 
     @staticmethod
     async def get(db: AsyncSession, id: str) -> models.ResourcePool | None:

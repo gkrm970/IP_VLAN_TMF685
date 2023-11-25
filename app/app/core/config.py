@@ -99,6 +99,13 @@ class ResourceInventoryProviderSettings(BaseSettings):
     RI_API_PREFIX: str = f"/{RI_API_NAME}/{RI_API_VERSION}"
 
 
+class ResourceCatalogManagementSettings(BaseSettings):
+    RC_BASE_URL: AnyHttpUrl
+    RC_API_NAME: str = "plan/inventory/resourceCatalogManagement"
+    RC_API_VERSION: str = "v1"
+    RC_API_PREFIX: str = f"/{RC_API_NAME}/{RC_API_VERSION}"
+
+
 class Settings(
     AuthSettings,
     APISettings,
@@ -106,6 +113,7 @@ class Settings(
     LoggerSettings,
     NetCrackerProviderSettings,
     ResourceInventoryProviderSettings,
+    ResourceCatalogManagementSettings,
 ):
     model_config = SettingsConfigDict(
         case_sensitive=True,
