@@ -2,6 +2,7 @@ import threading
 import time
 from typing import TypedDict
 
+import httpx
 from authlib.integrations.httpx_client import AsyncOAuth2Client
 
 from app import log
@@ -23,9 +24,10 @@ class AuthProvider:
     ) -> None:
         self._token_url = token_url
         self._token_update_time: int | None = None
+        httpx_client = httpx.AsyncClient(verify=False)
 
         self.oauth_client = AsyncOAuth2Client(
-            client_id=client_id, client_secret=client_secret, scope=scope, verify=False
+            client_id=client_id, client_secret=client_secret, scope=scope, client=httpx_client
         )
 
         self.lock = threading.Lock()
@@ -61,7 +63,13 @@ class AuthProvider:
 
     async def _fetch_access_token(self) -> None:
         log.debug("Fetching new access token")
+        print("****************sathish*******************")
+        print(self._token_url)
         try:
+            print(self.oauth_client.fetch_token(
+                url=self._token_url,
+                grant_type="client_credentials",
+            ))
             await self.oauth_client.fetch_token(
                 url=self._token_url,
                 grant_type="client_credentials",
