@@ -76,7 +76,7 @@ class DatabaseSettings(BaseSettings):
 
 class LoggerSettings(BaseSettings):
     LOGGER_NAME: str = "Resource Pool Management"
-    LOGGER_LEVEL: LogLevel = "DEBUG"
+    LOGGER_LEVEL: LogLevel = "INFO"
     LOGGER_FORMAT: str = (
         "[%(asctime)s] [%(levelname)s] [%(name)s] "
         "[PID %(process)d] [TID %(thread)d] [X-ID %(correlation_id)s] "
