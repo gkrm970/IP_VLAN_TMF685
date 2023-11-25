@@ -98,6 +98,7 @@ class AuthProvider:
                 log.debug(f"Fetching new access token, {force_new=}")
                 log.info(self._fetch_access_token());
                 await self._fetch_access_token()
+                log.info(self.access_token)
 
                 return self.access_token
 
