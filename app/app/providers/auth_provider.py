@@ -14,16 +14,18 @@ class AuthHeader(TypedDict):
 
 
 class AuthProvider:
-
-    def __init__(self, client_id: str, client_secret: str, token_url: str, scope: list[str] | None = None, ) -> None:
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        token_url: str,
+        scope: list[str] | None = None,
+    ) -> None:
         self._token_url = token_url
         self._token_update_time: int | None = None
 
         self.oauth_client = AsyncOAuth2Client(
-            client_id=client_id,
-            client_secret=client_secret,
-            scope=scope,
-            verify=False
+            client_id=client_id, client_secret=client_secret, scope=scope, verify=False
         )
 
         self.lock = threading.Lock()

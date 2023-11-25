@@ -113,7 +113,6 @@ class AccessRoleValidator:
         return token
 
 
-
 resource_pool_read_access = Security(
     AccessRoleValidator(
         [
@@ -132,18 +131,9 @@ resource_pool_read_write_access = Security(
 )
 
 reservation_read_access = Security(
-    AccessRoleValidator(
-        [
-        "uinv:tmf685:reservation:ro",
-        "uinv:tmf685:reservation:rw"
-        ]
-    )
+    AccessRoleValidator(["uinv:tmf685:reservation:ro", "uinv:tmf685:reservation:rw"])
 )
 
 reservation_read_write_access = Security(
-    AccessRoleValidator(
-        [
-            "uinv:tmf685:reservation:rw"
-        ]
-    )
+    AccessRoleValidator(["uinv:tmf685:reservation:rw"])
 )

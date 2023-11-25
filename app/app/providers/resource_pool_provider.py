@@ -69,29 +69,21 @@ class ResourcePoolProvider:
 
     @staticmethod
     async def generate_unique_vlan(
-        demand_amount, capacity_amount_from, capacity_amount_to, used_vlans
+        demand_amount: int,
+        capacity_amount_from: int,
+        capacity_amount_to: int,
+        used_vlans: list,
     ):
-        log.info(f"demand_amount: {demand_amount}")
+        log.info(f"demand_amount_unique: {demand_amount}")
         vlans_list = []
-        available_vlans = list(range(capacity_amount_from, capacity_amount_to + 1))
 
-        # Filter out used VLANs
-        available_vlans = [vlan for vlan in available_vlans if vlan not in used_vlans]
-
-        for vlan in available_vlans:
-            vlans_list.append(vlan)
-            log.info(f"vlans_list: {vlans_list}")
-            if len(vlans_list) == demand_amount:
-                break
-
-        return vlans_list
-        # for vlan in range(capacity_amount_from, capacity_amount_to + 1):
-        #     if vlan not in used_vlans and vlan not in vlans_list:
-        #         vlans_list.append(vlan)
-        #         log.info(f"vlans_list: {vlans_list}")
-        #         if len(vlans_list) == demand_amount:
-        #             break
-        # return vlans_list
+        if demand_amount <= capacity_amount_to:
+            for vlan in range(capacity_amount_from, capacity_amount_to + 1):
+                if vlan not in used_vlans:
+                    vlans_list.append(vlan)
+                    if len(vlans_list) == demand_amount:
+                        break
+            return vlans_list
 
     async def _send_request(
         self, method, url: str, request_body: Optional[dict[str, Any]] = None

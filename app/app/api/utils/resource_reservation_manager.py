@@ -1,10 +1,11 @@
 import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app import crud, log, models, providers, schemas
-from app.core.exceptions import InternalServerError
+from app.core.exceptions import BadRequestError, InternalServerError
 
 
 class ResourceReservationManager:
@@ -20,7 +21,7 @@ class ResourceReservationManager:
         capacity_amount_remaining: int,
         capacity_amount_from: int,
         capacity_amount_to: int,
-        used_vlans: set[int],
+        used_vlans: list,
         resource,
     ):
         if demand_amount <= capacity_amount_remaining:
@@ -37,26 +38,21 @@ class ResourceReservationManager:
                     )
                 )
                 log.info("unique_vlan_numbers=%s", unique_vlan_numbers)
-                used_vlans.update(unique_vlan_numbers)
                 return unique_vlan_numbers, available_capacity_amount
             else:
-                remaining_demand = demand_amount - len(used_vlans)
                 unique_vlan_numbers = (
                     await self.resource_pool_provider.generate_unique_vlan(
-                        remaining_demand,
+                        demand_amount,
                         capacity_amount_from,
                         capacity_amount_to,
                         used_vlans,
                     )
                 )
                 log.info("unique_vlan_numbers=%s", unique_vlan_numbers)
-                used_vlans.update(unique_vlan_numbers)
-                return unique_vlan_numbers, available_capacity_amount
+            return unique_vlan_numbers, available_capacity_amount
         else:
             log.info("Not enough resources available to reserve VLANs.")
-            raise InternalServerError(
-                "Not enough resources available to reserve VLANs."
-            )
+            raise BadRequestError("Not enough resources available to reserve VLANs.")
 
     async def _reserve_netcracker_resources(self):
         pass
@@ -64,7 +60,6 @@ class ResourceReservationManager:
     async def reserve(
         self, reservation_create: schemas.ReservationCreate, db: AsyncSession
     ):
-        used_vlans = set()
         reservation = []
         for reservation_item in reservation_create.reservation_item:
             resource_pool_id = (
@@ -79,7 +74,7 @@ class ResourceReservationManager:
             resource_pool: models.ResourcePool | None = result.scalars().first()
 
             if resource_pool is None:
-                raise InternalServerError("Resource pool not found")
+                raise BadRequestError("Resource pool not found")
 
             resource_pool_data = resource_pool.to_dict()
             log.info("resource_pool_response=%s", resource_pool)
@@ -104,6 +99,18 @@ class ResourceReservationManager:
                     demand_amount = int(
                         reservation_item.reservation_resource_capacity.capacity_demand_amount
                     )
+                    vlans = await db.execute(
+                        select(models.VlanAllocation.used_vlan_numbers)
+                    )
+                    results = vlans.fetchall()
+                    if results is not None:
+                        used_vlans = [
+                            vlan_number
+                            for vlan_set, in results
+                            for vlan_number in vlan_set
+                        ]
+                    else:
+                        used_vlans = []
                     (
                         reserved_vlans,
                         available_capacity_amount,
@@ -115,12 +122,18 @@ class ResourceReservationManager:
                         used_vlans,
                         resource,
                     )
-                    log.info("reserved_vlans=%s", reserved_vlans)
+                    models.VlanAllocation(
+                        id=str(uuid.uuid4()), used_vlan_numbers=reserved_vlans
+                    )
+                    await db.commit()
+                    log.info("vlan_object=%s", used_vlans)
+                    log.info("reserved_vlans_1=%s", reserved_vlans)
                     resource_inventory_response = (
                         await self.resource_inventory_provider.create_resource(
                             reservation_item,
                             resource_specification_list,
                             reserved_vlans,
+                            db,
                         )
                     )
                     log.info(
@@ -165,6 +178,7 @@ class ResourceReservationManager:
                             )
                     except Exception as e:
                         log.info(f"{e}")
+                        await db.rollback()
                         delete_response = await self.resource_inventory_provider.delete_resource_by_id(
                             resource_inventory_id
                         )
@@ -174,7 +188,8 @@ class ResourceReservationManager:
                                 resource_inventory_id,
                             )
                             raise InternalServerError(
-                                f"update resource pool fails, an error occurred during resource pool updating {e}"
+                                f"update resource pool fails, an error "
+                                f"occurred during resource pool updating {e}"
                             )
                         else:
                             log.info(

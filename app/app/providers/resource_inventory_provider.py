@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 import httpx
 from asgi_correlation_id import correlation_id
 from fastapi import status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import log, providers, schemas
 from app.core.config import settings
@@ -69,6 +70,7 @@ class ResourceInventoryProvider:
         reservation_item: schemas.ReservationItemCreate,
         resource_specification_list,
         reserved_vlans,
+        db: AsyncSession,
     ) -> None | dict | Any:
         try:
             reservation_place = (
@@ -119,11 +121,14 @@ class ResourceInventoryProvider:
                 log.info("TMF-639 Created successfully")
                 return response.json()
             else:
+                await db.rollback()
                 raise Exception(
                     "TMF639 create resource fails: "
                     f"{response.status_code} - {response.text}"
                 )
+
         except Exception as e:
+            await db.rollback()
             log.info(f"Error creating resource: {e}")
             raise InternalServerError(
                 "TMF639 create resource fails: "
