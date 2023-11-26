@@ -16,7 +16,7 @@ class MyOAuth2Client(AsyncOAuth2Client):
         ssl_context = aiohttp.FakeSSLContext()
 
         # Modify the HTTP request to use the custom SSL context
-        kwargs["ssl"] = ssl_context
+        kwargs['ssl'] = ssl_context
 
         # Call the parent class's fetch_token method with the modified arguments
         return await super().fetch_token(*args, **kwargs)
@@ -28,11 +28,11 @@ class AuthHeader(TypedDict):
 
 class AuthProvider:
     def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        token_url: str,
-        scope: list[str] | None = None,
+            self,
+            client_id: str,
+            client_secret: str,
+            token_url: str,
+            scope: list[str] | None = None,
     ) -> None:
         self._token_url = token_url
         self._token_update_time: int | None = None
@@ -96,7 +96,7 @@ class AuthProvider:
         with self.lock:
             if force_new or self.token_update_time is None:
                 log.debug(f"Fetching new access token, {force_new=}")
-                log.info(self._fetch_access_token())
+                log.info(self._fetch_access_token());
                 await self._fetch_access_token()
                 log.info(self.access_token)
 

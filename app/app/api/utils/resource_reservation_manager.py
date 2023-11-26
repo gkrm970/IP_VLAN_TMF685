@@ -123,9 +123,7 @@ class ResourceReservationManager:
                         resource,
                     )
                     vlan_object = models.VlanAllocation(
-                        id=str(uuid.uuid4()),
-                        used_vlan_numbers=reserved_vlans,
-                        resource_pool_id=resource_pool_id,
+                        id=str(uuid.uuid4()), used_vlan_numbers=reserved_vlans
                     )
                     vlan_id = vlan_object.id
                     db.add(vlan_object)
