@@ -38,6 +38,7 @@ python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 httpx = "^0.25.0"
 # OAuth2 client for external API calls
 authlib = "^1.2.1"
+aiohttp = "^3.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
