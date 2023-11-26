@@ -96,7 +96,7 @@ class AuthProvider:
         with self.lock:
             if force_new or self.token_update_time is None:
                 log.debug(f"Fetching new access token, {force_new=}")
-                log.info(self._fetch_access_token());
+                log.info(await self._fetch_access_token())
                 await self._fetch_access_token()
                 log.info(self.access_token)
 
