@@ -41,7 +41,7 @@ class ResourcePool(BaseDbModel):
         print("capacity_response", capacity)
         return cls(
             id=resource_pool_id,
-            href=f"resource/{resource_pool_id}",
+            href=f"resourcePool/{resource_pool_id}",
             name=schema.name,
             description=schema.description,
             type=schema.type,
