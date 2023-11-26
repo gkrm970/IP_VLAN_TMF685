@@ -21,10 +21,10 @@ retry_exceptions = (httpx.ConnectError,)
     retry=retry_if_exception_type(retry_exceptions),
 )
 async def _send_request(
-    method: Method,
-    url: str,
-    headers: dict[str, str] | None = None,
-    request_body: dict[str, Any] | None = None,
+        method: Method,
+        url: str,
+        headers: dict[str, str] | None = None,
+        request_body: dict[str, Any] | None = None,
 ) -> httpx.Response:
     async with httpx.AsyncClient() as client:
         response = await client.request(method, url, headers=headers, json=request_body)
@@ -33,17 +33,16 @@ async def _send_request(
 
 class NCReserveIPProvider:
     def __init__(self):
-        self.resource_name_id_from_nc = []
-        self.resource_ip_id = str
-        self.reserved_ips_names_from_nc = []
-        self.resource_id_list = []
+        self.ip_names_ids = None
+        self.resource_ip_id = None
+        self.ip_names = None
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def reserve_ip(
-        self,
-        reservation_item: schemas.ReservationItemCreate,
-        related_party_id: str,
-        related_party_role: str,
+            self,
+            reservation_item: schemas.ReservationItemCreate,
+            related_party_id: str,
+            related_party_role: str,
     ):
         create_resource_request_payload = {
             "relatedParty": {
@@ -76,7 +75,8 @@ class NCReserveIPProvider:
                                                     "name": place_info.name,
                                                     "role": place_info.type,
                                                 }
-                                                for place_info in reservation_item.reservation_resource_capacity.reservation_place
+                                                for place_info in
+                                                reservation_item.reservation_resource_capacity.reservation_place
                                             ],
                                             "characteristic": [
                                                 {
@@ -140,41 +140,25 @@ class NCReserveIPProvider:
                     "appliedCapacityAmount"
                 ]["resource"][0].get("id")
 
-                for resource in json_data["reservationItem"][0][
-                    "appliedCapacityAmount"
-                ]["resource"]:
-                    if resource.get("id") is not None:
-                        self.resource_id_list.append(resource.get("id"))
-
                 data = json_data.get("reservationItem", [])
 
                 # Extract the id and name from the resource list
-                ip_names_ids = [
+                self.ip_names_ids = [
                     {"id": resource.get("id"), "name": resource.get("name")}
                     for item in data
                     for applied_capacity_amount in item.get("appliedCapacityAmount", {})
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("id") is not None
-                    and resource.get("name") is not None
+                       and resource.get("name") is not None
                 ]
-                self.resource_name_id_from_nc.append(ip_names_ids)
 
-                ip_names = [
+                self.ip_names = [
                     resource.get("name")
                     for item in json_data.get("reservationItem", [])
                     for applied_capacity_amount in item.get("appliedCapacityAmount", {})
                     for resource in applied_capacity_amount.get("resource", [])
                     if resource.get("name") is not None
                 ]
-                self.reserved_ips_names_from_nc.append(ip_names)
-                log.info(
-                    "IP names from NC resource in list ",
-                    self.reserved_ips_names_from_nc,
-                )
-
-                # Now, combined_data is a list of dictionaries with "id" and "name" pairs
-                log.info("combined_data from NC resource ", ip_names_ids)
-                return self.resource_id_list, ip_names_ids
 
         except httpx.RequestError as exc:
             log.error(
@@ -187,20 +171,21 @@ class NCReserveIPProvider:
 nc_reserve_ip_instance = NCReserveIPProvider()
 
 
-class NCReleaseIPProvider:
+class NCReleaseIPProvider(NCReserveIPProvider):
     def __init__(self):
+        super().__init__()
         self.nc_api_base_url = settings.NC_API_BASE_URL
 
     async def release_ip(
-        self,
+            self,
     ) -> httpx.Response:
         # Access reserved_ips from the nc_reserve_ip_instance
         payload = {
             "@baseType": "Network",
             "@type": "IP Range",
-            "id": nc_reserve_ip_instance.resource_ip_id,
+            "id": self.resource_ip_id,
             "name": [
-                ip_name for ip_name in nc_reserve_ip_instance.reserved_ips_names_from_nc
+                ip_name for ip_name in self.ip_names
             ],
             "resourceCharacteristic": [
                 {
@@ -209,7 +194,7 @@ class NCReleaseIPProvider:
                     "value": "UNASSIGNED",
                     "valueType": "Text",
                 }
-                for resource_id_from_nc in nc_reserve_ip_instance.resource_id_list
+                for resource_id_from_nc in self.resource_ip_id
             ],
         }
 
@@ -240,16 +225,19 @@ class NCReleaseIPProvider:
 nc_release_ip_instance = NCReleaseIPProvider()
 
 
-class ResourceInventoryProvider:
+class ResourceInventoryProvider(NCReserveIPProvider):
     def __init__(self):
+        super().__init__()
+        self.resource_inventory_id = None
+        self.resource_inventory_href = None
         self.ri_api_base_url = str(settings.RI_BASE_URL)
-        self.ri_api_name = settings.RI_API_NAME
-        self.ri_api_version = settings.RI_API_VERSION
+        self.ri_api_name = str(settings.RI_API_NAME)
+        self.ri_api_version = str(settings.RI_API_VERSION)
 
     async def create_resource_inventory(
-        self,
-        reservation_create: schemas.ReservationItemCreate,
-        resource_specification_list: list,
+            self,
+            reservation_create: schemas.ReservationItemCreate,
+            resource_specification_list: list,
     ) -> None | dict | Any:
         reservation_place = (
             reservation_create.reservation_item.reservation_resource_capacity.reservation_place
@@ -266,7 +254,7 @@ class ResourceInventoryProvider:
             "place": [],
         }
         # Reserved IP name and ID from net cracker are appended to the resourceCharacteristic list
-        for name_id in nc_reserve_ip_instance.resource_name_id_from_nc:
+        for name_id in self.resource_ip_id:
             create_resource_request["resourceCharacteristic"].append(
                 {
                     "id": name_id.get("id"),
@@ -301,8 +289,8 @@ class ResourceInventoryProvider:
             )
             resource_inventory_response.raise_for_status()
             log.info("Resource inventory created successfully %s")
-            resource_inventory_response.json().get("href")
-            resource_inventory_response.json().get("id")
+            self.resource_inventory_href = resource_inventory_response.json().get("href")
+            self.resource_inventory_id = resource_inventory_response.json().get("id")
             return resource_inventory_response
         except httpx.HTTPStatusError as e:
             log.error("HTTPStatusError", e)
@@ -315,23 +303,23 @@ class ResourceInventoryProvider:
 nc_resource_inventory_instance = ResourceInventoryProvider()
 
 
-class ResourcePoolPatchProvider:
+class ResourcePoolPatchProvider(NCReserveIPProvider, ResourceInventoryProvider):
     def __init__(self):
-        self.api_base_url = settings.API_BASE_URL
-        self.api_name = settings.API_NAME
-        self.api_version = settings.API_VERSION
+        super().__init__()
+        self.api_base_url = str(settings.API_BASE_URL)
+        self.api_name = str(settings.API_NAME)
+        self.api_version = str(settings.API_VERSION)
         self.ri_base_url = str(settings.RI_BASE_URL)
-        self.ri_api_name = settings.RI_API_NAME
-        self.ri_api_version = settings.RI_API_VERSION
+        self.ri_api_name = str(settings.RI_API_NAME)
+        self.ri_api_version = str(settings.RI_API_VERSION)
 
     async def resource_pool_patch(
-        self,
-        reservation_item_resource_capacity_resource_pool_id: str,
-        ip_names: list[str],
-        resource_inventory_href: str,
-        resource_inventory_id: str,
-        db: AsyncSession,
+            self,
+            reservation_item: schemas.ReservationItemCreate,
+            db: AsyncSession,
     ) -> None | dict | Any:
+        reservation_item_resource_capacity_resource_pool_id = (
+            reservation_item.reservation_resource_capacity.resource_pool.pool_id)
         try:
             result = await db.execute(
                 select(models.ResourcePool)
@@ -346,9 +334,9 @@ class ResourcePoolPatchProvider:
 
             if resource_pool_response:
                 new_resource_data = models.ResourcePoolResource(
-                    resource_id=resource_inventory_id,
-                    href=resource_inventory_href,
-                    characteristic=[[{"ipv4Subnet": ip_name} for ip_name in ip_names]],
+                    resource_id=self.resource_inventory_id,
+                    href=self.resource_inventory_href,
+                    characteristic=[[{"ipv4Subnet": ip_name} for ip_name in self.ip_names]],
                 )
 
                 resource_pool_response.capacity[0].resource_pool_resource.append(
@@ -370,10 +358,10 @@ class ResourcePoolPatchProvider:
             log.info("Roll back of release IP address completed successfully")
 
             # Roll back code for resource inventory - delete
-            if resource_inventory_id:
+            if self.resource_inventory_id:
                 url = (
                     f"{self.ri_base_url}{self.ri_api_name}/{self.ri_api_version}/resource/"
-                    f"{resource_inventory_id}"
+                    f"{self.resource_inventory_id}"
                 )
                 response = await _send_request(method="DELETE", url=url)
                 log.info("Resource inventory deleted successfully", response)
