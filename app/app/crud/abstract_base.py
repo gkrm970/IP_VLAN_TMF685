@@ -4,7 +4,7 @@ from typing import Any, Generic, Type, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.base import BaseDbModel
+from app.app.db.base import BaseDbModel
 
 # SQLAlchemy Model
 ModelType = TypeVar("ModelType", bound=BaseDbModel)

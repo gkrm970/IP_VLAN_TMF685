@@ -1,5 +1,5 @@
-from app import log, schemas
-from app.core.exceptions import BadRequestError
+from app.app import log, schemas
+from app.app.core.exceptions import BadRequestError
 
 _resource_field_alias_name_mapping: dict[str, str] = {
     field_info.alias or field_name: field_name

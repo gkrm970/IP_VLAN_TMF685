@@ -1,4 +1,4 @@
-from app.core.security import (  # noqa: F401
+from app.app.core.security import (  # noqa: F401
     resource_pool_read_access,
     resource_pool_read_write_access,
     reservation_read_access,

@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import schemas
-from app.db.base import BaseDbModel
+from app.app import schemas
+from app.app.db.base import BaseDbModel
 
 if TYPE_CHECKING:
-    from app.models import ReservationResourceCapacity
+    from app.app.models import ReservationResourceCapacity
 
 
 class ReservationApplicableTimePeriod(BaseDbModel):

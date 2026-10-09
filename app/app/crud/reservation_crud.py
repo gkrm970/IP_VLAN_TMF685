@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
-from app.core.exceptions import ConflictError
+from app.app import models, schemas
+from app.app.core.exceptions import ConflictError
 
 
 class ReservationCRUD:

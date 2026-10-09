@@ -5,10 +5,10 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import crud, log, models, schemas
-from app.api import deps
-from app.api.responses import reservation_responses
-from app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
+from app.app import crud, log, models, schemas
+from app.app.api import deps
+from app.app.api.responses import reservation_responses
+from app.app.api.utils.resource_pool_alias_mapping import get_include_fields_for_response
 
 router = APIRouter()
 

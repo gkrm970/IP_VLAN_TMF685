@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.api_v1.api import router as api_router
-from app.core.config import settings
+from app.app.api.api_v1.api import router as api_router
+from app.app.core.config import settings
 
 app = FastAPI(
     title=settings.APP_TITLE,

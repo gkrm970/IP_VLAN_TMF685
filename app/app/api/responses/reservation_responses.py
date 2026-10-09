@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.core.exceptions import ErrorMessage
+from app.app.core.exceptions import ErrorMessage
 
 _NOT_FOUND = "Not Found"
 

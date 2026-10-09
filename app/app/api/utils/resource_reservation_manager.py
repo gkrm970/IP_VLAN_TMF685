@@ -4,8 +4,8 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app import crud, log, models, providers, schemas
-from app.core.exceptions import BadRequestError, InternalServerError
+from app.app import crud, log, models, providers, schemas
+from app.app.core.exceptions import BadRequestError, InternalServerError
 
 
 class ResourceReservationManager:

@@ -8,9 +8,9 @@ from fastapi.openapi.models import OAuthFlowClientCredentials, OAuthFlows
 from fastapi.security import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
 
-from app import log, schemas
-from app.core.config import JWKSet, settings
-from app.core.exceptions import InternalServerError, UnauthorizedError
+from app.app import log, schemas
+from app.app.core.config import JWKSet, settings
+from app.app.core.exceptions import InternalServerError, UnauthorizedError
 
 
 class OAuth2ClientCredentialsBearer(OAuth2):

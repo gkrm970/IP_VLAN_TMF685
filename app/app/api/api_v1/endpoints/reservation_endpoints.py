@@ -5,9 +5,9 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import crud, log, models, schemas
-from app.api import deps, utils
-from app.api.responses import reservation_responses
+from app.app import crud, log, models, schemas
+from app.app.api import deps, utils
+from app.app.api.responses import reservation_responses
 
 router = APIRouter()
 

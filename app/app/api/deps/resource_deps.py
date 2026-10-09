@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import crud, models
-from app.api import deps
-from app.core.exceptions import NotFoundError
+from app.app import crud, models
+from app.app.api import deps
+from app.app.core.exceptions import NotFoundError
 
 
 async def get_resource(

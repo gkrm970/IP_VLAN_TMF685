@@ -1,7 +1,7 @@
 import httpx
 import requests
 
-from app import log, schemas
+from app.app import log, schemas
 
 BASE_URL = "http://127.0.0.1:8000"
 headers = {"Content-Type": "application/json", "accept": "application/json"}

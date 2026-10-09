@@ -1,9 +1,11 @@
-from app import models, schemas, settings
+from app.app import models, schemas
 from sqlalchemy import func, select
 from urllib.parse import urljoin
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.providers import resource_catalog_provider
-from app.core.exceptions import BadRequestError
+
+from app.app.core.config import settings
+from app.app.providers import resource_catalog_provider
+from app.app.core.exceptions import BadRequestError
 from fastapi import status
 
 
